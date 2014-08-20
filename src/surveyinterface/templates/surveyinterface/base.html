@@ -1,0 +1,41 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+    <head>
+        <title>Survey Data Viewer</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" type="text/css"/>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" />
+    </head>
+    <body>
+    <div class="bs-example bs-navbar-bottom-example">
+        <nav class="navbar navbar-inverse" role="navigation">
+          <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-7">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="..">Survey Data Viewer</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-7">
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="..">Home</a></li>
+                <!--<li><a href="#">Data</a></li>-->
+                <!--<li><a href="#">About Us</a></li>-->
+              </ul>
+            </div><!-- /.navbar-collapse -->
+          </div>
+        </nav>
+    </div>
+        {% block body %}
+        {% endblock %}
+        <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js" data-main="{% static 'js/main.js' %}"></script>
+    </body>
+</html>

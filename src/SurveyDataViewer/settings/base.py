@@ -61,7 +61,7 @@ WSGI_APPLICATION = 'SurveyDataViewer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'Database',
+        'NAME': 'SurveysDatabase',
     }
 }
 
@@ -77,3 +77,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+MEDIA_ROOT = ''
+
+MEDIA_URL = ''

@@ -1,9 +1,10 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.views.generic.base import View
+from django.views.generic.list import ListView
 
+from surveyinterface.models import Survey
 
 # Create your views here.
-class HomeView(View):
-    def get(self, request):
-        return render(request, 'surveyinterface/home.html')
+
+
+class HomeView(ListView):
+    model = Survey
+    template_name = "surveyinterface/home.html"

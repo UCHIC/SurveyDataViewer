@@ -14,3 +14,4 @@ SITE_URL = ''
 MEDIA_ROOT = os.path.join('surveyinterface', 'surveyfiles')
 
 MEDIA_URL = '/surveydata/'
+

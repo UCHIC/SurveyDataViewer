@@ -12,6 +12,6 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'WaterSurveyData.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
-    url(r'^' + BASE_URL + '$', HomeView.as_view(), name='survey-viewer-home'),
+    url(r'^' + BASE_URL + '$', HomeView.as_view(), name='home'),
     url(r'^' + BASE_URL + 'admin/', include(admin.site.urls)),
 )

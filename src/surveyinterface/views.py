@@ -1,4 +1,4 @@
-from django.views.generic.list import ListView
+from django.views.generic import ListView, DetailView
 
 from surveyinterface.models import Survey
 
@@ -8,3 +8,8 @@ from surveyinterface.models import Survey
 class HomeView(ListView):
     model = Survey
     template_name = "surveyinterface/home.html"
+
+
+class SurveyView(DetailView):
+    model = Survey
+    template_name = "surveyinterface/survey.html"

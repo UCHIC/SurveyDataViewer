@@ -1,4 +1,6 @@
 {% extends "surveyinterface/base.html" %}
+{% load staticfiles %}
+
 {% block body %}
         <div id="mainContent">
         <div id="listQuestions" class="panel-group"></div>
@@ -11,4 +13,7 @@
             </div>
         </div>
     </div>
+    <input id="dataFile" type="hidden" value="{{ object.datafile.url }}" readonly>
+    <input id="metadataFile" type="hidden" value="{{ object.metadatafile.url }}" readonly>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js" data-main="{% static 'scripts/main.js' %}"></script>
 {% endblock %}

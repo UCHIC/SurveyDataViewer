@@ -9,7 +9,7 @@
             <div class="caption">
                 <h3>{{ survey.name }}</h3>
                 <span>{{ survey.dateconducted }}</span>
-                <p><a href="survey" class="btn btn-primary" role="button">View</a></p>
+                <p><a href="{% url 'survey-view' survey.code %}" class="btn btn-primary" role="button">View</a></p>
             </div>
         </div>
     {% empty %}

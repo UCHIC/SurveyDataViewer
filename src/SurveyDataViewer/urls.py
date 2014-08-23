@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.conf.urls import patterns, include, url
+from django.conf.urls.static import static
 
 from surveyinterface.views import HomeView, SurveyView
 
@@ -12,4 +13,4 @@ urlpatterns = patterns('',
     url(r'^' + BASE_URL + '$', HomeView.as_view(), name='home'),
     url(r'^' + BASE_URL + 'survey/(?P<pk>\w+)$', SurveyView.as_view(), name='survey-view'),
     url(r'^' + BASE_URL + 'admin/', include(admin.site.urls)),
-)
+) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

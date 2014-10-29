@@ -2,15 +2,52 @@
 {% load staticfiles %}
 
 {% block body %}
-        <div id="mainContent">
-        <div id="listQuestions" class="panel-group"></div>
+    <div id="mainContent">
+        <div id="listQuestions" class="panel-group">
+            <div class="thumbnail">
+                <img src="{% static 'images/docicon.jpg' %}" alt="...">
+                <div class="caption">
+                    <h4>{{ object.name }}</h4>
+                    <p>{{ object.dateconducted }}</p>
+                </div>
+
+             </div>
+            <hr class="intro-divider">
+        </div>
         <div id="visualizationContent">
-            <h3 id="txtTitle">{{ object.name }}</h3>
-            <h3 id="txtDescription">{{ object.dateconducted }}</h3>
-            <div class="btn-group">
-              <button id="nodeview" class="btn">Node View</button>
-              <button id="collapsedview" class="btn">Percentage View</button>
+            <div id="top-bar">
+                <div id="captionContainer">
+                    <span class="lbl-question" id="txtTitle"></span>
+                    <span class="lbl-option" id="txtDescription"></span>
+                </div>
+                <div id="options">
+                    <span>View</span>
+                    <div class="btn-group">
+                        <button id="nodeview" type="button" class="btn btn-default"> Respondant</button>
+                        <button id="collapsedview" type="button" class="btn btn-default"> Percentage</button>
+                    </div>
+                    <br/>
+                    <span>Category</span>
+
+                    <div class="dropdown">
+                      <button id="btnCategories" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                        All
+                        <span class="caret"></span>
+                      </button>
+                      <ul id = "lstYAxisMode" class="dropdown-menu">
+                        <li><a data-axis="All" href="#">All</a></li>
+                        <li><a data-axis="Gender" href="#">Gender</a></li>
+                        <li><a data-axis="Age" href="#">Age</a></li>
+                        <li><a data-axis="Education" href="#">Education</a></li>
+                        <li><a data-axis="Resident" href="#">Utah resident</a></li>
+                      </ul>
+                    </div>
+
+                </div>
+
             </div>
+
+
         </div>
     </div>
     <input id="dataFile" type="hidden" value="{{ object.datafile.url }}" readonly>

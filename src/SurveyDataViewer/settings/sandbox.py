@@ -5,6 +5,9 @@ from SurveyDataViewer.settings.base import *
 #sys.stderr = open('err.log', 'w')
 sys.stdout = open('out.log', 'w')
 
+DATABASE_PATH = os.path.join(BASE_DIR, os.pardir, 'SurveysDatabase')
+DATABASES['default']['NAME'] = DATABASE_PATH
+
 DEBUG = True
 TEMPLATE_DEBUG = True
 

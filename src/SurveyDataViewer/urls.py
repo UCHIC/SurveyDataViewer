@@ -15,5 +15,5 @@ urlpatterns = patterns('',
     url(r'^' + BASE_URL + 'admin/', include(admin.site.urls)),
 )
 
-if settings.DEBUG:
+if not settings.DEPLOYED:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

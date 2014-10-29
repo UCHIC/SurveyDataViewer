@@ -1,7 +1,7 @@
 __author__ = 'Juan'
 from SurveyDataViewer.settings.base import *
 
-DATABASE_PATH = os.path.join('SurveysDatabase')
+DATABASE_PATH = os.path.join('SurveysDatabase_dev.sql')
 DATABASES['default']['NAME'] = DATABASE_PATH
 
 DEBUG = True

@@ -3,9 +3,8 @@ from SurveyDataViewer.settings.base import *
 
 #For error logging (helicon zoo error trace logging doesn't work)
 #sys.stderr = open('err.log', 'w')
-sys.stdout = open('out.log', 'w')
 
-DATABASE_PATH = os.path.join(BASE_DIR, os.pardir, 'SurveysDatabase')
+DATABASE_PATH = os.path.join(BASE_DIR, os.pardir, 'SurveysDatabase_sandbox.sql')
 DATABASES['default']['NAME'] = DATABASE_PATH
 
 DEBUG = True
@@ -19,5 +18,3 @@ STATIC_URL = SITE_URL + 'static/'
 
 MEDIA_ROOT = os.path.join('surveyinterface', 'surveyfiles')
 MEDIA_URL = '/surveydata/'
-
-print(MEDIA_ROOT)

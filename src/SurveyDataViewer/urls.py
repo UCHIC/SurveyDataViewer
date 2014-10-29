@@ -13,4 +13,7 @@ urlpatterns = patterns('',
     url(r'^' + BASE_URL + '$', HomeView.as_view(), name='home'),
     url(r'^' + BASE_URL + 'survey/(?P<pk>\w+)$', SurveyView.as_view(), name='survey-view'),
     url(r'^' + BASE_URL + 'admin/', include(admin.site.urls)),
-) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

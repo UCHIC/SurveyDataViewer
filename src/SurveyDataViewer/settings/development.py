@@ -8,10 +8,8 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 
 STATIC_URL = '/static/'
-
 SITE_URL = ''
 
 MEDIA_ROOT = os.path.join('surveyinterface', 'surveyfiles')
-
 MEDIA_URL = '/surveydata/'
 

@@ -17,4 +17,4 @@ STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
 STATIC_URL = SITE_URL + 'static/'
 
 MEDIA_ROOT = os.path.join('surveyinterface', 'surveyfiles')
-MEDIA_URL = '/surveydata/'
+MEDIA_URL = SITE_URL + 'surveyfiles/'

@@ -8,7 +8,6 @@
     overflow-x: hidden;
 }
 
-
 .y.axisRight text {
     fill: orange;
 }
@@ -42,6 +41,7 @@
     width:calc(100% - 300px);
     float:right;
     background:#fff;
+    overflow: hidden;
 }
 
 .thumbnail{
@@ -120,19 +120,26 @@ svg{
     border-right: 1px solid #ddd;
 }
 
-#listQuestions a, #listQuestions h4, label{
+#listQuestions a, #listQuestions h4{
     width:270px;
-    color: #000000;
+    color: #000000 !important;
     cursor:default;
     text-decoration: none;
     font-size: 14px;
     margin:0 !important;
     display: inline-block;
 }
+#listQuestions .panel-collapse label{
+
+}
 
 #top-bar{
     float:right;
     width:100%;
+    border-bottom: 1px solid #aaa;
+    padding:4px;
+    margin-bottom:5px;
+    height: 90px;
 }
 
 #options{
@@ -166,6 +173,10 @@ svg{
     float:left;
 }
 
+#btnCategories{
+    margin-top:10px
+}
+
 hr{
     margin:0;
 }
@@ -189,12 +200,37 @@ hr{
     list-style-type: none;
 }
 
+.panel-collapse li{
+    border-bottom: 1px solid #aaa;
+}
+
+.panel-collapse li{
+    padding-top:3px !important;
+    padding-bottom:3px !important;
+}
+
+.even{
+    background:#ddd;
+}
+
+.odd{
+    background:#eee;
+}
+
+
+#listQuestions li:not(.indented){
+    border: 1px solid #aaa;
+    border-top:0px;
+}
+
 #listQuestions li:hover{
     background-color: rgb(172, 250, 255);
 }
 
 .indented{
     padding-left:20px !important;
+    border-left: 10px solid rgb(131, 131, 131);
+    border-right:1px solid #aaa;
 }
 
 
@@ -236,17 +272,61 @@ hr{
   font-weight:bold;
 }
 
-#listQuestions label{
+#listQuestions label, a{
     font-weight:normal;
+    font-size: 14px;
+    color:#000;
+}
+
+li .checkbox{
+    margin-left:10px;
 }
 
 #txtTitle{
+    font-size:18px;
     text-align:left;
-    display: none;
+    float:right;
+    height:auto;
+    width:auto;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin-left: 10px;
 }
 
 #txtDescription{
+    font-size:18px;
     text-align:left;
+    float:right;
+    height:auto;
+    width:auto;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin-left: 10px;
+    text-shadow: -1px 1px #6C6C6C;
+}
+
+.descriptionContainer{
+    color:#fff;
+    background: rgb(103, 180, 182);
+    border:1px solid #4F4F4F;
+    border-radius:5px;
+    padding:5px;
+    padding-left:15px;
+    padding-right:15px;
+    clear:left;
+    margin:5px;
+    float: left;
+    display: none;
+}
+
+.titleContainer{
+    color:#000;
+    border:1px solid #4F4F4F;
+    border-radius:5px;
+    padding:5px;
+    padding-left:15px;
+    padding-right:15px;
+    clear:left;
+    margin:5px;
+    float: left;
     display: none;
 }
 
@@ -255,6 +335,9 @@ hr{
     color:#fff !important;
 }
 
+.active label{
+    color:#fff !important;
+}
 
 body,
 html {

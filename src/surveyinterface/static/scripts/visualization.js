@@ -26,8 +26,6 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     var self = {};
     var data, metadata;
     var radius = 10;
-    var charge = 0; //-30
-    var gravity = 0.05;
     var yAxisMode = "All";
     var selectedQuestion;
     var tooltip = CustomTooltip("gates_tooltip", 240);
@@ -37,12 +35,12 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
     var svg;
     var view = "";
-    var answers = [0];
+    var answers = [];
 
     var radius_scale, nodes, force;
 
     // Multiple choices (s:select one, m:select multiple) - Single choice group - Single choice
-    var regExp = {reMS: /^Q([0-9]+)_([0-9]) ([a-z])/, reSG: /^Q([0-9])+[a-z]/,  reS:/^Q([0-9]+)/};
+    var regExp = {reMS: /^Q([0-9]+)_([0-9]+) ([a-z])/, reSG: /^Q([0-9])+[a-z]/,  reS:/^Q([0-9]+)/};
 
     var infoQuestions = {Gender:"Are you female or male?", Resident: "Do you live in Cache County, Utah? ", Education:"What is the highest level of school you have completed?", Age:"How old were you at your last birthday?"}
 
@@ -90,18 +88,15 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             else{
                 Gender = "";
             }
-
-            return {radius: radius, value: 0, info: info, cx: (w + margin.left)/2, genderString: Gender,cy: (h - margin.bottom) / 2};
-
+            return {radius: radius, value: 0, info: info, cx: w/2, cy: (h - margin.bottom) / 2, genderString: Gender};
         })
 
         force = d3.layout.force()
-            .gravity(gravity)
-            .charge(charge)
+            .gravity(0)
+            .charge(0)
             .nodes(nodes)
             .size([w, h])
             .on("tick", tick);
-
 
         force.start();
 
@@ -109,6 +104,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             .attr("width", w)
             .attr("height", h);
 
+        drawTable();
         setNodeView();
 
         $("#collapsedview").click(setCollapsedView);
@@ -150,17 +146,17 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         $("#txtDescription").text("");
         $("#txtTitle").text(title);
         if ($("#txtTitle").text() == ""){
-            $("#txtTitle").hide();
+            $(".titleContainer").hide();
         }
         else{
-            $("#txtTitle").show();
+            $(".titleContainer").show();
         }
-        $("#txtDescription").text(content);
+        $("#txtDescription").text(" " + content);
         if ($("#txtDescription").text() == ""){
-            $("#txtDescription").hide();
+            $(".descriptionContainer").hide();
         }
         else{
-            $("#txtDescription").show();
+            $(".descriptionContainer").show();
         }
 
         positionNodes(selectedQuestion);
@@ -201,7 +197,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         var options = valuesY.getUnique().sort(function(a, b){return b-a});
 
         var xDelta = (w - marginLeft) / (answers.length);
-        var yDelta = (h - margin.bottom) / (options.length) + separation / 2;
+        var yDelta = (h - margin.bottom) / (options.length);
         var maxPerRow = Math.floor(xDelta / separation) - 1;
         var maxPerColumn = Math.floor(yDelta / separation);
         var counters = [];
@@ -219,8 +215,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             }
 
             d.cx = marginLeft + (posX * xDelta) + (counters[posX][posY] % maxPerRow ) * separation + separation / 2 + ((xDelta - maxPerRow * separation) / 2) ;
-            // d.cx = margin.left + (posX * xDelta);
-            d.cy = (posY * yDelta) + Math.floor(counters[posX][posY] / maxPerRow) * separation;
+            d.cy = (posY * yDelta) + Math.floor(counters[posX][posY] / maxPerRow) * separation + separation / 2 + ((yDelta - maxPerColumn * separation) / 2);
 
             counters[posX][posY]++;
         });
@@ -366,15 +361,15 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode")
-            .attr("stroke", "#000")
             .attr("fill", "#fff")
             .attr("stroke-width", "3")
 
         fixedNodesContainers.append("svg:circle")
             .style("stroke", function(d, i){
                 var myColor = d3.scale.category10().range();
-                var index = i / answers.length;
-                return myColor[Math.floor(index)];
+                var index = Math.floor(i / answers.length);
+
+                return myColor[index];
             })
             .attr("r", "15")
             .attr("visibility", function(d){
@@ -442,13 +437,14 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     function drawOuterRect(){
         var marginLeft = yAxisMode != "All" ? margin.left : 0;
         // Draw outer rectangle, but append it to the back so it doesn't overlap the nodes
-        svg.append("svg:rect")
-            .attr("width", w - marginLeft)
-            .attr("height", h - margin.bottom)
-            .attr("transform", "translate(" + marginLeft + "," + margin.top + ")")
-            .style("stroke", "#000")
-            .style("stroke-width", "1")
-            .style("fill", "none");
+
+       svg.append("svg:rect")
+        .attr("width", w - marginLeft)
+        .attr("height", h - margin.bottom)
+        .attr("transform", "translate(" + marginLeft + "," + margin.top + ")")
+        .style("stroke", "#000")
+        .style("stroke-width", "1")
+        .style("fill", "none");
     }
 
     function drawVerticalLines(marginLeft, x){
@@ -466,7 +462,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
     }
 
-    function drawXaxisLegend(marginLeft, x){
+    function drawXAxisLegend(marginLeft, x){
         var value = $(".active label").attr("data-value");
 
         for (var i = 0; i < answers.length; i++){
@@ -483,8 +479,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
               .style("fill", "#000")
               .text(function(){
                    for (var j = 0; j < metadata.rows.length; j++){
-                        var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
-                        var questionID = reGetQuestionID.exec(metadata.rows[j]["Question"]);
+                       var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
+                       var questionID = reGetQuestionID.exec(metadata.rows[j]["Question"]);
                        if (questionID == data.rows[0][value]){
                            if (metadata.rows[j][answers[i]] == null){
                                return "No response";
@@ -492,8 +488,11 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                            return metadata.rows[j][answers[i]] == "0" ? " " : metadata.rows[j][answers[i]];
                        }
                    }
-                   return data.rows[0][value] + ": " + answers[i];
-               })
+                   if (data.rows[0][value] != null)
+                    return data.rows[0][value] + ": " + answers[i];
+                   else
+                    return "";
+              })
         }
     }
 
@@ -544,11 +543,13 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     }
 
     function drawTable(){
-        svg.selectAll(".legend").remove();
-        svg.selectAll(".y-legend").remove();
-        svg.selectAll("rect").remove();
-        svg.selectAll("line").remove();
-        svg.selectAll("rect").remove();
+        if (svg != null){
+            svg.selectAll(".legend").remove();
+            svg.selectAll(".y-legend").remove();
+            svg.selectAll("rect").remove();
+            svg.selectAll("line").remove();
+            svg.selectAll("rect").remove();
+        }
 
         var marginLeft = yAxisMode != "All" ? margin.left : 0;
 
@@ -571,7 +572,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         drawOuterRect();
         drawYAxisLegend(marginLeft, options);
         drawVerticalLines(marginLeft, x);
-        drawXaxisLegend(marginLeft, x);
+        drawXAxisLegend(marginLeft, x);
         drawHorizontalLines(marginLeft, options, y);
     }
 
@@ -579,12 +580,20 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         return "translate(" + d.x + "," + d.y + ")";
     }
 
+    function evenOddTick(val){
+        if (val == "even")
+            return "odd";
+        else return "even"
+    }
+
     function loadQuestions(){
         var title = "";
+        var evenOddCounter = "even";
 
         for (var i = 1; i < data.headers.length; i++){
             var question;
             var questionContent = data.headers[i];
+
 
             for (var j = 0; j < metadata.rows.length; j++){
                 if (metadata.rows[j]['Question'].startsWith(data.rows[0][data.headers[i]])){
@@ -599,9 +608,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 if (title != questionContent.substr(0, questionContent.lastIndexOf('--'))){
                     title = questionContent.substr(0, questionContent.lastIndexOf('--'));
                     var id = regExp['reMS'].exec(question)[1];
-                    $("#listQuestions").append('<li><a data-toggle="collapse" class="accordion-toggle" data-parent="#listQuestions" href="' + "#Q" + id + '">' + title + '</a><span class="caret"></span></li>' +
+                    $("#listQuestions").append('<li class="'+ evenOddCounter +'"><a data-toggle="collapse" class="accordion-toggle" data-parent="#listQuestions" href="' + "#Q" + id + '">' + title + '</a><span class="caret"></span></li>' +
                                                     '<div id="Q' + id + '"  class="panel-collapse collapse">' + '</div>'
                                                 );
+                    evenOddCounter = evenOddTick(evenOddCounter);
                 }
 
                 var questionType = regExp['reMS'].exec(question)[3];
@@ -618,17 +628,19 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             else if (question != null && regExp['reSG'].exec(question)){
                 var id = regExp['reSG'].exec(question)[1];
                 if ($("#Q" + id).length == 0){
-                    $("#listQuestions").append('<li><a data-toggle="collapse" class="accordion-toggle collapsed" data-parent="#listQuestions" href="' +
+                    $("#listQuestions").append('<li class="'+ evenOddCounter +'"><a data-toggle="collapse" class="accordion-toggle collapsed" data-parent="#listQuestions" href="' +
                                                             "#Q" + id + '">' + "General" + '</a>' + '<span class="caret"></span></li>' +
                                                 '<div class="panel-collapse collapse" id="Q' + id + '">' + '</div>');
+                    evenOddCounter = evenOddTick(evenOddCounter);
                 }
 
                 $("#Q" + id).append('<li class="indented"><label class="clickable" data-value="' + data.headers[i] + '">' + questionContent + '</label></li>');
             }
             else if (question != null && regExp['reS'].exec(question)){
                 var id = regExp['reS'].exec(question)[1];
-                $("#listQuestions").append('<li><label  class="clickable" data-value="'+ data.headers[i] + '" id="Q' + id + '">' +
+                $("#listQuestions").append('<li class="'+ evenOddCounter +'"><label  class="clickable" data-value="'+ data.headers[i] + '" id="Q' + id + '">' +
                                                questionContent + '</label></li>');
+                evenOddCounter = evenOddTick(evenOddCounter);
             }
         }
     }

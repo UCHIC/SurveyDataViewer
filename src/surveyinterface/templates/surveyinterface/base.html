@@ -30,7 +30,7 @@
                             <a href="#">About</a>
                         </li>
                         <li>
-                            <a href="../surveys">Surveys</a>
+                            <a href="{% url 'home' %}">Surveys</a>
                         </li>
                         <li>
                             <a href="#">Contact</a>
@@ -43,8 +43,6 @@
         </nav>
         {% block body %}
         {% endblock %}
-
-        <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js" data-main="{% static 'js/main.js' %}"></script>
     </body>
      <!-- Footer -->
     <footer>

@@ -105,9 +105,9 @@ svg{
 }
 
 #mainContent{
-    height:calc(100% - 50px);
+    height:calc(100% - 70px);
     overflow:auto;
-    margin-top: 50px;
+    margin-top: 70px;
 }
 
 #listQuestions{
@@ -136,7 +136,6 @@ svg{
 #top-bar{
     float:right;
     width:100%;
-    border-bottom: 1px solid #aaa;
     padding:4px;
     margin-bottom:5px;
     height: 90px;
@@ -272,7 +271,7 @@ hr{
   font-weight:bold;
 }
 
-#listQuestions label, a{
+#listQuestions label, #listQuestions a{
     font-weight:normal;
     font-size: 14px;
     color:#000;
@@ -358,6 +357,27 @@ h6 {
 .lead {
     font-size: 18px;
     font-weight: 400;
+}
+
+.navbar-brand img {
+    max-height: 70px;
+}
+
+.navbar > .container {
+    margin-left: 15px;
+}
+.navbar .container {
+    position: absolute;
+}
+
+.navbar-brand {
+    float: left;
+    padding: 0px 15px;
+}
+
+.navbar {
+    margin-bottom: 0px;
+    height: 70px;
 }
 
 .intro-header {

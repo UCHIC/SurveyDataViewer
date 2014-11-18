@@ -31,7 +31,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top:0, bottom:60, left:150, right:0};
 
-    var w = $("#visualizationContent").width() - 1, h = $("#visualizationContent").height() - 105;
+    var w = $("#visualizationContent").width() - 1, h = $("#visualizationContent").height() - $("#top-bar").height() - 15;
 
     var svg;
     var view = "";
@@ -115,9 +115,14 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     }
 
     function tick(e) {
-        nodes.forEach(function(d, i) {
-            d.y += (d.cy - d.y) * e.alpha;
+        nodes.forEach(function(d) {
+            d.y += (d.cy - d.y) * e.alpha / 2;
             d.x += (d.cx - d.x);
+            /*
+            d.y += (d.cy - d.y) * e.alpha / 2;
+            d.x += (d.cx - d.x) * e.alpha / 2;
+            */
+
         });
 
         svg.selectAll("circle").attr("transform", transform);
@@ -182,7 +187,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     function positionNodes(selectedQuestion){
         var valuesX = [];
         var valuesY = []
-        var separation = radius * 2;
+
         var marginLeft = yAxisMode != "All" ? margin.left : 0;
 
         // populate value arrays
@@ -191,7 +196,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             valuesX.push(data.rows[i + 1][selectedQuestion]);
             valuesY.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
+        var customRadius = radius;
 
+        var separation = radius * 2;
         // X axis
         answers = valuesX.getUnique().sort(function(a, b){return b-a});
         var options = valuesY.getUnique().sort(function(a, b){return b-a});
@@ -199,7 +206,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         var xDelta = (w - marginLeft) / (answers.length);
         var yDelta = (h - margin.bottom) / (options.length);
         var maxPerRow = Math.floor(xDelta / separation) - 1;
-        var maxPerColumn = Math.floor(yDelta / separation);
+        var maxPerColumn = Math.floor(yDelta / separation) - 1;
         var counters = [];
 
         for (var i = 0; i < answers.length; i++){
@@ -214,9 +221,24 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 counters[posX][posY] = 0;
             }
 
-            d.cx = marginLeft + (posX * xDelta) + (counters[posX][posY] % maxPerRow ) * separation + separation / 2 + ((xDelta - maxPerRow * separation) / 2) ;
+            d.cx = marginLeft + (posX * xDelta) + (counters[posX][posY] % maxPerRow ) * separation + separation / 2 + ((xDelta - maxPerRow * separation) / 2);
             d.cy = (posY * yDelta) + Math.floor(counters[posX][posY] / maxPerRow) * separation + separation / 2 + ((yDelta - maxPerColumn * separation) / 2);
 
+            if (d.cy + separation > (posY + 1) * yDelta){
+                var fitFactor = 0;
+
+                while (d.cy + separation > (posY + 1) * yDelta){
+                    fitFactor++;
+                    d.cy -= yDelta - separation * 1.5;
+                }
+
+                switch((fitFactor - 1) % 2){
+                    case 0: d.cx += radius / 2 * fitFactor; break;   // move to right
+                    case 1: d.cx -= radius / 2 * fitFactor; break;   // move to left
+                }
+            }
+
+            d.radius = customRadius;
             counters[posX][posY]++;
         });
     }
@@ -292,7 +314,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 d3.select(this).attr("stroke-width", "3")
                 var content ="<span class=\"name\">Utah resident: </span><span class=\"value\">" + (d.info.resident  == 1 ? "Yes" : "No") + "</span><br/>"
                 content +="<span class=\"name\">Gender: </span><span class=\"value\">" + d.genderString + "</span><br/>"
-                content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>"
+                // content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>"
                 tooltip.showTooltip(content,d3.event)
             })
             .on("mouseout", function(d, i){
@@ -314,7 +336,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             return d.radius - 2;
        });
 
-
+       positionNodes(selectedQuestion);
+       shuffleNodes();
 
         /*g.append("svg:text")
           .attr("x", -5)
@@ -468,7 +491,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         for (var i = 0; i < answers.length; i++){
            svg.append("text")
               .attr("x", x(i) + marginLeft + (x(1) - x(0))/2)
-              .attr("class", "legend")
+              .attr("class", "x-legend")
               .attr("text-anchor", "middle ")
               .attr("y", h - margin.bottom + 20)
               .attr("dy", ".31em")
@@ -542,9 +565,31 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
     }
 
+    function drawLegendContainers(){
+        var marginLeft = yAxisMode != "All" ? margin.left : 0;
+
+        svg.append("svg:rect")
+            .attr("width", marginLeft)
+            .attr("height", h)
+            .attr("transform", "translate(" + 0 + "," + 0 + ")")
+            .style("stroke", "#000")
+            .style("stroke-width", "1")
+            .attr("opacity", "0.5")
+            .style("fill", "#aaa");
+
+        svg.append("svg:rect")
+            .attr("width", w)
+            .attr("height", margin.bottom)
+            .attr("transform", "translate(" + 0 + "," + (h - margin.bottom) + ")")
+            .style("stroke", "#000")
+            .style("stroke-width", "1")
+            .attr("opacity", "0.5")
+            .style("fill", "#aaa");
+    }
+
     function drawTable(){
         if (svg != null){
-            svg.selectAll(".legend").remove();
+            svg.selectAll(".x-legend").remove();
             svg.selectAll(".y-legend").remove();
             svg.selectAll("rect").remove();
             svg.selectAll("line").remove();
@@ -563,13 +608,13 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
         var options = values.getUnique().sort(function(a, b){return b-a});
 
-         var y = d3.scale.linear()
+        var y = d3.scale.linear()
             .domain([0, options.length])
             .range([0, h - margin.bottom]);
 
-
-        // Draw y-axis legend
+        // Draw stuff
         drawOuterRect();
+        drawLegendContainers();
         drawYAxisLegend(marginLeft, options);
         drawVerticalLines(marginLeft, x);
         drawXAxisLegend(marginLeft, x);

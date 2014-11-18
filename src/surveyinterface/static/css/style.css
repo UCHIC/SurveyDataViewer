@@ -172,6 +172,10 @@ svg{
     float:left;
 }
 
+.caption p{
+    clear:left;
+}
+
 #btnCategories{
     margin-top:10px
 }

@@ -95,9 +95,9 @@
 
 #surveyContainer{
     width:1000px;
-    height:calc(100% - 51px);
+    height:calc(100% - 71px);
     margin:auto;
-    margin-top: 20px;
+    margin-top:71px;
 }
 
 svg{

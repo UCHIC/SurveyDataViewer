@@ -476,7 +476,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 .attr("x1", x(i) + marginLeft)
                 .attr("x2", x(i) + marginLeft)
                 .attr("y1", 0)
-                .attr("y2", h - margin.bottom)
+                .attr("y2", h)
                 //.attr("id", "line" + i)
                 .attr("data-id", i)
                 .attr("class", "vertical-line")
@@ -553,7 +553,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     function drawHorizontalLines(marginLeft, options, y){
         for (var i = 1; i < options.length; i++){
             svg.append("svg:line")
-                .attr("x1", marginLeft)
+                .attr("x1", 0)
                 .attr("x2", w)
                 .attr("y1", y(i))
                 .attr("y2", y(i))

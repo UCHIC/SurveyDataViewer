@@ -153,6 +153,12 @@ svg{
     float:left;
 }
 
+.radio input[type=radio], .radio-inline input[type=radio], .checkbox input[type=checkbox], .checkbox-inline input[type=checkbox] {
+    float: left;
+    margin-left: -10px;
+    margin-right:5px;
+}
+
 #options .dropdown{
     width: 198px;
     float:right;
@@ -220,22 +226,20 @@ hr{
     background:#eee;
 }
 
-
 #listQuestions li:not(.indented){
     border: 1px solid #aaa;
     border-top:0px;
 }
 
 #listQuestions li:hover{
-    background-color: rgb(172, 250, 255);
+    background-color: rgb(200, 250, 255);
 }
 
 .indented{
-    padding-left:20px !important;
+    /*padding-left:20px !important;*/
     border-left: 10px solid rgb(131, 131, 131);
     border-right:1px solid #aaa;
 }
-
 
 #CollisionToggleContainer{
     display: inline;

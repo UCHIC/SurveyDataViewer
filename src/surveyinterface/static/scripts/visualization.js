@@ -22,31 +22,40 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
+
 define('visualization', ['bootstrap', 'd3Libraries'], function() {
     var self = {};
-    var data, metadata;
+    var data, metadata, selectedQuestion, svg, radius_scale, nodes, force;
     var radius = 10;
     var yAxisMode = "All";
-    var selectedQuestion;
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top:0, bottom:60, left:150, right:0};
-
     var w = $("#visualizationContent").width() - 1, h = $("#visualizationContent").height() - $("#top-bar").height() - 15;
-
-    var svg;
     var view = "";
     var answers = [];
 
-    var radius_scale, nodes, force;
+    d3.selection.prototype.moveToBack = function() {
+        return this.each(function() {
+            var firstChild = this.parentNode.firstChild;
+            if (firstChild) {
+                this.parentNode.insertBefore(this, firstChild);
+            }
+        });
+    };
+
+    d3.selection.prototype.moveToFront = function() {
+      return this.each(function(){
+        this.parentNode.appendChild(this);
+      });
+    };
 
     // Multiple choices (s:select one, m:select multiple) - Single choice group - Single choice
     var regExp = {reMS: /^Q([0-9]+)_([0-9]+) ([a-z])/, reSG: /^Q([0-9])+[a-z]/,  reS:/^Q([0-9]+)/};
-
     var infoQuestions = {Gender:"Are you female or male?", Resident: "Do you live in Cache County, Utah? ", Education:"What is the highest level of school you have completed?", Age:"How old were you at your last birthday?"}
 
     self.loadData = function() {
         $.ajax(self.dataFile, {
-            success: function(csvData) { //men esto ta deprecated.
+            success: function(csvData) {
                 data = csvjson.csv2json(csvData);
                     $.ajax(self.metadataFile, {
                         success: function(csvMetaData) {
@@ -89,7 +98,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 Gender = "";
             }
             return {radius: radius, value: 0, info: info, cx: w/2, cy: (h - margin.bottom) / 2, genderString: Gender};
-        })
+        });
 
         force = d3.layout.force()
             .gravity(0)
@@ -111,6 +120,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         $("#nodeview").click(setNodeView);
 
         $('#listQuestions .clickable').click(onListQuestionClick);
+        $('#listQuestions li').click(onListQuestionClick);
         $('#lstYAxisMode li').click(onYAxisModeChange);
     }
 
@@ -118,18 +128,18 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         nodes.forEach(function(d) {
             d.y += (d.cy - d.y) * e.alpha / 2;
             d.x += (d.cx - d.x);
-            /*
-            d.y += (d.cy - d.y) * e.alpha / 2;
-            d.x += (d.cx - d.x) * e.alpha / 2;
-            */
-
         });
 
         svg.selectAll("circle").attr("transform", transform);
     }
 
     function onListQuestionClick(e){
-        var that = $(e.target).closest(".clickable");
+        var that = $(e.target).closest(".clickable").length > 0 ? $(e.target).closest(".clickable") :$(e.target).find(".clickable");
+
+        if (that.length == 0){
+            return;
+        }
+
         if (view == "node"){
             force.resume();
         }
@@ -167,10 +177,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         positionNodes(selectedQuestion);
         drawTable();
 
-        if (view == "node"){
-
-        }
-        else{
+        if (view != "node"){
             /*svg.selectAll("circle").transition().duration(200).attr("r", function(d) {
                 return radius_scale(0);
             }).remove();*/
@@ -358,7 +365,6 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             values.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
         var options = values.getUnique().sort(function(a, b){return b-a});
-
         var marginLeft = yAxisMode != "All" ? margin.left : 0;
 
         var fixedNodes = d3.range(answers.length * options.length).map(function(i) {
@@ -384,7 +390,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode")
-            .attr("fill", "#fff")
+            .attr("fill", "#FFF")
             .attr("stroke-width", "3")
 
         fixedNodesContainers.append("svg:circle")
@@ -402,17 +408,32 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 return "visible";
             })
             .transition().duration(700).attr("r", function(d) {
-                return radius_scale(d.amount);
-                //return radius_scale(15);    // min size of 15 for testing
-            });
+                var rowTotal = 0;
+                fixedNodes.forEach(function(o){
+                   if (o.y == d.y){
+                       rowTotal += o.amount;
+                   }
+                });
+                var x = d3.scale.linear()
+                    .domain([0, answers.length])
+                    .range([0, w - marginLeft]);
+                var y = d3.scale.linear()
+                    .domain([0, options.length])
+                    .range([0, h - margin.bottom]);
+                var maxRadius = (Math.min(x(1) - x(0), y(1) - y(0))) / 2 - 10;
+
+                var customScale = d3.scale.pow().exponent(0.5).domain([0, rowTotal]).range([2, maxRadius]);
+                return customScale(d.amount);
+            })
+            .attr("opacity", 0.5);
 
         fixedNodesContainers.append("svg:text")
           .attr("x", function(d) {
                 return d.x;
-            })
+           })
           .attr("y", function(d) {
                 return d.y;
-           })
+          })
           .attr("visibility", function(d){
                 if (d.amount == 0){
                     return "hidden";
@@ -423,55 +444,55 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
           .attr("class", "percentageLabel")
           .style("stroke-width", 0)
           .style("fill", "#000")
-          .text(0)
-          .transition()
-          .duration(700)
-          .tween("text", function(d) {
-            var i = d3.interpolate(this.textContent, (100/ nodes.length) * d.amount),
-                prec = (d.amount + "").split("."),
-                round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
+          .text(0).transition().duration(700).tween("text", function(d) {
+                var rowTotal = 0;
+                fixedNodes.forEach(function(o){
+                   if (o.y == d.y){
+                       rowTotal += o.amount;
+                   }
+                });
+                var i = d3.interpolate(this.textContent, (100/ rowTotal) * d.amount),
+                    prec = (d.amount + "").split("."),
+                    round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
 
-            var x = parseFloat(this.getAttribute("x"));
-            var y = parseFloat(this.getAttribute("y"));
+                var x = parseFloat(this.getAttribute("x"));
+                var y = parseFloat(this.getAttribute("y"));
 
-            return function(t) {
-                var value = (i(t) * round / round).toFixed(2);
-                this.textContent = value + "%";
-                // Center the label
-                var textWidth = d3.select(this).node().getBBox().width;
-                this.setAttribute("x" , x - textWidth / 2);
+                return function(t) {
+                    var value = (i(t) * round / round).toFixed(2);
+                    this.textContent = value + "%";
+                    // Center the label
+                    var textWidth = d3.select(this).node().getBBox().width;
+                    this.setAttribute("x" , x - textWidth / 2);
 
-                // Label starts outside the circle since the circle is too small at the beginning
-                if (parseFloat(this.getAttribute("y")) == y){
-                    this.setAttribute("y" , y + 40);
-                }
+                    // Label starts outside the circle since the circle is too small at the beginning
+                    if (parseFloat(this.getAttribute("y")) == y){
+                        this.setAttribute("y" , y + 40);
+                    }
 
-                // Once the circle is large enough, move the label to the center
-                if (value > 5 && parseFloat(this.getAttribute("y")) != y){
-                    this.setAttribute("y" , y);
-                }
-
-            };
+                    // Once the circle is large enough, move the label to the center
+                    if (value > 12 && parseFloat(this.getAttribute("y")) != y){
+                        this.setAttribute("y" , y);
+                    }
+                };
           });
 
         svg.selectAll("circle").attr("transform", transform);
     }
 
     function drawOuterRect(){
-        var marginLeft = yAxisMode != "All" ? margin.left : 0;
-        // Draw outer rectangle, but append it to the back so it doesn't overlap the nodes
-
+       //var marginLeft = yAxisMode != "All" ? margin.left : 0;
        svg.append("svg:rect")
-        .attr("width", w - marginLeft)
-        .attr("height", h - margin.bottom)
-        .attr("transform", "translate(" + marginLeft + "," + margin.top + ")")
+        .attr("width", w)
+        .attr("height", h)
+        .attr("transform", "translate(" + 0 + "," + 0 + ")")
         .style("stroke", "#000")
         .style("stroke-width", "1")
         .style("fill", "none");
     }
 
     function drawVerticalLines(marginLeft, x){
-        for (var i = 1; i < answers.length; i++){
+        for (var i = 0; i < answers.length; i++){
             svg.append("svg:line")
                 .attr("x1", x(i) + marginLeft)
                 .attr("x2", x(i) + marginLeft)
@@ -480,8 +501,41 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 //.attr("id", "line" + i)
                 .attr("data-id", i)
                 .attr("class", "vertical-line")
-                .style("stroke", "#000")
-                .style("stroke-width", "1px")
+                .style("stroke", "#777")
+                .style("stroke-width", "1px");
+        }
+
+        var colorScale = [];
+        colorScale["-1"] = "#FF4444";   // Green
+        colorScale["0"] = "#FFFFFF";    // Neutral
+        colorScale["1"] = "#44FF44";    // Red
+
+        for (var i = 0; i < answers.length; i++){
+             var line = svg.append("svg:rect")
+                .attr("width", x(i) - x(i-1))
+                .attr("class", "colorShade")
+                .attr("height", h - margin.bottom)
+                .attr("transform", "translate(" + (marginLeft + x(i)) + "," + margin.top + ")")
+
+                .attr("opacity", function(d){
+                     if (i == (answers.length - 1) / 2)
+                        return 0.5 / (i + 1);
+                     else if (i < (answers.length - 1) / 2)
+                        return 0.5 / (i + 1);
+                     else{
+                        return 0.5 / (answers.length - i);
+                     }
+                 })
+                .style("fill", function(d){
+                     if (i == (answers.length - 1) / 2)
+                        return colorScale["0"];
+                     else if (i < (answers.length - 1) / 2)
+                        return colorScale["1"];
+                     else{
+                         return colorScale["-1"];
+                     }
+                 });
+            line.moveToBack();
         }
     }
 
@@ -515,7 +569,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                     return data.rows[0][value] + ": " + answers[i];
                    else
                     return "";
-              })
+              });
         }
     }
 
@@ -551,7 +605,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     }
 
     function drawHorizontalLines(marginLeft, options, y){
-        for (var i = 1; i < options.length; i++){
+        for (var i = 0; i <= options.length; i++){
             svg.append("svg:line")
                 .attr("x1", 0)
                 .attr("x2", w)
@@ -560,7 +614,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 //.attr("id", "line" + i)
                 .attr("data-id", i)
                 .attr("class", "horizontal-line")
-                .style("stroke", "#000")
+                .style("stroke", "#777")
                 .style("stroke-width", "1px")
         }
     }
@@ -572,8 +626,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             .attr("width", marginLeft)
             .attr("height", h)
             .attr("transform", "translate(" + 0 + "," + 0 + ")")
-            .style("stroke", "#000")
-            .style("stroke-width", "1")
+
             .attr("opacity", "0.5")
             .style("fill", "#aaa");
 
@@ -638,7 +691,6 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         for (var i = 1; i < data.headers.length; i++){
             var question;
             var questionContent = data.headers[i];
-
 
             for (var j = 0; j < metadata.rows.length; j++){
                 if (metadata.rows[j]['Question'].startsWith(data.rows[0][data.headers[i]])){

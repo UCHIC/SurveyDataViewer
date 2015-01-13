@@ -133,6 +133,12 @@ svg{
 
 }
 
+text.shadow {
+    stroke: white;
+    stroke-width: 2.5px;
+    opacity: 0.9;
+}
+
 #top-bar{
     float:right;
     width:100%;

@@ -50,8 +50,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     };
 
     // Multiple choices (s:select one, m:select multiple) - Single choice group - Single choice
-    var regExp = {reMS: /^Q([0-9]+)_([0-9]+) ([a-z])/, reSG: /^Q([0-9])+[a-z]/,  reS:/^Q([0-9]+)/};
-    var infoQuestions = {Gender:"Are you female or male?", Resident: "Do you live in Cache County, Utah? ", Education:"What is the highest level of school you have completed?", Age:"How old were you at your last birthday?"}
+    var regExp = {reMS: /^Q([0-9]+)E_([0-9]+)/,  reS:/^Q([0-9])+E/};
+    var infoQuestions = {Gender:"Q12E", Resident: "Q8E", Venue:"VX", FarmTies: "Q11E", SurveySite: "", Education:"Q14E", Age:"Q13E"}
 
     self.loadData = function() {
         $.ajax(self.dataFile, {
@@ -78,26 +78,39 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         initializeGraph();
     };
 
+    function getValue(questionID, label){
+        for (var i = 0; i < metadata.rows.length; i++){
+            if (metadata.rows[i]["ID"] == questionID){
+                for (var prop in metadata.rows[i]){
+                    if (metadata.rows[i][prop] == label){
+                        return prop;
+                    }
+                }
+            }
+        }
+    }
+
+    function getLabel(questionID, value){
+        for (var i = 0; i < metadata.rows.length; i++){
+            if (metadata.rows[i]["ID"] == questionID){
+                return metadata.rows[i][value];
+            }
+        }
+    }
+
     function initializeGraph(){
         radius_scale = d3.scale.pow().exponent(0.5).domain([0, data.rows.length - 1]).range([2, 85]);
         nodes = d3.range(data.rows.length - 1).map(function(d, i) {
-            var Resident = data.rows[i+ 1][infoQuestions.Resident];
-            var Gender = data.rows[i+ 1][infoQuestions.Gender];
-            var Education = data.rows[i+ 1][infoQuestions.Education];
-            var Age = data.rows[i+ 1][infoQuestions.Age];
+            var Resident =      getLabel(infoQuestions.Resident, data.rows[i + 1][infoQuestions.Resident]);
+            var Gender =        getLabel(infoQuestions.Gender, data.rows[i + 1][infoQuestions.Gender]);
+            var Education =     getLabel(infoQuestions.Education, data.rows[i + 1][infoQuestions.Education]);
+            var Age =           getLabel(infoQuestions.Age, data.rows[i + 1][infoQuestions.Age]);
+            var FarmTies =      getLabel(infoQuestions.FarmTies, data.rows[i + 1][infoQuestions.FarmTies]);
+            var Venue = data.rows[i + 1][infoQuestions.Venue];
 
-            var info = {Resident: Resident, Gender: Gender, Education: Education, Age: Age}
+            var info = {Resident: Resident, Venue:Venue, FarmTies:FarmTies, Gender: Gender, Education: Education, Age: Age};
 
-            if (Gender == "1"){
-                Gender = "Male"
-            }
-            else if(Gender == "2"){
-                Gender = "Female";
-            }
-            else{
-                Gender = "";
-            }
-            return {radius: radius, value: 0, info: info, cx: w/2, cy: (h - margin.bottom) / 2, genderString: Gender};
+            return {radius: radius, value: 0, info: info, cx: w/2, cy: (h - margin.bottom) / 2};
         });
 
         force = d3.layout.force()
@@ -126,8 +139,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
     function tick(e) {
         nodes.forEach(function(d) {
-            d.y += (d.cy - d.y) * e.alpha / 2;
-            d.x += (d.cx - d.x);
+            d.y += (d.cy - d.y) * e.alpha;
+            d.x += (d.cx - d.x) * e.alpha;
         });
 
         svg.selectAll("circle").attr("transform", transform);
@@ -149,13 +162,13 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         that.closest("li").addClass("active");
 
         selectedQuestion = that.attr("data-value");
-        var title = selectedQuestion.substr(0, selectedQuestion.lastIndexOf('--'));
+        var title = data.rows[0][selectedQuestion].substr(0, data.rows[0][selectedQuestion].lastIndexOf('-'));
         var content;
-        if (selectedQuestion.lastIndexOf('--') != -1){
-            content = selectedQuestion.substr(selectedQuestion.lastIndexOf('--') + 2, selectedQuestion.length);
+        if (data.rows[0][selectedQuestion].lastIndexOf('-') != -1){
+            content = data.rows[0][selectedQuestion].substr(data.rows[0][selectedQuestion].lastIndexOf('-') + 1, data.rows[0][selectedQuestion].length);
         }
         else{
-            content = selectedQuestion.substr(0, selectedQuestion.length);
+            content = data.rows[0][selectedQuestion];
         }
 
         $("#txtDescription").text("");
@@ -194,7 +207,6 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     function positionNodes(selectedQuestion){
         var valuesX = [];
         var valuesY = []
-
         var marginLeft = yAxisMode != "All" ? margin.left : 0;
 
         // populate value arrays
@@ -207,8 +219,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
         var separation = radius * 2;
         // X axis
-        answers = valuesX.getUnique().sort(function(a, b){return b-a});
-        var options = valuesY.getUnique().sort(function(a, b){return b-a});
+        answers = valuesX.getUnique().sort(function(a, b){return a-b});
+        var options = valuesY.getUnique().sort(function(a, b){return a-b});
 
         var xDelta = (w - marginLeft) / (answers.length);
         var yDelta = (h - margin.bottom) / (options.length);
@@ -220,9 +232,13 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             counters.push([]);
         }
 
+        for (var i = 0; i < options.length; i++){
+            options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
+        }
+
         nodes.forEach(function(d) {
             var posX = $.inArray(d.value, answers);
-            var posY = $.inArray(d.info[yAxisMode], options);
+            var posY = options.length - 1 - $.inArray(d.info[yAxisMode], options);
 
             if (counters[posX][posY] == null){
                 counters[posX][posY] = 0;
@@ -260,8 +276,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             shuffleNodes();
             svg.selectAll("circle").transition().duration(1000)
                 .style("fill", function(d, i) {
-                    var myColor = d3.scale.category10().range()
-                    return myColor[parseInt(d.info[yAxisMode])];
+                    var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
+                    var myColor = d3.scale.category10().range();
+                    return myColor[parseInt(val)];
                 });
 
             positionNodes(selectedQuestion);
@@ -319,24 +336,29 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             .on("mouseover", function(d,i){
                 d3.select(this).attr("stroke", "black")
                 d3.select(this).attr("stroke-width", "3")
-                var content ="<span class=\"name\">Utah resident: </span><span class=\"value\">" + (d.info.resident  == 1 ? "Yes" : "No") + "</span><br/>"
-                content +="<span class=\"name\">Gender: </span><span class=\"value\">" + d.genderString + "</span><br/>"
-                // content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>"
-                tooltip.showTooltip(content,d3.event)
+                var content ="<span class=\"name\">Originally from Utah: </span><span class=\"value\">" + d.info.Resident + "</span><br/>";
+                content +="<span class=\"name\">Gender: </span><span class=\"value\">" + d.info.Gender + "</span><br/>";
+                content +="<span class=\"name\">Age: </span><span class=\"value\">" + d.info.Age + "</span><br/>";
+                content +="<span class=\"name\">Education: </span><span class=\"value\">" + d.info.Education + "</span><br/>";
+                content +="<span class=\"name\">Farm Ties: </span><span class=\"value\">" + d.info.FarmTies + "</span><br/>";
+                content +="<span class=\"name\">Survey Venue: </span><span class=\"value\">" + d.info.Venue + "</span><br/>";
+                content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>";
+                tooltip.showTooltip(content,d3.event);
             })
             .on("mouseout", function(d, i){
-                d3.select(this).attr("stroke","#222")
-                d3.select(this).attr("stroke-width", "2")
-                tooltip.hideTooltip()
+                d3.select(this).attr("stroke","#222");
+                d3.select(this).attr("stroke-width", "2");
+                tooltip.hideTooltip();
             })
-            //.call(force.drag);
+            .call(force.drag);
 
         var circle = g.append("svg:circle")
             .attr("r", function(d) { return 0; })
             .attr("data-value", function(d){return d.value})
             .style("fill", function(d, i) {
-                var myColor = d3.scale.category10().range()
-                return myColor[parseInt(d.info[yAxisMode])];
+                var myColor = d3.scale.category10().range();
+                var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
+                return myColor[parseInt(val)];
             });
 
        circle.transition().duration(500).attr("r", function(d) {
@@ -377,6 +399,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                   pos: {x:(i % answers.length), y:Math.floor(i / answers.length)}};
         });
 
+        for (var i = 0; i < options.length; i++){
+            options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
+        }
+
         nodes.forEach(function(d, i) {
            var posAnswer = ($.inArray(d.value, answers));
            var posOption = ($.inArray(d.info[yAxisMode], options))
@@ -396,8 +422,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         fixedNodesContainers.append("svg:circle")
             .style("stroke", function(d, i){
                 var myColor = d3.scale.category10().range();
-                var index = Math.floor(i / answers.length);
-
+                var index = options.length - 1 - Math.floor(i / answers.length);
                 return myColor[index];
             })
             .attr("r", "15")
@@ -425,7 +450,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 var customScale = d3.scale.pow().exponent(0.5).domain([0, rowTotal]).range([2, maxRadius]);
                 return customScale(d.amount);
             })
-            .attr("opacity", 0.5);
+            .attr("opacity", 0.4);
 
         fixedNodesContainers.append("svg:text")
           .attr("x", function(d) {
@@ -443,7 +468,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
           .attr("dy", ".31em")
           .attr("class", "percentageLabel")
           .style("stroke-width", 0)
+          .style("text-decoration", "underline")
           .style("fill", "#000")
+          .attr("class", "shadow")
           .text(0).transition().duration(700).tween("text", function(d) {
                 var rowTotal = 0;
                 fixedNodes.forEach(function(o){
@@ -506,9 +533,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
 
         var colorScale = [];
-        colorScale["-1"] = "#FF4444";   // Green
+        colorScale["-1"] = "#44FF44";   // Red
         colorScale["0"] = "#FFFFFF";    // Neutral
-        colorScale["1"] = "#44FF44";    // Red
+        colorScale["1"] = "#FF4444";    // Green
+        var gradientOpacity = 0.4;
 
         for (var i = 0; i < answers.length; i++){
              var line = svg.append("svg:rect")
@@ -516,14 +544,13 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 .attr("class", "colorShade")
                 .attr("height", h - margin.bottom)
                 .attr("transform", "translate(" + (marginLeft + x(i)) + "," + margin.top + ")")
-
                 .attr("opacity", function(d){
                      if (i == (answers.length - 1) / 2)
-                        return 0.5 / (i + 1);
+                        return gradientOpacity / (i + 1);
                      else if (i < (answers.length - 1) / 2)
-                        return 0.5 / (i + 1);
+                        return gradientOpacity / (i + 1);
                      else{
-                        return 0.5 / (answers.length - i);
+                        return gradientOpacity / (answers.length - i);
                      }
                  })
                 .style("fill", function(d){
@@ -557,8 +584,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
               .text(function(){
                    for (var j = 0; j < metadata.rows.length; j++){
                        var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
-                       var questionID = reGetQuestionID.exec(metadata.rows[j]["Question"]);
-                       if (questionID == data.rows[0][value]){
+                       var questionID = reGetQuestionID.exec(metadata.rows[j]["ID"])[0];
+                       if (questionID == value){
                            if (metadata.rows[j][answers[i]] == null){
                                return "No response";
                            }
@@ -590,8 +617,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                        return "";
                    for (var j = 0; j < metadata.rows.length; j++){
                        var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
-                       var questionID = reGetQuestionID.exec(metadata.rows[j]["Question"]);
-                       if (questionID == data.rows[0][infoQuestions[yAxisMode]]){
+                       var questionID = reGetQuestionID.exec(metadata.rows[j]["ID"])[0];
+                       if (questionID == infoQuestions[yAxisMode]){
                            if (metadata.rows[j][options[i]] == null){
                                return "No response";
                            }
@@ -688,22 +715,22 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         var title = "";
         var evenOddCounter = "even";
 
-        for (var i = 1; i < data.headers.length; i++){
-            var question;
-            var questionContent = data.headers[i];
+        for (var prop in data.rows[0]){
+            var question = prop;
+            var questionContent = data.rows[0][prop];
 
-            for (var j = 0; j < metadata.rows.length; j++){
+            /*for (var j = 0; j < metadata.rows.length; j++){
                 if (metadata.rows[j]['Question'].startsWith(data.rows[0][data.headers[i]])){
                     question = metadata.rows[j]['Question'];
                     break;
                 }
-            }
+            }*/
 
             if (question != null && regExp['reMS'].exec(question)){
-                var answer = questionContent.substr(questionContent.lastIndexOf('--') + 2, questionContent.length);
+                var answer = questionContent.substr(questionContent.lastIndexOf('-') + 1, questionContent.length);
 
-                if (title != questionContent.substr(0, questionContent.lastIndexOf('--'))){
-                    title = questionContent.substr(0, questionContent.lastIndexOf('--'));
+                if (title != questionContent.substr(0, questionContent.lastIndexOf('-'))){
+                    title = questionContent.substr(0, questionContent.lastIndexOf('-'));
                     var id = regExp['reMS'].exec(question)[1];
                     $("#listQuestions").append('<li class="'+ evenOddCounter +'"><a data-toggle="collapse" class="accordion-toggle" data-parent="#listQuestions" href="' + "#Q" + id + '">' + title + '</a><span class="caret"></span></li>' +
                                                     '<div id="Q' + id + '"  class="panel-collapse collapse">' + '</div>'
@@ -713,16 +740,16 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
                 var questionType = regExp['reMS'].exec(question)[3];
 
-                if (questionType == "m"){
-                    $("#Q" + id ).append('<li class="clickable indented" data-value="' + data.headers[i] + '"><label class="checkbox">' +
+                /*if (questionType == "m"){
+                    $("#Q" + id ).append('<li class="clickable indented" data-value="' + question + '"><label class="checkbox">' +
                                                                     '<input type="checkbox">' + answer + '</label></li>');
-                }
-                else if(questionType == "s"){
-                    $("#Q" + id ).append('<li class="indented"><label class="clickable" data-value="' + data.headers[i]+ '">' +
+                }*/
+                //else if(questionType == "s"){
+                    $("#Q" + id ).append('<li class="indented"><label class="clickable" data-value="' + question+ '">' +
                                                                 answer + '</label></li>');
-                }
+                //}
             }
-            else if (question != null && regExp['reSG'].exec(question)){
+            /*else if (question != null && regExp['reSG'].exec(question)){
                 var id = regExp['reSG'].exec(question)[1];
                 if ($("#Q" + id).length == 0){
                     $("#listQuestions").append('<li class="'+ evenOddCounter +'"><a data-toggle="collapse" class="accordion-toggle collapsed" data-parent="#listQuestions" href="' +
@@ -731,11 +758,11 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                     evenOddCounter = evenOddTick(evenOddCounter);
                 }
 
-                $("#Q" + id).append('<li class="indented"><label class="clickable" data-value="' + data.headers[i] + '">' + questionContent + '</label></li>');
-            }
+                $("#Q" + id).append('<li class="indented"><label class="clickable" data-value="' + question + '">' + questionContent + '</label></li>');
+            }*/
             else if (question != null && regExp['reS'].exec(question)){
                 var id = regExp['reS'].exec(question)[1];
-                $("#listQuestions").append('<li class="'+ evenOddCounter +'"><label  class="clickable" data-value="'+ data.headers[i] + '" id="Q' + id + '">' +
+                $("#listQuestions").append('<li class="'+ evenOddCounter +'"><label  class="clickable" data-value="'+ question + '" id="Q' + id + '">' +
                                                questionContent + '</label></li>');
                 evenOddCounter = evenOddTick(evenOddCounter);
             }

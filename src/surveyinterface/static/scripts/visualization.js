@@ -282,7 +282,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 .attr("stroke", function(d) {
                     var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
                     var myColor = d3.scale.category10().range();
-                    return d3.rgb(myColor[parseInt(parseInt(val))]).darker(3) ;
+                    return d3.rgb(myColor[parseInt(parseInt(val))]).darker(3);
                 });
 
             positionNodes(selectedQuestion);
@@ -309,6 +309,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             return;
 
         view = "collapsed";
+
+        $("#collapsedview").addClass("disabled");
+        $("#nodeview").removeClass("disabled");
+
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
         svg.selectAll(".node").transition().duration(520).remove();
         force.stop();
@@ -319,6 +323,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         if (view == "node")
             return;
         view = "node";
+
+        $("#nodeview").addClass("disabled");
+        $("#collapsedview").removeClass("disabled");
+
         force.resume();
         svg.selectAll(".fixedNode text").remove();
         svg.selectAll("circle").transition().duration(500).attr("r", function(d) {

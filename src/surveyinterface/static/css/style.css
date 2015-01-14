@@ -206,7 +206,18 @@ hr{
 
 #listQuestions .caret{
     float:right;
-    margin-right:-7px;
+    margin-right: -5px;
+}
+
+.caret {
+    /* display: inline-block; */
+    /* width: 0; */
+    /* height: 0; */
+    /* margin-left: 2px; */
+    /* vertical-align: middle; */
+    border-top: 6px solid;
+    border-right: 6px solid transparent;
+    border-left: 6px solid transparent;
 }
 
 #listQuestions li{
@@ -236,6 +247,7 @@ hr{
     border: 1px solid #aaa;
     border-top:0px;
 }
+
 
 #listQuestions li:hover{
     background-color: rgb(200, 250, 255);
@@ -287,8 +299,8 @@ hr{
 
 #listQuestions label, #listQuestions a{
     font-weight:normal;
-    font-size: 14px;
     color:#000;
+    padding-right: 15px;
 }
 
 li .checkbox{
@@ -313,12 +325,12 @@ li .checkbox{
     width:auto;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin-left: 10px;
-    text-shadow: -1px 1px #6C6C6C;
+    /*text-shadow: -1px 1px #6C6C6C;*/
 }
 
 .descriptionContainer{
-    color:#fff;
-    background: rgb(103, 180, 182);
+    color:#000;
+    background: #C2DBF0;
     border:1px solid #4F4F4F;
     border-radius:5px;
     padding:5px;
@@ -344,13 +356,9 @@ li .checkbox{
 }
 
 .active{
-    background: rgb(103, 180, 182) !important;
-    color:#fff !important;
+    background: #C2DBF0 !important;
 }
 
-.active label{
-    color:#fff !important;
-}
 
 body,
 html {
@@ -373,8 +381,24 @@ h6 {
     font-weight: 400;
 }
 
+.navbar-nav.navbar-right:last-child {
+    margin-right: 0px;
+}
 .navbar-brand img {
     max-height: 70px;
+}
+
+.navbar-inverse {
+    background-color: #C2DBF0;
+    border-color: #6E6F74;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #6E6F74;
+}
+
+.navbar-inverse:hover,  .navbar-brand:hover {
+    color: #000;
 }
 
 .navbar > .container {
@@ -382,6 +406,15 @@ h6 {
 }
 .navbar .container {
     position: absolute;
+    width: 100%;
+}
+
+.navbar-inverse .navbar-nav>li>a {
+    color: #6E6F74;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover {
+    color: #000;
 }
 
 .navbar-brand {
@@ -392,6 +425,10 @@ h6 {
 .navbar {
     margin-bottom: 0px;
     height: 70px;
+}
+
+.navbar-inverse .navbar-brand:hover, .navbar-inverse .navbar-brand:focus {
+    color: #000;
 }
 
 .intro-header {

@@ -86,6 +86,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                         return prop;
                     }
                 }
+                return 0;
             }
         }
     }
@@ -93,7 +94,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     function getLabel(questionID, value){
         for (var i = 0; i < metadata.rows.length; i++){
             if (metadata.rows[i]["ID"] == questionID){
-                return metadata.rows[i][value];
+                return metadata.rows[i][value] == null ? "No response" : metadata.rows[i][value];
             }
         }
     }
@@ -107,6 +108,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             var Age =           getLabel(infoQuestions.Age, data.rows[i + 1][infoQuestions.Age]);
             var FarmTies =      getLabel(infoQuestions.FarmTies, data.rows[i + 1][infoQuestions.FarmTies]);
             var Venue = data.rows[i + 1][infoQuestions.Venue];
+
+            if (Resident == null || Gender == null ||Education == null ||Age == null ||Resident == null ||FarmTies == null ||Venue == null){
+                console.log("flag");
+            }
 
             var info = {Resident: Resident, Venue:Venue, FarmTies:FarmTies, Gender: Gender, Education: Education, Age: Age};
 
@@ -139,8 +144,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
     function tick(e) {
         nodes.forEach(function(d) {
-            d.y += (d.cy - d.y) * e.alpha;
-            d.x += (d.cx - d.x) * e.alpha;
+            d.y += (d.cy - d.y) * e.alpha * 0.4;
+            d.x += (d.cx - d.x) * e.alpha * 0.2;
         });
 
         svg.selectAll("circle").attr("transform", transform);
@@ -191,11 +196,6 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         drawTable();
 
         if (view != "node"){
-            /*svg.selectAll("circle").transition().duration(200).attr("r", function(d) {
-                return radius_scale(0);
-            }).remove();*/
-
-            //svg.selectAll("line").attr("visibility", "hidden");
             svg.selectAll("circle").remove();
             svg.selectAll(".node").transition().duration(550).remove();
             svg.selectAll(".fixedNode").transition().duration(550).remove();
@@ -268,17 +268,21 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
     function onYAxisModeChange(e){
         yAxisMode = e.target.getAttribute("data-axis");
-        $("#btnCategories").text(yAxisMode)
-
+        $("#btnCategories").text(yAxisMode);
         drawTable();
 
         if (view == "node"){
             shuffleNodes();
             svg.selectAll("circle").transition().duration(1000)
-                .style("fill", function(d, i) {
+                .style("fill", function(d) {
                     var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
                     var myColor = d3.scale.category10().range();
-                    return myColor[parseInt(val)];
+                    return myColor[parseInt(parseInt(val))];
+                })
+                .attr("stroke", function(d) {
+                    var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
+                    var myColor = d3.scale.category10().range();
+                    return d3.rgb(myColor[parseInt(parseInt(val))]).darker(3) ;
                 });
 
             positionNodes(selectedQuestion);
@@ -305,14 +309,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             return;
 
         view = "collapsed";
-        //svg.selectAll("line").attr("visibility", "hidden");
-        //svg.selectAll(".y-legend").remove();
-
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
         svg.selectAll(".node").transition().duration(520).remove();
-
         force.stop();
-
         addFixedNodes();
     }
 
@@ -330,12 +329,11 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         var g = svg.selectAll().data(nodes)
         .enter().append("svg:g")
             .attr("class", "node")
-            .attr("stroke", "#222")
-            .style("fill", "#aaa")
-            .attr("stroke-width", "2")
-            .on("mouseover", function(d,i){
-                d3.select(this).attr("stroke", "black")
-                d3.select(this).attr("stroke-width", "3")
+            .attr("stroke", d3.rgb("#aec7e8").darker(3))
+            .style("fill", "#aec7e8")
+            .attr("stroke-width", "1.5")
+            .on("mouseover", function(d){
+                d3.select(this).attr("stroke-width", "3");
                 var content ="<span class=\"name\">Originally from Utah: </span><span class=\"value\">" + d.info.Resident + "</span><br/>";
                 content +="<span class=\"name\">Gender: </span><span class=\"value\">" + d.info.Gender + "</span><br/>";
                 content +="<span class=\"name\">Age: </span><span class=\"value\">" + d.info.Age + "</span><br/>";
@@ -345,9 +343,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>";
                 tooltip.showTooltip(content,d3.event);
             })
-            .on("mouseout", function(d, i){
-                d3.select(this).attr("stroke","#222");
-                d3.select(this).attr("stroke-width", "2");
+            .on("mouseout", function(){
+                d3.select(this).attr("stroke-width", "1.5");
                 tooltip.hideTooltip();
             })
             .call(force.drag);
@@ -568,19 +565,16 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
     function drawXAxisLegend(marginLeft, x){
         var value = $(".active label").attr("data-value");
-
+        var delta = (x(1) - x(0));
         for (var i = 0; i < answers.length; i++){
            svg.append("text")
-              .attr("x", x(i) + marginLeft + (x(1) - x(0))/2)
+              //.attr("x", x(i) + marginLeft + (x(1) - x(0))/2)
               .attr("class", "x-legend")
               .attr("text-anchor", "middle ")
-              .attr("y", h - margin.bottom + 20)
-              .attr("dy", ".31em")
+              .attr("y", h - margin.bottom)
               .attr("id", "x-legend" + i)
-              .attr("font-weight", "bold")
+              //.attr("font-weight", "normal")
               .attr("data-id", i)
-              .style("stroke-width", 0)
-              .style("fill", "#000")
               .text(function(){
                    for (var j = 0; j < metadata.rows.length; j++){
                        var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
@@ -593,10 +587,11 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                        }
                    }
                    if (data.rows[0][value] != null)
-                    return data.rows[0][value] + ": " + answers[i];
+                        return data.rows[0][value] + ": " + answers[i];
                    else
-                    return "";
-              });
+                        return "";
+              })
+              .call(wrap, 0, delta * i + delta/2 + marginLeft);
         }
     }
 
@@ -608,9 +603,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
               .attr("id", "y-legend" + i)
               .attr("dx", marginLeft - 10)
               .attr("text-anchor", "end")
-              .style("stroke-width", 0)
-              .attr("font-weight", "bold")
-              .style("fill", "#000")
+              //.style("stroke-width", 0)
+              //.attr("font-weight", "normal")
+              //.style("fill", "#000")
               .attr("y", ((h - margin.bottom) / (options.length)) * i + 30)
               .text(function(){
                    if (yAxisMode == 'All')
@@ -631,7 +626,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
     }
 
-    function drawHorizontalLines(marginLeft, options, y){
+    function drawHorizontalLines(options, y){
         for (var i = 0; i <= options.length; i++){
             svg.append("svg:line")
                 .attr("x1", 0)
@@ -698,7 +693,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         drawYAxisLegend(marginLeft, options);
         drawVerticalLines(marginLeft, x);
         drawXAxisLegend(marginLeft, x);
-        drawHorizontalLines(marginLeft, options, y);
+        drawHorizontalLines(options, y);
     }
 
     function transform(d) {
@@ -719,16 +714,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             var question = prop;
             var questionContent = data.rows[0][prop];
 
-            /*for (var j = 0; j < metadata.rows.length; j++){
-                if (metadata.rows[j]['Question'].startsWith(data.rows[0][data.headers[i]])){
-                    question = metadata.rows[j]['Question'];
-                    break;
-                }
-            }*/
-
             if (question != null && regExp['reMS'].exec(question)){
                 var answer = questionContent.substr(questionContent.lastIndexOf('-') + 1, questionContent.length);
-
                 if (title != questionContent.substr(0, questionContent.lastIndexOf('-'))){
                     title = questionContent.substr(0, questionContent.lastIndexOf('-'));
                     var id = regExp['reMS'].exec(question)[1];
@@ -738,28 +725,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                     evenOddCounter = evenOddTick(evenOddCounter);
                 }
 
-                var questionType = regExp['reMS'].exec(question)[3];
-
-                /*if (questionType == "m"){
-                    $("#Q" + id ).append('<li class="clickable indented" data-value="' + question + '"><label class="checkbox">' +
-                                                                    '<input type="checkbox">' + answer + '</label></li>');
-                }*/
-                //else if(questionType == "s"){
-                    $("#Q" + id ).append('<li class="indented"><label class="clickable" data-value="' + question+ '">' +
+                $("#Q" + id ).append('<li class="indented"><label class="clickable" data-value="' + question+ '">' +
                                                                 answer + '</label></li>');
-                //}
             }
-            /*else if (question != null && regExp['reSG'].exec(question)){
-                var id = regExp['reSG'].exec(question)[1];
-                if ($("#Q" + id).length == 0){
-                    $("#listQuestions").append('<li class="'+ evenOddCounter +'"><a data-toggle="collapse" class="accordion-toggle collapsed" data-parent="#listQuestions" href="' +
-                                                            "#Q" + id + '">' + "General" + '</a>' + '<span class="caret"></span></li>' +
-                                                '<div class="panel-collapse collapse" id="Q' + id + '">' + '</div>');
-                    evenOddCounter = evenOddTick(evenOddCounter);
-                }
-
-                $("#Q" + id).append('<li class="indented"><label class="clickable" data-value="' + question + '">' + questionContent + '</label></li>');
-            }*/
             else if (question != null && regExp['reS'].exec(question)){
                 var id = regExp['reS'].exec(question)[1];
                 $("#listQuestions").append('<li class="'+ evenOddCounter +'"><label  class="clickable" data-value="'+ question + '" id="Q' + id + '">' +
@@ -769,7 +737,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
     }
 
-    function wrap(text, width, margin) {
+    function wrap(text, width, margin){
         text.each(function() {
             var text = d3.select(this),
             words = text.text().split(/\s+/).reverse(),

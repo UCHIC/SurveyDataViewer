@@ -22,7 +22,6 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
-
 define('visualization', ['bootstrap', 'd3Libraries'], function() {
     var self = {};
     var data, metadata, selectedQuestion, svg, radius_scale, nodes, force;
@@ -78,6 +77,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         initializeGraph();
     };
 
+    // Returns the cell value given a question ID and the name of the column
     function getValue(questionID, label){
         for (var i = 0; i < metadata.rows.length; i++){
             if (metadata.rows[i]["ID"] == questionID){
@@ -91,6 +91,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
     }
 
+    // Returns the column name in the metadata file given the question id and a value
     function getLabel(questionID, value){
         for (var i = 0; i < metadata.rows.length; i++){
             if (metadata.rows[i]["ID"] == questionID){
@@ -176,6 +177,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             content = data.rows[0][selectedQuestion];
         }
 
+        // Toggle Title visibility
         $("#txtDescription").text("");
         $("#txtTitle").text(title);
         if ($("#txtTitle").text() == ""){
@@ -212,10 +214,12 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         // populate value arrays
         for (var i = 0; i < nodes.length; i++){
             nodes[i].value = data.rows[i + 1][selectedQuestion];
-            valuesX.push(data.rows[i + 1][selectedQuestion]);
+            if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
+                continue;
+            }
+            valuesX.push(nodes[i].value);
             valuesY.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
-        var customRadius = radius;
 
         var separation = radius * 2;
         // X axis
@@ -237,6 +241,12 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
 
         nodes.forEach(function(d) {
+            //  Hide nodes with no response values
+            if (d.value == 0 || d.info[yAxisMode] == "No response"){
+                d.cx = w/2;
+                d.cy = -50;
+                return;
+            }
             var posX = $.inArray(d.value, answers);
             var posY = options.length - 1 - $.inArray(d.info[yAxisMode], options);
 
@@ -244,8 +254,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 counters[posX][posY] = 0;
             }
 
-            d.cx = marginLeft + (posX * xDelta) + (counters[posX][posY] % maxPerRow ) * separation + separation / 2 + ((xDelta - maxPerRow * separation) / 2);
+            // Sorts the nodes into a matrix
+            d.cx = marginLeft + (posX * xDelta) + (counters[posX][posY] % maxPerRow ) * separation + separation / 2 + ((xDelta - maxPerRow * separation) / 2);  // ...I'm a genius
             d.cy = (posY * yDelta) + Math.floor(counters[posX][posY] / maxPerRow) * separation + separation / 2 + ((yDelta - maxPerColumn * separation) / 2);
+
 
             if (d.cy + separation > (posY + 1) * yDelta){
                 var fitFactor = 0;
@@ -260,8 +272,6 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                     case 1: d.cx -= radius / 2 * fitFactor; break;   // move to left
                 }
             }
-
-            d.radius = customRadius;
             counters[posX][posY]++;
         });
     }
@@ -358,9 +368,14 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             .call(force.drag);
 
         var circle = g.append("svg:circle")
-            .attr("r", function(d) { return 0; })
+            .attr("r", 0)
             .attr("data-value", function(d){return d.value})
-            .style("fill", function(d, i) {
+            .attr("stroke", function(d) {
+                var myColor = d3.scale.category10().range();
+                var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
+                return d3.rgb(myColor[parseInt(val)]).darker(3);
+            })
+            .style("fill", function(d) {
                 var myColor = d3.scale.category10().range();
                 var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
                 return myColor[parseInt(val)];
@@ -373,6 +388,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
        positionNodes(selectedQuestion);
        shuffleNodes();
 
+        // Attachs a character to center of each node
         /*g.append("svg:text")
           .attr("x", -5)
           .attr("dy", ".31em")
@@ -389,6 +405,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         // Add fixed nodes
         var values = [];
         for (var i = 0; i < nodes.length; i++){
+            if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
+                continue;
+            }
             values.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
         var options = values.getUnique().sort(function(a, b){return b-a});
@@ -408,7 +427,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
         }
 
-        nodes.forEach(function(d, i) {
+        nodes.forEach(function(d) {
            var posAnswer = ($.inArray(d.value, answers));
            var posOption = ($.inArray(d.info[yAxisMode], options))
 
@@ -423,11 +442,17 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             .attr("class", "fixedNode")
             .attr("fill", "#FFF")
             .attr("stroke-width", "3")
+            .on("mouseover", function(d){
+                d3.select(this).attr("stroke-width", "5");
+            })
+            .on("mouseout", function(){
+                d3.select(this).attr("stroke-width", "3");
+            })
 
         fixedNodesContainers.append("svg:circle")
             .style("stroke", function(d, i){
                 var myColor = d3.scale.category10().range();
-                var index = options.length - 1 - Math.floor(i / answers.length);
+                var index = options.length - Math.floor(i / answers.length);
                 return myColor[index];
             })
             .attr("r", "15")
@@ -455,7 +480,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 var customScale = d3.scale.pow().exponent(0.5).domain([0, rowTotal]).range([2, maxRadius]);
                 return customScale(d.amount);
             })
-            .attr("opacity", 0.4);
+            .attr("opacity", 0.6);
 
         fixedNodesContainers.append("svg:text")
           .attr("x", function(d) {
@@ -471,13 +496,10 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 return "visible";
           })
           .attr("dy", ".31em")
-          .attr("class", "percentageLabel")
-          .style("stroke-width", 0)
           .style("text-decoration", "underline")
           .style("fill", "#000")
-          .attr("class", "shadow")
           .text(0).transition().duration(700).tween("text", function(d) {
-                var rowTotal = 0;
+                var rowTotal = 0;   // Percentage is calculated per row
                 fixedNodes.forEach(function(o){
                    if (o.y == d.y){
                        rowTotal += o.amount;
@@ -523,53 +545,6 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         .style("fill", "none");
     }
 
-    function drawVerticalLines(marginLeft, x){
-        for (var i = 0; i < answers.length; i++){
-            svg.append("svg:line")
-                .attr("x1", x(i) + marginLeft)
-                .attr("x2", x(i) + marginLeft)
-                .attr("y1", 0)
-                .attr("y2", h)
-                //.attr("id", "line" + i)
-                .attr("data-id", i)
-                .attr("class", "vertical-line")
-                .style("stroke", "#777")
-                .style("stroke-width", "1px");
-        }
-
-        var colorScale = [];
-        colorScale["-1"] = "#44FF44";   // Red
-        colorScale["0"] = "#FFFFFF";    // Neutral
-        colorScale["1"] = "#FF4444";    // Green
-        var gradientOpacity = 0.4;
-
-        for (var i = 0; i < answers.length; i++){
-             var line = svg.append("svg:rect")
-                .attr("width", x(i) - x(i-1))
-                .attr("class", "colorShade")
-                .attr("height", h - margin.bottom)
-                .attr("transform", "translate(" + (marginLeft + x(i)) + "," + margin.top + ")")
-                .attr("opacity", function(d){
-                     if (i == (answers.length - 1) / 2)
-                        return gradientOpacity / (i + 1);
-                     else if (i < (answers.length - 1) / 2)
-                        return gradientOpacity / (i + 1);
-                     else{
-                        return gradientOpacity / (answers.length - i);
-                     }
-                 })
-                .style("fill", function(d){
-                     if (i == (answers.length - 1) / 2)
-                        return colorScale["0"];
-                     else if (i < (answers.length - 1) / 2)
-                        return colorScale["1"];
-                     else{
-                         return colorScale["-1"];
-                     }
-                 });
-            line.moveToBack();
-        }
-    }
 
     function drawXAxisLegend(marginLeft, x){
         var value = $(".active label").attr("data-value");
@@ -649,6 +624,22 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
     }
 
+
+    function drawVerticalLines(marginLeft, x){
+        for (var i = 0; i < answers.length; i++){
+            svg.append("svg:line")
+                .attr("x1", x(i) + marginLeft)
+                .attr("x2", x(i) + marginLeft)
+                .attr("y1", 0)
+                .attr("y2", h)
+                //.attr("id", "line" + i)
+                .attr("data-id", i)
+                .attr("class", "vertical-line")
+                .style("stroke", "#777")
+                .style("stroke-width", "1px");
+        }
+    }
+
     function drawLegendContainers(){
         var marginLeft = yAxisMode != "All" ? margin.left : 0;
 
@@ -670,6 +661,47 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             .style("fill", "#aaa");
     }
 
+    function drawColorGradient(marginLeft, x){
+        if (getLabel(selectedQuestion, "Color") != 1){
+            return;
+        }
+
+        // Draw color gradient
+
+        var colorScale = [];
+        colorScale["-1"] = "#44FF44";   // Red
+        colorScale["0"] = "#FFFFFF";    // Neutral
+        colorScale["1"] = "#FF4444";    // Green
+        var gradientOpacity = 0.4;
+
+        for (var i = 0; i < answers.length; i++){
+             var rect = svg.append("svg:rect")
+                .attr("width", x(i) - x(i-1))
+                .attr("class", "colorShade")
+                .attr("height", h - margin.bottom)
+                .attr("transform", "translate(" + (marginLeft + x(i)) + "," + margin.top + ")")
+                .attr("opacity", function(d){
+                     if (i == (answers.length - 1) / 2)
+                        return gradientOpacity / (i + 1);
+                     else if (i < (answers.length - 1) / 2)
+                        return gradientOpacity / (i + 1);
+                     else{
+                        return gradientOpacity / (answers.length - i);
+                     }
+                 })
+                .style("fill", function(d){
+                     if (i == (answers.length - 1) / 2)
+                        return colorScale["0"];
+                     else if (i < (answers.length - 1) / 2)
+                        return colorScale["1"];
+                     else{
+                         return colorScale["-1"];
+                     }
+                 });
+            rect.moveToBack();
+        }
+    }
+
     function drawTable(){
         if (svg != null){
             svg.selectAll(".x-legend").remove();
@@ -679,6 +711,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             svg.selectAll("rect").remove();
         }
 
+
         var marginLeft = yAxisMode != "All" ? margin.left : 0;
 
         var x = d3.scale.linear()
@@ -687,6 +720,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
         var values = [];
         for (var i = 0; i < nodes.length; i++){
+            if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
+                continue;
+            }
             values.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
         var options = values.getUnique().sort(function(a, b){return b-a});
@@ -698,10 +734,14 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         // Draw stuff
         drawOuterRect();
         drawLegendContainers();
+
         drawYAxisLegend(marginLeft, options);
-        drawVerticalLines(marginLeft, x);
         drawXAxisLegend(marginLeft, x);
+
+        drawVerticalLines(marginLeft, x);
         drawHorizontalLines(options, y);
+
+        drawColorGradient(marginLeft, x);
     }
 
     function transform(d) {
@@ -722,7 +762,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             var question = prop;
             var questionContent = data.rows[0][prop];
 
-            if (question != null && regExp['reMS'].exec(question)){
+            if (question != null && (regExp['reMS'].exec(question))){
                 var answer = questionContent.substr(questionContent.lastIndexOf('-') + 1, questionContent.length);
                 if (title != questionContent.substr(0, questionContent.lastIndexOf('-'))){
                     title = questionContent.substr(0, questionContent.lastIndexOf('-'));

@@ -10,44 +10,45 @@
                     <h4>{{ object.name }}</h4>
                     <p>{{ object.dateconducted }}</p>
                 </div>
-
              </div>
             <hr class="intro-divider">
         </div>
         <div id="visualizationContent">
             <div id="top-bar">
-                <div id="captionContainer">
-                    <div class="titleContainer glyphicon glyphicon-question-sign">
-                        <span class="lbl-question" id="txtTitle"></span>
-                    </div>
-                    <div class="descriptionContainer glyphicon glyphicon-ok">
-                        <span class="lbl-option" id="txtDescription"></span>
-                    </div>
-
+                <div id="captionContainer" class="panel panel-primary">
+                  <div class="panel-heading">
+                    <h3 id="txtTitle" class="panel-title"></h3>
+                  </div>
+                  <div id="txtDescription" class="panel-body">
+                    Select a question to get started
+                  </div>
                 </div>
-                <div id="options">
+                <div id="viewContainer" class="panel panel-primary">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">View</h3>
+                  </div>
+                  <div class="panel">
                     <div class="btn-group">
-                        <button id="nodeview" type="button" class="btn btn-default"> Respondent</button>
-                        <button id="collapsedview" type="button" class="btn btn-default"> Percentage</button>
-                    </div>
-                    <br/>
+                        <button id="nodeview" title="Respondent View" type="button" class="btn btn-default" aria-label="Center Align"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></button>
+                        <button id="collapsedview" title="Percentage View" type="button" class="btn btn-default" aria-label="Left Align"><span class="glyphicon glyphicon-th" aria-hidden="true"></span></button>
 
-                    <div class="dropdown">
-                      <button id="btnCategories" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-                        All
-                        <span class="caret"></span>
-                      </button>
-                      <ul id = "lstYAxisMode" class="dropdown-menu">
-                        <li><a data-axis="All" href="#">All</a></li>
-                        <li><a data-axis="Gender" href="#">Gender</a></li>
-                        <li><a data-axis="Age" href="#">Age</a></li>
-                        <li><a data-axis="Education" href="#">Education</a></li>
-                        <li><a data-axis="Resident" href="#">Utah resident</a></li>
-                      </ul>
                     </div>
-
+                  </div>
                 </div>
 
+                <div class="dropdown">
+                  <button id="btnCategories" class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+                      <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+                  </button>
+                  <ul id="lstYAxisMode" class="dropdown-menu">
+                    <li ><a data-axis="All" href="#">All</a></li>
+                    <li role="presentation" class="divider"></li>
+                    <li><a data-axis="Gender" href="#">Gender</a></li>
+                    <li><a data-axis="Age" href="#">Age</a></li>
+                    <li><a data-axis="Education" href="#">Education</a></li>
+                    <li><a data-axis="Resident" href="#">Utah resident</a></li>
+                  </ul>
+                </div>
             </div>
 
 

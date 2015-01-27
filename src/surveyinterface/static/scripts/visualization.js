@@ -34,7 +34,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var answers = [];
     var tableColor = "#666";  // 666
     var legendColor = "#000";
-    var nodesColor = "#123033";
+    var nodesColor = "#3D4348";
+    var yPanelWidth = 40;
     var map;
     var markers = [];
 
@@ -225,6 +226,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function onListQuestionClick(e){
+
+        if(e.target.getAttribute("data-value") == selectedQuestion){
+            return;
+        }
+
         var that = $(e.target).closest(".clickable").length > 0 ? $(e.target).closest(".clickable") :$(e.target).find(".clickable");
 
         if (that.length == 0){
@@ -297,7 +303,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function positionNodes(){
         var valuesX = [];
         var valuesY = []
-        var marginLeft = getYLabelSize() + 40;
+        var marginLeft = getYLabelSize() + yPanelWidth;
 
         // populate value arrays
         for (var i = 0; i < nodes.length; i++){
@@ -363,6 +369,25 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             d.cy += margin.top;
             counters[posX][posY]++;
         });
+
+        // Add counters
+        svg.selectAll(".countLabel").remove();
+
+        if (view == "collapsed")
+            return;
+
+        for (var i = 0; i < counters.length; i++){
+            for(var j = 0; j < counters[i].length; j++){
+                var xMargin = marginLeft + (i * xDelta) + 5;
+                var yMargin = ((j + 1) * yDelta) - 4;
+                svg.append("text")
+                  .attr("font-weight", "normal")
+                  .attr("fill", legendColor)
+                  .attr("class", "countLabel")
+                  .attr("transform", "translate(" + xMargin + "," + yMargin + ")")
+                  .text(counters[i][j]);
+            }
+        }
     }
 
     function onYAxisModeChange(e){
@@ -394,6 +419,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".node").transition().duration(550).remove();
             svg.selectAll(".fixedNode").transition().duration(550).remove();
             svg.selectAll(".fixedNode text").remove();
+            svg.selectAll(".countLabel").remove();
             addFixedNodes();
         }
     }
@@ -414,6 +440,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $("#collapsedview").addClass("disabled");
         $("#nodeview").removeClass("disabled");
+
+        svg.selectAll(".countLabel").remove();
 
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
         svg.selectAll(".node").transition().duration(520).remove();
@@ -506,7 +534,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             values.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
         var options = values.getUnique().sort(function(a, b){return b-a});
-        var marginLeft = getYLabelSize() + 40;
+        var marginLeft = getYLabelSize() + yPanelWidth;
 
         var fixedNodes = d3.range(answers.length * options.length).map(function(i) {
           return {
@@ -550,7 +578,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 var index = options.length - Math.floor(i / answers.length);
                 return myColor[index];
             })*/
-            .style("stroke", "#aaa")
+            .style("stroke", "#AAA")
             .attr("r", "15")
             .attr("visibility", function(d){
                 if (d.amount == 0){
@@ -617,7 +645,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                     // Label starts outside the circle since the circle is too small at the beginning
                     if (parseFloat(this.getAttribute("y")) == y){
-                        this.setAttribute("y" , y + 40);
+                        this.setAttribute("y" , y + yPanelWidth);
                     }
 
                     // Once the circle is large enough, move the label to the center
@@ -689,7 +717,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
               .attr("dy", 0)
               .attr("text-anchor", "start")
               .attr("y", ((h - margin.bottom) / (options.length)) * i + 30)
-              .attr("transform", "translate(" + (40 + 10) + "," + margin.top + ")")
+              .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
               .text(function(){
                    if (yAxisMode == 'All')
                        return "";
@@ -712,7 +740,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function drawHorizontalLines(options, y){
         for (var i = 1; i <= options.length - 1; i++){
             svg.append("svg:line")
-                .attr("x1", 40)
+                .attr("x1", yPanelWidth)
                 .attr("x2", w)
                 .attr("y1", y(i))
                 .attr("y2", y(i))
@@ -739,7 +767,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
            var grad = svg.append("svg:rect")
             .attr("width", w)
             .attr("height", y(1) - y(0))
-            .attr("transform", "translate(" + 40 + "," + y(i) + ")")
+            .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
             .attr("opacity", (i%2 == 0) ? 0 : 0.15)
             .style("fill", "#000");
 
@@ -828,8 +856,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function drawYAxisPanel(){
         if (yAxisMode != "All"){
             svg.append("svg:line")
-                .attr("x1", 40)
-                .attr("x2", 40)
+                .attr("x1", yPanelWidth)
+                .attr("x2", yPanelWidth)
                 .attr("y1", margin.top)
                 .attr("y2", h - margin.bottom)
                 .attr("class", "vertical-line")
@@ -857,6 +885,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll("line").remove();
             svg.selectAll("rect").remove();
             svg.selectAll(".yPanelLabel").remove();
+            //svg.selectAll(".countLabel").remove();
         }
 
         var values = [];
@@ -869,7 +898,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var options = values.getUnique().sort(function(a, b){return b-a});
         drawYAxisLegend(options);
 
-        var marginLeft = getYLabelSize() + 40;
+        var marginLeft = getYLabelSize() + yPanelWidth;
 
         var x = d3.scale.linear()
             .domain([0, answers.length])

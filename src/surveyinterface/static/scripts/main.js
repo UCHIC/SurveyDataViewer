@@ -4,10 +4,29 @@
 
 requirejs.config({
     paths: {
-        jquery: '//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min',
-        bootstrap: '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min',
-        d3: '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.6/d3.min',
-        d3_nvd3: '//cdnjs.cloudflare.com/ajax/libs/nvd3/1.1.15-beta/nv.d3.min',
+        async: [
+            '//cdnjs.cloudflare.com/ajax/libs/requirejs-async/0.1.1/async',
+            'vendor/requirejs/async'
+        ],
+        jquery: [
+            '//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min',
+            'vendor/jquery/jquery.min'
+        ],
+        bootstrap: [
+            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min',
+            'vendor/bootstrap/bootstrap.min'
+        ],
+        d3: ['//cdnjs.cloudflare.com/ajax/libs/d3/3.4.6/d3.min',
+            'vendor/d3/d3.min'
+        ],
+        d3_nvd3: [
+            '//cdnjs.cloudflare.com/ajax/libs/nvd3/1.1.15-beta/nv.d3.min',
+            'vendor/d3/nv.d3.min'
+        ],
+        underscore: [
+            '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min',
+            'vendor/underscore/underscore-min'
+        ],
         custom_tooltip: 'customtooltip',
         csvjson:'csvjson'
     },
@@ -20,6 +39,7 @@ requirejs.config({
 
 define('generalLibraries', ['jquery', 'bootstrap']);
 define('d3Libraries', ['d3', 'd3_nvd3', 'csvjson', 'custom_tooltip']);
+define('mapLibraries', ['async!https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyANPfBBVteHSTx4o9O-kgjC8RVMuXW0O2o&sensor=false&libraries=geometry']);
 
 define('d3_global', ['d3'], function(d3Module) {
     window.d3 = d3Module;

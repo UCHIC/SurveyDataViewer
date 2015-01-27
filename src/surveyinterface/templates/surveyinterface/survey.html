@@ -30,28 +30,25 @@
                   <div class="panel">
                     <div class="btn-group">
                         <button id="nodeview" title="Respondent View" type="button" class="btn btn-default" aria-label="Center Align"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></button>
-                        <button id="collapsedview" title="Percentage View" type="button" class="btn btn-default" aria-label="Left Align"><span class="glyphicon glyphicon-th" aria-hidden="true"></span></button>
-
+                        <button id="collapsedview" title="Percentage View" type="button" class="btn btn-default" aria-label="Left Align"><span class="glyphicon glyphicon-th-large" aria-hidden="true"></span></button>
                     </div>
                   </div>
                 </div>
-
-                <div class="dropdown">
-                  <button id="btnCategories" class="btn dropdown-toggle" type="button" data-toggle="dropdown">
-                      <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-                  </button>
-                  <ul id="lstYAxisMode" class="dropdown-menu">
-                    <li ><a data-axis="All" href="#">All</a></li>
-                    <li role="presentation" class="divider"></li>
-                    <li><a data-axis="Gender" href="#">Gender</a></li>
-                    <li><a data-axis="Age" href="#">Age</a></li>
-                    <li><a data-axis="Education" href="#">Education</a></li>
-                    <li><a data-axis="Resident" href="#">Utah resident</a></li>
-                  </ul>
-                </div>
             </div>
-
-
+            <div class="dropdown">
+              <button id="btnCategories" class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+                  <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+              </button>
+              <ul id="lstYAxisMode" class="dropdown-menu">
+                <li ><a data-axis="All" href="#">All</a></li>
+                <li role="presentation" class="divider"></li>
+                <li><a data-axis="Gender" href="#">Gender</a></li>
+                <li><a data-axis="Age" href="#">Age</a></li>
+                <li><a data-axis="Education" href="#">Education</a></li>
+                <li><a data-axis="Resident" href="#">Utah resident</a></li>
+              </ul>
+            </div>
+            <div id="map-canvas"></div>
         </div>
     </div>
     <input id="dataFile" type="hidden" value="{{ object.datafile.url }}" readonly>

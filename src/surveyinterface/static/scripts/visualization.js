@@ -22,7 +22,7 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
-define('visualization', ['bootstrap', 'd3Libraries'], function() {
+define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore'],  function() {
     var self = {};
     var data, metadata, selectedQuestion, svg, radius_scale, nodes, force;
     var radius = 10;
@@ -32,7 +32,11 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
     var w = $("#visualizationContent").width() - 20, h = $("#visualizationContent").height() - $("#top-bar").height() - 20 /*- $("#top-bar").height()*/;
     var view = "";
     var answers = [];
-    var tableColor = "#000";  // 428bca
+    var tableColor = "#666";  // 666
+    var legendColor = "#000";
+    var nodesColor = "#123033";
+    var map;
+    var markers = [];
 
     d3.selection.prototype.moveToBack = function() {
         return this.each(function() {
@@ -148,13 +152,76 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
     }
 
+
+
     function tick(e) {
         nodes.forEach(function(d) {
-            d.y += (d.cy - d.y) * e.alpha * 4.5;
-            d.x += (d.cx - d.x) * e.alpha * 3.5;
+            d.y += (d.cy - d.y);    // * e.alpha * 4.5;
+            d.x += (d.cx - d.x);
         });
 
         svg.selectAll("circle").attr("transform", transform);
+    }
+
+    function initializeMap() {
+        if (map != null){
+            return;
+        }
+        var mapOptions = {
+            center: new google.maps.LatLng(38.5000, -98.0000),   // Center the map at Utah
+            zoom: 5
+        };
+
+        map = new google.maps.Map(document.getElementById('map-canvas'),
+            mapOptions);
+    }
+
+    function loadMarkers(values){
+        _(values).keys().forEach(function(zipcode) {
+            var url = 'http://maps.googleapis.com/maps/api/geocode/json?address=' + zipcode;
+            $.getJSON(url, function(data) {
+                if (data.results.length === 0) {
+                    return;
+                }
+                var result = _(data.results).first();
+                var title = _(result.address_components).pluck("long_name").join(', ')
+
+                var marker = new google.maps.Marker({
+                    title: title,
+                    position: result.geometry.location,
+                    map: map
+                });
+                markers.push(marker);
+            });
+        });
+    }
+
+    function clearMarkers(){
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
+    }
+
+    function loadMap(){
+        $("#map-canvas").show();
+        // Initialize google maps
+        //google.maps.event.addDomListener(window, 'load', initializeMap);
+        initializeMap();
+
+        var values = [];
+        // populate value arrays
+        for (var i = 0; i < nodes.length; i++){
+            nodes[i].value = data.rows[i + 1][selectedQuestion];
+            if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
+                continue;
+            }
+            values.push(nodes[i].value);
+        }
+
+        values = _(values).countBy();
+
+        clearMarkers();
+        loadMarkers(values);
     }
 
     function onListQuestionClick(e){
@@ -164,15 +231,15 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             return;
         }
 
+        $('#listQuestions li').removeClass("active");
+        that.closest("li").addClass("active");
+        selectedQuestion = that.attr("data-value");
+
         if (view == "node"){
             force.resume();
         }
 
-        $('#listQuestions li').removeClass("active");
 
-        that.closest("li").addClass("active");
-
-        selectedQuestion = that.attr("data-value");
         var title = data.rows[0][selectedQuestion].substr(0, data.rows[0][selectedQuestion].lastIndexOf('-'));
         var content;
         if (data.rows[0][selectedQuestion].lastIndexOf('-') != -1){
@@ -199,7 +266,16 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             $(".descriptionContainer").show();
         }
 
-        positionNodes(selectedQuestion);
+        if (getLabel(selectedQuestion, "data-type") == "map"){
+            loadMap();
+            return;
+        }
+        else{
+            $("#map-canvas").hide();
+        }
+
+        positionNodes();
+        blinkNodes();
         drawTable();
 
         if (view != "node"){
@@ -211,7 +287,14 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }
     }
 
-    function positionNodes(selectedQuestion){
+    function blinkNodes(){
+        var circle = svg.selectAll("circle").attr("r", 0);
+        circle.transition().duration(500).attr("r", function(d) {
+            return d.radius - 2;
+        });
+    }
+
+    function positionNodes(){
         var valuesX = [];
         var valuesY = []
         var marginLeft = getYLabelSize() + 40;
@@ -291,7 +374,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
 
         if (view == "node"){
             shuffleNodes();
-            svg.selectAll("circle").transition().duration(1000)
+            blinkNodes();
+            /*svg.selectAll("circle").transition().duration(1000)
                 .style("fill", function(d) {
                     var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
                     var myColor = d3.scale.category10().range();
@@ -301,7 +385,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                     var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
                     var myColor = d3.scale.category10().range();
                     return d3.rgb(myColor[parseInt(parseInt(val))]).darker(3);
-                });
+                })*/;
 
             positionNodes(selectedQuestion);
         }
@@ -352,12 +436,14 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         }).remove();
 
         svg.selectAll("line").attr("visibility", "default");
+
         var g = svg.selectAll().data(nodes)
         .enter().append("svg:g")
             .attr("class", "node")
-            .attr("stroke", d3.rgb("#aec7e8").darker(3))
-            .style("fill", "#aec7e8")
-            .attr("stroke-width", "1.5")
+            //.attr("stroke", d3.rgb(nodesColor).darker(1))
+            .attr("stroke", "#000")
+            .style("fill", nodesColor)
+            .attr("stroke-width", "1")
             .on("mouseover", function(d){
                 d3.select(this).attr("stroke-width", "3");
                 var content ="<span class=\"name\">Originally from Utah: </span><span class=\"value\">" + d.info.Resident + "</span><br/>";
@@ -367,19 +453,19 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 content +="<span class=\"name\">Farm Ties: </span><span class=\"value\">" + d.info.FarmTies + "</span><br/>";
                 content +="<span class=\"name\">Survey Venue: </span><span class=\"value\">" + d.info.Venue + "</span><br/>";
                 content +="<span class=\"name\">Survey Site: </span><span class=\"value\">" + d.info.Site + "</span><br/>";
-                content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>";
+                //content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>";
                 tooltip.showTooltip(content,d3.event);
             })
             .on("mouseout", function(){
-                d3.select(this).attr("stroke-width", "1.5");
+                d3.select(this).attr("stroke-width", "1");
                 tooltip.hideTooltip();
-            })
-            .call(force.drag);
+            });
+            //.call(force.drag);
 
         var circle = g.append("svg:circle")
             .attr("r", 0)
             .attr("data-value", function(d){return d.value})
-            .attr("stroke", function(d) {
+            /*.attr("stroke", function(d) {
                 var myColor = d3.scale.category10().range();
                 var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
                 return d3.rgb(myColor[parseInt(val)]).darker(3);
@@ -388,7 +474,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 var myColor = d3.scale.category10().range();
                 var val = getValue(infoQuestions[yAxisMode], d.info[yAxisMode]);
                 return myColor[parseInt(val)];
-            });
+            })*/;
 
        circle.transition().duration(500).attr("r", function(d) {
             return d.radius - 2;
@@ -459,11 +545,12 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             })
 
         fixedNodesContainers.append("svg:circle")
-            .style("stroke", function(d, i){
+            /*.style("stroke", function(d, i){
                 var myColor = d3.scale.category10().range();
                 var index = options.length - Math.floor(i / answers.length);
                 return myColor[index];
-            })
+            })*/
+            .style("stroke", "#aaa")
             .attr("r", "15")
             .attr("visibility", function(d){
                 if (d.amount == 0){
@@ -505,7 +592,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 return "visible";
           })
           .attr("dy", ".31em")
-          .style("text-decoration", "underline")
+          //.style("text-decoration", "underline")
           .style("fill", "#000")
           .text(0).transition().duration(700).tween("text", function(d) {
                 var rowTotal = 0;   // Percentage is calculated per row
@@ -534,9 +621,9 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                     }
 
                     // Once the circle is large enough, move the label to the center
-                    if (value > 12 && parseFloat(this.getAttribute("y")) != y){
+                    //if (value > 12 && parseFloat(this.getAttribute("y")) != y){
                         this.setAttribute("y" , y);
-                    }
+                    //}
                 };
           });
 
@@ -561,9 +648,11 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         for (var i = 0; i < answers.length; i++){
            svg.append("text")
               .attr("dx", 0)
-               .attr("dy", 0)
+              .attr("dy", 0)
               .attr("class", "x-legend")
-              .attr("text-anchor", "middle ")
+              .attr("text-anchor", "middle")
+              .attr("font-weight", "normal")
+              .attr("fill", legendColor)
               .attr("y", h - margin.bottom + 30)
               .attr("id", "x-legend" + i)
               .attr("transform", "translate(" + ( x(i) + marginLeft + delta/2) + "," + 0 + ")")
@@ -594,6 +683,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
               .attr("class", "y-legend")
               .attr("data-id", i)
               .attr("id", "y-legend" + i)
+              .attr("font-weight", "normal")
+              .attr("fill", legendColor)
               .attr("dx", 0)
               .attr("dy", 0)
               .attr("text-anchor", "start")
@@ -630,7 +721,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 .attr("class", "horizontal-line")
                 .attr("transform", "translate(" + 0 + "," + margin.top + ")")
                 .style("stroke", tableColor)
-                .style("stroke-width", "1px")
+                .style("stroke-width", "1.3px")
         }
 
         // Line at the top of x axis legend
@@ -641,8 +732,19 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
             .attr("y2", h- margin.bottom)
             .attr("class", "horizontal-line")
             .style("stroke", tableColor)
-            .style("stroke-width", "1px")
+            .style("stroke-width", "1.3px")
 
+        // Gray alternation
+        for (var i = 0; i <= options.length - 1; i++){
+           var grad = svg.append("svg:rect")
+            .attr("width", w)
+            .attr("height", y(1) - y(0))
+            .attr("transform", "translate(" + 40 + "," + y(i) + ")")
+            .attr("opacity", (i%2 == 0) ? 0 : 0.15)
+            .style("fill", "#000");
+
+            grad.moveToBack();
+        }
     }
 
     function drawVerticalLines(marginLeft, x){
@@ -654,17 +756,8 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 .attr("y2", h)
                 .attr("class", "vertical-line")
                 .style("stroke", tableColor)
-                .attr("stroke-width", "1px");
+                .attr("stroke-width", "1.3px");
         }
-
-        /*svg.append("svg:line")
-        .attr("x1", marginLeft)
-        .attr("x2", w)
-        .attr("y1", h - qLabelHeight)
-        .attr("y2", h - qLabelHeight)
-        .attr("data-id", i)
-        .style("stroke", "#000")
-        .attr("stroke-width", "1px");*/
     }
 
     function drawLegendContainers(marginLeft){
@@ -675,16 +768,15 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 .attr("y2", h)
                 .attr("class", "vertical-line")
                 .style("stroke", tableColor)
-                .attr("stroke-width", "1px");
+                .attr("stroke-width", "1.3px");
     }
 
     function drawColorGradient(marginLeft, x){
-        if (getLabel(selectedQuestion, "Color") != 1){
+        if (getLabel(selectedQuestion, "data-type") != "gradient"){
             return;
         }
 
         // Draw color gradient
-
         var colorScale = [];
         colorScale["-1"] = "#44FF44";   // Red
         colorScale["0"] = "#FFFFFF";    // Neutral
@@ -742,13 +834,14 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
                 .attr("y2", h - margin.bottom)
                 .attr("class", "vertical-line")
                 .style("stroke", tableColor)
-                .attr("stroke-width", "1px");
+                .attr("stroke-width", "1.3px");
         }
 
         svg.append("svg:text")
             .attr("transform", "rotate(-90)")
             .attr("class", "yPanelLabel")
             .attr("dy", ".71em")
+            .attr("fill", legendColor)
             .style("text-anchor", "end")
             .style("font-size", "14px")
             .text(yAxisMode);
@@ -792,7 +885,7 @@ define('visualization', ['bootstrap', 'd3Libraries'], function() {
         drawXAxisLegend(marginLeft, x);
 
         drawVerticalLines(marginLeft, x);
-        drawHorizontalLines(options, y);
+        drawHorizontalLines(options, y, marginLeft);
 
         drawLegendContainers(marginLeft);
 

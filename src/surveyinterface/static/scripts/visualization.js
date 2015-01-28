@@ -226,7 +226,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function onListQuestionClick(e){
-
+        // Prevents the event from triggering twice with the same question
         if(e.target.getAttribute("data-value") == selectedQuestion){
             return;
         }
@@ -296,7 +296,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function blinkNodes(){
         var circle = svg.selectAll("circle").attr("r", 0);
         circle.transition().duration(500).attr("r", function(d) {
-            return d.radius - 2;
+            return Math.max(0, d.radius - 2);
         });
     }
 

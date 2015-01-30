@@ -236,15 +236,14 @@ text.shadow {
 #btnCategories{
     width: 20px;
     height: 24px;
-    border: 1px solid #FFFFFF;
     border-radius: 1px;
-    color: #FFFFFF;
-    background: #3D4348;
-    border:1px solid #ddd;
+    color: #000;
+    background: #FFF;
+    border: 1px solid #BBB;
 }
 
 #btnCategories:hover{
-    background: #777;
+    border: 1px solid #999;
 }
 
 #btnCategories span{
@@ -297,11 +296,11 @@ hr{
 }
 
 .even{
-    background:#ddd;
+    background:#FFF;
 }
 
 .odd{
-    background:#eee;
+    background:#EFEFEF;
 }
 
 #listQuestions li:not(.indented){

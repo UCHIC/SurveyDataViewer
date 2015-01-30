@@ -32,12 +32,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var w = $("#visualizationContent").width() - 20, h = $("#visualizationContent").height() - $("#top-bar").height() - 20 /*- $("#top-bar").height()*/;
     var view = "";
     var answers = [];
-    var tableColor = "#666";  // 666
+    var tableColor = "#666";
     var legendColor = "#000";
-    var nodesColor = "#3D4348";
     var yPanelWidth = 40;
     var map;
     var markers = [];
+    var nodes = [];
+    var markerQuestions = [];
+    var openInfoWindow = {};
 
     d3.selection.prototype.moveToBack = function() {
         return this.each(function() {
@@ -126,6 +128,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return {radius: radius, value: 0, info: info, cx: w/2, cy: (h - margin.bottom) / 2};
         });
 
+
+
         force = d3.layout.force()
             .gravity(0)
             .charge(0)
@@ -142,7 +146,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawTable();
         setNodeView();
 
-        // setCollapsedView();
+        // Pre-load markers for questions that use the map
+        for (var i = 0; i < markerQuestions.length; i++){
+            loadMarkerData(markerQuestions[i]);
+        }
+        //loadMarkerData(question);
 
         $("#collapsedview").click(setCollapsedView);
         $("#nodeview").click(setNodeView);
@@ -152,8 +160,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $('#lstYAxisMode li:not(.disabled)').click(onYAxisModeChange);
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
     }
-
-
 
     function tick(e) {
         nodes.forEach(function(d) {
@@ -177,24 +183,102 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             mapOptions);
     }
 
-    function loadMarkers(values){
-        _(values).keys().forEach(function(zipcode) {
-            var url = 'http://maps.googleapis.com/maps/api/geocode/json?address=' + zipcode;
-            $.getJSON(url, function(data) {
-                if (data.results.length === 0) {
-                    return;
-                }
-                var result = _(data.results).first();
-                var title = _(result.address_components).pluck("long_name").join(', ')
+    function loadMarkerData(mapQuestion){
+        var values = [];
+        // populate value arrays
+        for (var i = 0; i < nodes.length; i++){
+            var myVal = data.rows[i + 1][mapQuestion];
+            if (myVal == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
+                continue;
+            }
+            values.push(myVal);
+        }
 
-                var marker = new google.maps.Marker({
-                    title: title,
-                    position: result.geometry.location,
-                    map: map
-                });
-                markers.push(marker);
-            });
+        values = _(values).countBy();
+        var counter = 0;
+
+        _(values).keys().forEach(function(zipcode) {
+            var dataMarker;
+
+            if (localStorage[zipcode] != null){
+                dataMarker = JSON.parse(localStorage[zipcode]);
+            }
+            // Request the marker data from geocode API which has a limit of 1 request per ~300 ms
+            if (dataMarker == null){
+                setTimeout(function() {
+                    var url = 'http://maps.googleapis.com/maps/api/geocode/json?address=' + zipcode;
+                    $.getJSON(url, function(data) {
+                        if (data.results.length === 0) {
+                            return;
+                        }
+                        var result = _(data.results).first();
+                        var title = _(result.address_components).pluck("long_name").join(', ');
+                        var position = result.geometry.location;
+
+                        localStorage.setItem(zipcode, JSON.stringify({title:title, position:position}));    // Save in local storage for future use
+                    });
+                }, 300 * counter++);
+            }
         });
+    }
+
+    function loadMarkers(values){
+        var counter = 0;
+
+        _(values).keys().forEach(function(zipcode) {
+            var dataMarker;
+
+            if (localStorage[zipcode] != null){
+                dataMarker = JSON.parse(localStorage[zipcode]);
+            }
+                                                                                                            // If the marker exists in the local storage, load it from there
+            if (dataMarker != null){
+                addMarker(dataMarker.title, values[zipcode], dataMarker.position);
+            }else{                                                                                          // Request it from geocode API which has a limit of 1 request per ~300 ms
+                setTimeout(function() {
+                    var url = 'http://maps.googleapis.com/maps/api/geocode/json?address=' + zipcode;
+                    $.getJSON(url, function(data) {
+                        if (data.results.length === 0) {
+                            return;
+                        }
+                        var result = _(data.results).first();
+                        var title = _(result.address_components).pluck("long_name").join(', ');
+                        var position = result.geometry.location;
+                        localStorage.setItem(zipcode, JSON.stringify({title:title, position:position}));    // Save in local storage for future use
+                        addMarker(title, values[zipcode], position);
+                    });
+                }, 300 * counter++);
+            }
+        });
+    }
+
+    function addMarker(title, participants, position){
+
+
+        var infoWindowContent = "<section style='text-align: left;'>\
+                                    <header><h5>" + "<b>Location: </b>" + title + "</h5></header>\
+                                    <h5>" + "<b>Participants: </b>"+ participants + "</h5></header>\
+                                </section>";
+
+        var infoWindow = new google.maps.InfoWindow({
+            content: infoWindowContent
+        });
+
+        var marker = new google.maps.Marker({
+            title: title + ". \n" + participants + ((participants > 1) ?" participants" : " participant"),
+            position: position,
+            map: map
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+            if (openInfoWindow.hasOwnProperty("content")) {
+                openInfoWindow.close();
+            }
+            infoWindow.open(map, marker);
+            openInfoWindow = infoWindow;
+        });
+
+        markers.push(marker);
     }
 
     function clearMarkers(){
@@ -226,12 +310,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function onListQuestionClick(e){
+        var that = $(e.target).closest(".clickable").length > 0 ? $(e.target).closest(".clickable") :$(e.target).find(".clickable");
+
         // Prevents the event from triggering twice with the same question
-        if(e.target.getAttribute("data-value") == selectedQuestion){
+        if(that.length == 0 || that[0].getAttribute("data-value") == selectedQuestion){
             return;
         }
-
-        var that = $(e.target).closest(".clickable").length > 0 ? $(e.target).closest(".clickable") :$(e.target).find(".clickable");
 
         if (that.length == 0){
             return;
@@ -244,7 +328,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (view == "node"){
             force.resume();
         }
-
 
         var title = data.rows[0][selectedQuestion].substr(0, data.rows[0][selectedQuestion].lastIndexOf('-'));
         var content;
@@ -316,16 +399,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         var separation = radius * 2;
-        // X axis
-        answers = valuesX.getUnique().sort(function(a, b){return a-b});
-        var options = valuesY.getUnique().sort(function(a, b){return a-b});
 
-        var xDelta = (w - marginLeft) / (answers.length);
+        answers = valuesX.getUnique().sort(function(a, b){return a-b});     // x-axis
+        var options = valuesY.getUnique().sort(function(a, b){return a-b}); // y-axis
+
+        var xDelta = (w - marginLeft) / (answers.length);                   // The length in pixels of every rectangle area
         var yDelta = (h - margin.bottom - margin.top) / (options.length);
-        var maxPerRow = Math.floor(xDelta / separation) - 1;
-        var maxPerColumn = Math.floor(yDelta / separation) - 1;
+        var maxPerRow = Math.floor(xDelta / separation) - 1;                // The number of circles that can fit in one row of the area
+        var maxPerColumn = Math.floor(yDelta / separation) - 1;             // The number of circles that can fit in one column of the area
         var counters = [];
 
+        // Initialize 2D array that will keep track of the count on each rectangle area
         for (var i = 0; i < answers.length; i++){
             counters.push([]);
         }
@@ -348,10 +432,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 counters[posX][posY] = 0;
             }
 
-            // Sorts the nodes into a matrix
+            // Sorts the nodes into a matrix.
             d.cx = marginLeft + (posX * xDelta) + (counters[posX][posY] % maxPerRow ) * separation + separation / 2 + ((xDelta - maxPerRow * separation) / 2);
             d.cy = (posY * yDelta) + Math.floor(counters[posX][posY] / maxPerRow) * separation + separation / 2 + ((yDelta - maxPerColumn * separation) / 2);
 
+            // Stack the nodes nicely on top of each other when the area is too small to fit them all
             if (d.cy + separation > (posY + 1) * yDelta){
                 var fitFactor = 0;
 
@@ -366,11 +451,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
             }
 
-            d.cy += margin.top;
+            d.cy += margin.top;     // Apply top margin
             counters[posX][posY]++;
         });
 
-        // Add counters
+        // Add count label at the bottom left corner of each rectangle area
         svg.selectAll(".countLabel").remove();
 
         if (view == "collapsed")
@@ -391,6 +476,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function onYAxisModeChange(e){
+        if (e.target.getAttribute("data-axis") == yAxisMode){
+            return;
+        }
         $("#lstYAxisMode li").removeClass("disabled");
         $(this).addClass("disabled");
         yAxisMode = e.target.getAttribute("data-axis");
@@ -425,7 +513,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function shuffleNodes(){
-        nodes.forEach(function(o, i) {
+        nodes.forEach(function(o) {
             o.x += (Math.random() - .5) * 10;
             o.y += (Math.random() - .5) * 10;
         });
@@ -442,7 +530,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#nodeview").removeClass("disabled");
 
         svg.selectAll(".countLabel").remove();
-
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
         svg.selectAll(".node").transition().duration(520).remove();
         force.stop();
@@ -453,6 +540,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (view == "node")
             return;
         view = "node";
+
+        var nodesColor = "#EEE";
+        var nodeStrokeWidth = "1.5";
+
 
         $("#nodeview").addClass("disabled");
         $("#collapsedview").removeClass("disabled");
@@ -469,9 +560,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         .enter().append("svg:g")
             .attr("class", "node")
             //.attr("stroke", d3.rgb(nodesColor).darker(1))
-            .attr("stroke", "#000")
+            .attr("stroke", "#555")
             .style("fill", nodesColor)
-            .attr("stroke-width", "1")
+            .attr("stroke-width", nodeStrokeWidth)
             .on("mouseover", function(d){
                 d3.select(this).attr("stroke-width", "3");
                 var content ="<span class=\"name\">Originally from Utah: </span><span class=\"value\">" + d.info.Resident + "</span><br/>";
@@ -485,7 +576,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 tooltip.showTooltip(content,d3.event);
             })
             .on("mouseout", function(){
-                d3.select(this).attr("stroke-width", "1");
+                d3.select(this).attr("stroke-width", nodeStrokeWidth);
                 tooltip.hideTooltip();
             });
             //.call(force.drag);
@@ -768,7 +859,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("width", w)
             .attr("height", y(1) - y(0))
             .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
-            .attr("opacity", (i%2 == 0) ? 0 : 0.15)
+            .attr("opacity", (i%2 == 0) ? 0 : 0.1)
             .style("fill", "#000");
 
             grad.moveToBack();
@@ -968,6 +1059,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         for (var prop in data.rows[0]){
             var question = prop;
             var questionContent = data.rows[0][prop];
+
+            if (getLabel(question, "data-type") == "map"){
+                markerQuestions.push(question);
+            }
 
             if (question != null && (regExp['reMS'].exec(question))){
                 var answer = questionContent.substr(questionContent.lastIndexOf('-') + 1, questionContent.length);

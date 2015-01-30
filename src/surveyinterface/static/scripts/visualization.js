@@ -58,7 +58,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     // Multiple choices (s:select one, m:select multiple) - Single choice group - Single choice
     var regExp = {reMS: /^Q([0-9]+)E_([0-9]+)/,  reS:/^Q([0-9])+E/};
-    var infoQuestions = {Gender:"Q12E", Resident: "Q8E", Venue:"VX", Site:"Q15E", FarmTies: "Q11E", SurveySite: "", Education:"Q14E", Age:"Q13E"}
+    var infoQuestions = {Gender:"Q12E", OriginallyFromUtah: "Q8E", SurveyVenue:"VX", Site:"Q15E", FarmTies: "Q11E", Education:"Q14E", Age:"Q13E"}
 
     self.loadData = function() {
         $.ajax(self.dataFile, {
@@ -111,24 +111,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function initializeGraph(){
         radius_scale = d3.scale.pow().exponent(0.5).domain([0, data.rows.length - 1]).range([2, 85]);
         nodes = d3.range(data.rows.length - 1).map(function(d, i) {
-            var Resident =      getLabel(infoQuestions.Resident, data.rows[i + 1][infoQuestions.Resident]);
+            var OriginallyFromUtah =      getLabel(infoQuestions.OriginallyFromUtah, data.rows[i + 1][infoQuestions.OriginallyFromUtah]);
             var Gender =        getLabel(infoQuestions.Gender, data.rows[i + 1][infoQuestions.Gender]);
             var Education =     getLabel(infoQuestions.Education, data.rows[i + 1][infoQuestions.Education]);
             var Age =           getLabel(infoQuestions.Age, data.rows[i + 1][infoQuestions.Age]);
             var FarmTies =      getLabel(infoQuestions.FarmTies, data.rows[i + 1][infoQuestions.FarmTies]);
-            var Venue = data.rows[i + 1][infoQuestions.Venue];
+            var SurveyVenue = data.rows[i + 1][infoQuestions.SurveyVenue];
             var Site = data.rows[i + 1][infoQuestions.Site];
 
-            if (Resident == null || Gender == null ||Education == null ||Age == null ||Resident == null ||FarmTies == null ||Venue == null){
-                console.log("flag");
-            }
-
-            var info = {Resident: Resident, Venue:Venue, Site:Site, FarmTies:FarmTies, Gender: Gender, Education: Education, Age: Age};
+            var info = {OriginallyFromUtah: OriginallyFromUtah, SurveyVenue:SurveyVenue, Site:Site, FarmTies:FarmTies, Gender: Gender, Education: Education, Age: Age};
 
             return {radius: radius, value: 0, info: info, cx: w/2, cy: (h - margin.bottom) / 2};
         });
-
-
 
         force = d3.layout.force()
             .gravity(0)
@@ -414,9 +408,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             counters.push([]);
         }
 
-        for (var i = 0; i < options.length; i++){
-            options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
+
+        // Replace each value for its label, except for text input questions
+        if (getLabel(infoQuestions[yAxisMode], 1) != "(text)"){
+            for (var i = 0; i < options.length; i++){
+                options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
+            }
         }
+
+
+            //regExp['reMS'].exec(question)
+            //regExp['reS'].exec(question)
+
 
         nodes.forEach(function(d) {
             //  Hide nodes with no response values
@@ -565,14 +568,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("stroke-width", nodeStrokeWidth)
             .on("mouseover", function(d){
                 d3.select(this).attr("stroke-width", "3");
-                var content ="<span class=\"name\">Originally from Utah: </span><span class=\"value\">" + d.info.Resident + "</span><br/>";
-                content +="<span class=\"name\">Gender: </span><span class=\"value\">" + d.info.Gender + "</span><br/>";
-                content +="<span class=\"name\">Age: </span><span class=\"value\">" + d.info.Age + "</span><br/>";
-                content +="<span class=\"name\">Education: </span><span class=\"value\">" + d.info.Education + "</span><br/>";
-                content +="<span class=\"name\">Farm Ties: </span><span class=\"value\">" + d.info.FarmTies + "</span><br/>";
-                content +="<span class=\"name\">Survey Venue: </span><span class=\"value\">" + d.info.Venue + "</span><br/>";
-                content +="<span class=\"name\">Survey Site: </span><span class=\"value\">" + d.info.Site + "</span><br/>";
-                //content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>";
+                var content = "<span class=\"name\">Gender: </span><span class=\"value\">" + d.info.Gender + "</span><br/>";
+                    content +="<span class=\"name\">Age: </span><span class=\"value\">" + d.info.Age + "</span><br/>";
+                    content +="<span class=\"name\">Education: </span><span class=\"value\">" + d.info.Education + "</span><br/>";
+                    content +="<span class=\"name\">Originally from Utah: </span><span class=\"value\">" + d.info.OriginallyFromUtah + "</span><br/>";
+                    content +="<span class=\"name\">Farm Ties: </span><span class=\"value\">" + d.info.FarmTies + "</span><br/>";
+                    content +="<span class=\"name\">Survey Venue: </span><span class=\"value\">" + d.info.SurveyVenue + "</span><br/>";
+                    content +="<span class=\"name\">Survey Site: </span><span class=\"value\">" + d.info.Site + "</span><br/>";
+                    //content +="<span class=\"name\">Value: </span><span class=\"value\">" + d.value + "</span>";
                 tooltip.showTooltip(content,d3.event);
             })
             .on("mouseout", function(){
@@ -637,8 +640,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                   pos: {x:(i % answers.length), y:Math.floor(i / answers.length)}};
         });
 
-        for (var i = 0; i < options.length; i++){
-            options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
+        // Replace each value for its label, except for text input questions
+        if (getLabel(infoQuestions[yAxisMode], 1) != "(text)"){
+            for (var i = 0; i < options.length; i++){
+                options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
+            }
         }
 
         nodes.forEach(function(d) {
@@ -809,9 +815,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
               .attr("text-anchor", "start")
               .attr("y", ((h - margin.bottom) / (options.length)) * i + 30)
               .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
-              .text(function(){
+              .text(function(d){
                    if (yAxisMode == 'All')
                        return "";
+                   // case for non standard formatted question
+                   if (getLabel(infoQuestions[yAxisMode], 1) == "(text)"){
+                        return options[i];
+                   }
                    for (var j = 0; j < metadata.rows.length; j++){
                        var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
                        var questionID = reGetQuestionID.exec(metadata.rows[j]["ID"])[0];
@@ -965,7 +975,21 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("font-size", "14px")
             .text(yAxisMode);
 
-        repositionPanelLabels();
+        // Reposition label
+        var textHeight = $(".yPanelLabel")[0].getBBox().height;
+        var textWidth = $(".yPanelLabel")[0].getBBox().width;
+
+        // Case for browsers that do not support the direct use of width()
+        /*var browser = ui.getBrowserName;
+        if (browser.substring(0,7) == "Firefox" || browser.substr(0,2) == "IE"){
+            textHeight = $(".yPanelLabel").text().length * 7;
+            textWidth = $(".yPanelLabel").text().length * 7;
+            tickWidth = $(".yPanelLabel")[0].textContent.length * 7;
+        }*/
+
+        // Reposition y-panelLabel
+        $(".yPanelLabel").attr("x", -((h - textWidth - margin.bottom) / 2));
+        $(".yPanelLabel").attr("y", yPanelWidth - textHeight - textHeight/2)
     }
 
     function drawTable(){
@@ -1024,23 +1048,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         return labelWidth == 0 ? 0 : labelWidth + 20;
     }
 
-    function repositionPanelLabels(){
-        // Center text
-        var textHeight = $(".yPanelLabel")[0].getBBox().height;
-        var textWidth = $(".yPanelLabel")[0].getBBox().width;
-
-        // Case for browsers that do not support the direct use of width()
-        /*var browser = ui.getBrowserName;
-        if (browser.substring(0,7) == "Firefox" || browser.substr(0,2) == "IE"){
-            textHeight = $(".yPanelLabel").text().length * 7;
-            textWidth = $(".yPanelLabel").text().length * 7;
-            tickWidth = $(".yPanelLabel")[0].textContent.length * 7;
-        }*/
-
-        // Reposition y-panelLabel
-        $(".yPanelLabel").attr("x", -((h - textWidth - margin.bottom) / 2) + (textWidth/2));
-        $(".yPanelLabel").attr("y", textHeight)
-    }
 
     function transform(d) {
         return "translate(" + d.x + "," + d.y + ")";

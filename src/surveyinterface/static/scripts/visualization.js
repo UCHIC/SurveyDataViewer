@@ -1083,7 +1083,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
 
                 $("#Q" + id ).append('<li class="indented"><label class="clickable" data-value="' + question+ '">' +
-                                                                answer + '</label></li>');
+                                                                answer + '</label><span class="btnAdd glyphicon glyphicon-plus"></span></li>');
             }
             else if (question != null && regExp['reS'].exec(question)){
                 var id = regExp['reS'].exec(question)[1];

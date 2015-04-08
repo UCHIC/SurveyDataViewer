@@ -392,6 +392,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else{
             setNodeView();
         }
+
     }
 
     function blinkNodes(){
@@ -421,6 +422,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         var separation = radius * 2;
+        if (yAxisMode == ""){
+            separation = radius * 1.3;
+        }
 
         answers = valuesX.getUnique().sort(function(a, b){return a-b});     // x-axis
         var options = valuesY.getUnique().sort(function(a, b){return a-b}); // y-axis

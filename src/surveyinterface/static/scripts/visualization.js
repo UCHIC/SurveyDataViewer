@@ -311,6 +311,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function onListQuestionClick(e){
+
         var that = $(e.target).closest(".clickable").length > 0 ? $(e.target).closest(".clickable") :$(e.target).find(".clickable");
 
         // Prevents the event from triggering twice with the same question
@@ -322,7 +323,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return;
         }
         $("#btnCategories").disabled=false;
-
+         numberOfQuestions = 1;
         $('#listQuestions li').removeClass("active");
         that.closest("li").addClass("active");
         selectedQuestion = that.attr("data-value");
@@ -393,6 +394,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             setNodeView();
         }
 
+                if (yAxisMode == "" && numberOfQuestions < 2){
+            yAxisMode = "All";
+        }
+
     }
 
     function blinkNodes(){
@@ -422,7 +427,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         var separation = radius * 2;
-        if (yAxisMode == ""){
+        if (yAxisMode == "" && numberOfQuestions > 1){
             separation = radius * 1.3;
         }
 
@@ -609,6 +614,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 nodes.splice(i, 1);
             }
         }
+
     }
 
     function onYAxisModeChange(e){

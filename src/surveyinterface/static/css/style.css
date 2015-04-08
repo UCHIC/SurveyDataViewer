@@ -118,7 +118,7 @@ svg{
 }
 
 #listQuestions a, #listQuestions h4{
-    width:270px;
+    /*width:270px;*/
     color: #000000 !important;
     cursor:default;
     text-decoration: none;
@@ -249,12 +249,14 @@ text.shadow {
 
 span.btnAdd {
     cursor: pointer;
-    float: right;
-    right: 5px;
     font-size: 12px;
     color: #AAA;
-    width: 0;
-    position: inherit;
+    margin-top: 7px;
+    display: none;
+    float: right;
+    right: 15px;
+    width:0;
+    height:0;
 }
 
 span.btnAdd:hover {
@@ -274,16 +276,11 @@ hr{
 }
 
 #listQuestions .caret{
-    float:right;
-    margin-right: -5px;
+    margin-left: -15px;
+    margin-top: 5px;
 }
 
 .caret {
-    /* display: inline-block; */
-    /* width: 0; */
-    /* height: 0; */
-    /* margin-left: 2px; */
-    /* vertical-align: middle; */
     border-top: 6px solid;
     border-right: 6px solid transparent;
     border-left: 6px solid transparent;
@@ -291,7 +288,7 @@ hr{
 }
 
 #listQuestions li{
-    padding:10px 10px;
+    /*padding:10px 10px;*/
     outline: none;
     list-style-type: none;
 }
@@ -301,8 +298,8 @@ hr{
 }
 
 .panel-collapse li{
-    padding-top:3px !important;
-    padding-bottom:3px !important;
+    /*padding-top:3px !important;*/
+    /*padding-bottom:3px !important;*/
 }
 
 .even{
@@ -369,9 +366,12 @@ hr{
 }
 
 #listQuestions a, #listQuestions label{
-    font-weight:normal;
-    color:#000;
-    padding-right: 15px;
+    font-weight: normal;
+    color: #000;
+    margin-bottom: 0;
+    padding: 5px;
+    padding-right: 20px;
+    width: 100%;
 }
 
 

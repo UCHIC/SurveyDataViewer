@@ -40,6 +40,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var nodes = [];
     var markerQuestions = [];
     var openInfoWindow = {};
+    var numberOfQuestions = 0;
 
     d3.selection.prototype.moveToBack = function() {
         return this.each(function() {
@@ -118,10 +119,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             var FarmTies =      getLabel(infoQuestions.FarmTies, data.rows[i + 1][infoQuestions.FarmTies]);
             var SurveyVenue = data.rows[i + 1][infoQuestions.SurveyVenue];
             var Site = data.rows[i + 1][infoQuestions.Site];
-
             var info = {OriginallyFromUtah: OriginallyFromUtah, SurveyVenue:SurveyVenue, Site:Site, FarmTies:FarmTies, Gender: Gender, Education: Education, Age: Age};
 
-            return {radius: radius, value: 0, info: info, cx: w/2, cy: (h - margin.bottom) / 2};
+            return {radius: radius, value: 0, info: info, temp:false, tempPosY:0, cx: w/2, cy: (h - margin.bottom) / 2};
         });
 
         force = d3.layout.force()
@@ -153,10 +153,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $('#listQuestions li').click(onListQuestionClick);
         $('#lstYAxisMode li:not(.disabled)').click(onYAxisModeChange);
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
+        $(".btnAdd").click(onBtnAddClick);
     }
 
     function tick(e) {
         nodes.forEach(function(d) {
+            if (!d.y){
+                d.y = 0;
+            }
+            if (!d.x){
+                d.x = 0;
+            }
             d.y += (d.cy - d.y);    // * e.alpha * 4.5;
             d.x += (d.cx - d.x);
         });
@@ -304,6 +311,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function onListQuestionClick(e){
+
         var that = $(e.target).closest(".clickable").length > 0 ? $(e.target).closest(".clickable") :$(e.target).find(".clickable");
 
         // Prevents the event from triggering twice with the same question
@@ -314,7 +322,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (that.length == 0){
             return;
         }
-
+        $("#btnCategories").disabled=false;
+         numberOfQuestions = 1;
         $('#listQuestions li').removeClass("active");
         that.closest("li").addClass("active");
         selectedQuestion = that.attr("data-value");
@@ -330,6 +339,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
         else{
             content = data.rows[0][selectedQuestion];
+        }
+
+        // Toggle add button visibility
+        $(".btnAdd").hide();
+        removeTempNodes();
+
+        if ($(this.parentElement).hasClass("indented")){
+            $(this.parentElement.parentElement).find(".btnAdd").show();
+             $(this.parentElement).find(".btnAdd").hide();
+
+        }
+        else{
+             $(".btnAdd").hide();
         }
 
         // Toggle Title visibility
@@ -368,6 +390,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".fixedNode text").remove();
             addFixedNodes();
         }
+        else{
+            setNodeView();
+        }
+
+                if (yAxisMode == "" && numberOfQuestions < 2){
+            yAxisMode = "All";
+        }
+
     }
 
     function blinkNodes(){
@@ -379,11 +409,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function positionNodes(){
         var valuesX = [];
-        var valuesY = []
+        var valuesY = [];
         var marginLeft = getYLabelSize() + yPanelWidth;
 
         // populate value arrays
-        for (var i = 0; i < nodes.length; i++){
+        for (var i = 0; i < data.rows.length - 1; i++){
             nodes[i].value = data.rows[i + 1][selectedQuestion];
             if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
                 continue;
@@ -392,7 +422,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             valuesY.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
 
+        if (yAxisMode == ""){
+            valuesY = _.range(numberOfQuestions)
+        }
+
         var separation = radius * 2;
+        if (yAxisMode == "" && numberOfQuestions > 1){
+            separation = radius * 1.3;
+        }
 
         answers = valuesX.getUnique().sort(function(a, b){return a-b});     // x-axis
         var options = valuesY.getUnique().sort(function(a, b){return a-b}); // y-axis
@@ -408,7 +445,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             counters.push([]);
         }
 
-
         // Replace each value for its label, except for text input questions
         if (getLabel(infoQuestions[yAxisMode], 1) != "(text)"){
             for (var i = 0; i < options.length; i++){
@@ -416,10 +452,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
-
-            //regExp['reMS'].exec(question)
-            //regExp['reS'].exec(question)
-
+        //regExp['reMS'].exec(question)
+        //regExp['reS'].exec(question)
 
         nodes.forEach(function(d) {
             //  Hide nodes with no response values
@@ -430,6 +464,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
             var posX = $.inArray(d.value, answers);
             var posY = options.length - 1 - $.inArray(d.info[yAxisMode], options);
+            if (yAxisMode == ""){
+                posY = d.tempPosY;
+            }
 
             if (counters[posX][posY] == null){
                 counters[posX][posY] = 0;
@@ -478,6 +515,108 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
     }
 
+    function onBtnAddClick(e){
+        $(this).closest("li").addClass("active");
+        $(this).hide();
+
+        yAxisMode = "";
+        numberOfQuestions = $(this).parent().parent().find(".active").length;
+
+        // Load labels for y-axis
+        var labels = $(this).parent().parent().find(".active .clickable");
+        for (var i = 0; i < labels.length; i++){
+            labels[i] = $(labels[i]).text();
+        }
+
+        if (svg != null){
+            svg.selectAll(".x-legend").remove();
+            svg.selectAll(".y-legend").remove();
+            svg.selectAll("rect").remove();
+            svg.selectAll("line").remove();
+            svg.selectAll("rect").remove();
+            svg.selectAll(".yPanelLabel").remove();
+            //svg.selectAll(".countLabel").remove();
+        }
+
+        var options = _.range(numberOfQuestions);
+
+        for (var i = 0; i < numberOfQuestions; i++){
+            svg.append("text")
+              .attr("class", "y-legend")
+              .attr("data-id", i)
+              .attr("id", "y-legend" + i)
+              .attr("font-weight", "normal")
+              .attr("fill", legendColor)
+              .attr("dx", 0)
+              .attr("dy", 0)
+              .attr("text-anchor", "start")
+              .attr("y", ((h - margin.bottom) / (numberOfQuestions)) * i + 30)
+              .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
+              .text(function(){return labels[i];})
+              .call(wrap, 150);
+        }
+        var marginLeft = getYLabelSize() + yPanelWidth;
+
+        var x = d3.scale.linear()
+            .domain([0, answers.length])
+            .range([0, w - marginLeft]);
+
+        var y = d3.scale.linear()
+            .domain([0, options.length])
+            .range([0, h - margin.bottom - margin.top]);
+
+        // Draw stuff
+        drawOuterRect();
+
+        //drawXAxisLegend(marginLeft, x);
+
+        drawVerticalLines(marginLeft, x);
+        drawHorizontalLines(options, y, marginLeft);
+
+        drawLegendContainers(marginLeft);
+
+        drawColorGradient(marginLeft, x);
+
+        drawYAxisPanel();
+
+        drawXAxisLegend(marginLeft, x);
+        // Add a set of nodes for each selected question
+        removeTempNodes();
+        var nodesCopy = nodes.slice();
+        var tempQuestions = $(this).parent().parent().find(".active .clickable");
+
+        // Get list of selected questions
+        for (var i = 0; i < labels.length; i++){
+            tempQuestions[i] = tempQuestions[i].getAttribute("data-value");
+        }
+
+        for (var j = 0; j < tempQuestions.length - 1; j++){ // -1 because the first set of nodes is already the original set
+            for (var i = 0; i < nodesCopy.length; i++){
+                var tempNode = {radius: radius, value: data.rows[i + 1][tempQuestions[j] ],  info:nodesCopy[i].info, temp:true, tempPosY:j + 1, cx: w/2, cy: (h - margin.bottom) / 2}
+                nodes.push(tempNode);
+            }
+        }
+        // Move each set of nodes
+        if (view == "node"){
+           setNodeView();
+        }
+        else{
+            setNodeView();
+            setCollapsedView();
+        }
+
+        $("#btnCategories").disabled=true;
+    }
+
+    function removeTempNodes(){
+        for(var i = nodes.length -1; i >= 0 ; i--){
+            if(nodes[i].temp == true){
+                nodes.splice(i, 1);
+            }
+        }
+
+    }
+
     function onYAxisModeChange(e){
         if (e.target.getAttribute("data-axis") == yAxisMode){
             return;
@@ -503,7 +642,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     return d3.rgb(myColor[parseInt(parseInt(val))]).darker(3);
                 })*/;
 
-            positionNodes(selectedQuestion);
+            positionNodes();
         }
         else{
             svg.selectAll("circle").remove();
@@ -540,13 +679,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function setNodeView(){
-        if (view == "node")
+        if (view == "node" && yAxisMode != "")
             return;
         view = "node";
-
+        $(".node").remove();
         var nodesColor = "#EEE";
         var nodeStrokeWidth = "1.5";
-
 
         $("#nodeview").addClass("disabled");
         $("#collapsedview").removeClass("disabled");
@@ -602,7 +740,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return d.radius - 2;
        });
 
-       positionNodes(selectedQuestion);
+       positionNodes();
        shuffleNodes();
 
         // Attachs a character to center of each node
@@ -621,13 +759,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function addFixedNodes(){
         // Add fixed nodes
         var values = [];
-        for (var i = 0; i < nodes.length; i++){
+        for (var i = 0; i <data.rows.length - 1; i++){
             if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
                 continue;
             }
             values.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
         var options = values.getUnique().sort(function(a, b){return b-a});
+        if (yAxisMode == ""){
+            options = _.range(numberOfQuestions);
+        }
         var marginLeft = getYLabelSize() + yPanelWidth;
 
         var fixedNodes = d3.range(answers.length * options.length).map(function(i) {
@@ -649,7 +790,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         nodes.forEach(function(d) {
            var posAnswer = ($.inArray(d.value, answers));
-           var posOption = ($.inArray(d.info[yAxisMode], options))
+           var posOption = ($.inArray(d.info[yAxisMode], options));
+            if (yAxisMode == ""){
+                posOption = d.tempPosY;
+            }
 
            fixedNodes.forEach(function(o){
                if (o.pos.x == posAnswer && o.pos.y == posOption){
@@ -1010,6 +1154,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
             values.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
         }
+
         var options = values.getUnique().sort(function(a, b){return b-a});
         drawYAxisLegend(options);
 

@@ -2,6 +2,8 @@
  * Created by Juan on 4/6/14.
  */
 
+
+
 if (typeof Array.prototype.getUnique != 'function') {
     Array.prototype.getUnique = function(){
        var u = {}, a = [];
@@ -24,9 +26,9 @@ if (typeof String.prototype.startsWith != 'function') {
 
 define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore'],  function() {
     var self = {};
-    var data, metadata, selectedQuestion, svg, radius_scale, nodes, force;
-    var radius = 10;
+    var data, metadata, selectedQuestion, svg, radius_scale;
     var yAxisMode = "All";
+    var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top:0, bottom:60, left:0, right:5};
     var w = $("#visualizationContent").width() - 20, h = $("#visualizationContent").height() - $("#top-bar").height() - 20 /*- $("#top-bar").height()*/;
     var view = "";
@@ -42,6 +44,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var openInfoWindow = {};
     var numberOfQuestions = 0;
     var questionNodes = [];
+    var centered;
+    var projection = d3.geo.albersUsa()
+    .scale(1070)
+    .translate([w / 2, h / 2]);
+
+    var mapContainer;
+
+    var path = d3.geo.path()
+        .projection(projection);
 
     d3.selection.prototype.moveToBack = function() {
         return this.each(function() {
@@ -85,6 +96,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     self.drawPivotView = function() {
         loadQuestions();
         initializeGraph();
+
     };
 
     // Returns the cell value given a question ID and the name of the column
@@ -122,15 +134,21 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             var Site = data.rows[i + 1][infoQuestions.Site];
             var info = {OriginallyFromUtah: OriginallyFromUtah, SurveyVenue:SurveyVenue, Site:Site, FarmTies:FarmTies, Gender: Gender, Education: Education, Age: Age};
 
-            return {radius: radius, value: 0, info: info, temp:false, tempPosY:0, cx: w/2, cy: (h - margin.bottom) / 2};
+            return {value: 0, info: info, temp:false, tempPosY:0};
         });
 
         svg = d3.select("#visualizationContent").append("svg:svg")
             .attr("width", w)
             .attr("height", h);
 
+        mapContainer = svg.append("g")
+            .attr("class", "map-container");
+        $("map-container").hide();
+
+        loadZipMap();
         drawTable();
         setPercentageView();
+        //setMapView();
 
         // Pre-load markers for questions that use the map
         for (var i = 0; i < markerQuestions.length; i++){
@@ -138,8 +156,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
         //loadMarkerData(question);
 
-        $("#percentageview").click(setPercentageView);
-        $("#nodeview").click(setMapView);
+        $("#percentage-view").click(setPercentageView);
+        $("#map-view").click(setMapView);
 
         $('#listQuestions .clickable').click(onListQuestionClick);
         $('#listQuestions li').click(onListQuestionClick);
@@ -496,7 +514,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         if (view == "map"){
 
-
         }
         else{
             svg.selectAll("circle").remove();
@@ -509,21 +526,20 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
 
-    function setMapView(){
-
-    }
-
     function setPercentageView(){
         if (view == "percentage")
             return;
 
         view = "percentage";
+        $(".map-container").hide();
 
         $("#percentage-view").addClass("disabled");
         $("#map-view").removeClass("disabled");
 
         svg.selectAll(".countLabel").remove();
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
+
+        drawTable();
 
         addFixedNodes();
     }
@@ -536,6 +552,98 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#map-view").addClass("disabled");
         $("#percentage-view").removeClass("disabled");
 
+        svg.selectAll(".countLabel").remove();
+        svg.selectAll(".fixedNode").remove();
+        svg.selectAll("line").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("rect").remove();
+
+        $(".map-container").show();
+
+        drawOuterRect();
+
+        $('path[data-zip="84321"]').attr("fill","red")  // Mark Logan, UT as red
+    }
+
+    var quantize = d3.scale.quantize()
+    .domain([0, .15])
+    .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
+
+    function loadZipMap() {
+        queue()
+            .defer(d3.json, "/static/files/zips_us_utah_topo.json")
+            .await(plotZipCodes);
+
+        queue()
+            .defer(d3.json, "/static/files/counties_us_topo.json")
+            .await(plotStates);
+
+        function plotZipCodes(error, us) {
+            // Append polygons for counties
+            mapContainer.append("g")
+                .attr("class", "zips")
+                .selectAll("path")
+                .data(topojson.feature(us, us.objects.zip_codes_for_utah).features)
+                .enter().append("path")
+                .attr("data-zip", function (d) {
+                    return d.properties.ZCTA5CE10;
+                })
+
+                //.attr("class", function (d) {
+                //    return quantize(0.1);
+                //})
+                .attr("d", path)
+                .on("mouseover", function (d) {
+                    var content = "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.ZCTA5CE10 + "</span><br/>";
+                    tooltip.showTooltip(content, d3.event);
+                })
+                .on("mouseout", function () {
+                    tooltip.hideTooltip();
+                });
+        }
+
+        function plotStates(error, us) {
+            // Append polygons for counties
+          mapContainer.append("g")
+              .attr("id", "states")
+            .selectAll("path")
+              .data(topojson.feature(us, us.objects.states).features)
+            .enter().append("path")
+              .attr("d", path)
+              .on("click", clicked);
+
+          mapContainer.append("path")
+              .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+              .attr("id", "state-borders")
+              .attr("d", path);
+          }
+    }
+
+    function clicked(d) {
+        var x, y, k;
+
+        if (d && centered !== d) {
+            var centroid = path.centroid(d);
+            x = centroid[0];
+            y = centroid[1];
+            k = 7;  // Zoom level
+            centered = d;
+        } else {
+            x = w / 2;
+            y = h / 2;
+            k = 1;
+            centered = null;
+        }
+
+        mapContainer.selectAll("path")
+            .classed("active", centered && function (d) {
+                return d === centered;
+            });
+
+        mapContainer.transition()
+            .duration(750)
+            .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+            .style("stroke-width", 1.5 / k + "px");
     }
 
     function refreshValues(){
@@ -574,7 +682,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function addFixedNodes(){
         // Add fixed nodes
         refreshValues();
-
 
         var marginLeft = getYLabelSize() + yPanelWidth;
 

@@ -466,3 +466,40 @@ li .checkbox{
     text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
 }
 
+
+#states {
+  fill: #aaa;
+}
+
+#states .active {
+  /*fill: orange;*/
+}
+
+.zips{
+    fill:#428bca;
+}
+
+path[data-zip]:hover{
+    stroke: rgba(206, 252, 255, 0.71);
+    stroke-width:0.5px;
+}
+
+#state-borders {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+
+.q0-9 { fill:rgb(247,251,255); }
+.q1-9 { fill:rgb(222,235,247); }
+.q2-9 { fill:rgb(198,219,239); }
+.q3-9 { fill:rgb(158,202,225); }
+.q4-9 { fill:rgb(107,174,214); }
+.q5-9 { fill:rgb(66,146,198); }
+.q6-9 { fill:rgb(33,113,181); }
+.q7-9 { fill:rgb(8,81,156); }
+.q8-9 { fill:rgb(8,48,107); }

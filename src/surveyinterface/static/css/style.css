@@ -468,20 +468,16 @@ li .checkbox{
 
 
 #states {
-  fill: #aaa;
+  fill: #98cac7;
 }
 
 #states .active {
   /*fill: orange;*/
 }
 
-.zips{
-    fill:#428bca;
-}
-
 path[data-zip]:hover{
-    stroke: rgba(206, 252, 255, 0.71);
-    stroke-width:0.5px;
+    fill: rgba(206, 252, 255, 0.71);
+    stroke-width:2px;
 }
 
 #state-borders {

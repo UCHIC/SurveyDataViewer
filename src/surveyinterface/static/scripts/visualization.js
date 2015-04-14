@@ -48,6 +48,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var projection = d3.geo.albersUsa()
     .scale(1070)
     .translate([w / 2, h / 2]);
+    var zipQuestion = "Q15E";
 
     var mapContainer;
 
@@ -369,9 +370,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             $("#map-canvas").hide();
         }
 
-        drawTable();
+        // If the question is an interval, update the heat map
+        if (getLabel(selectedQuestion, "data-type") == "gradient"){
+           updateHeatMap();
+        }
 
         if (view == "percentage"){
+            drawTable();
             svg.selectAll("circle").remove();
             svg.selectAll(".node").transition().duration(550).remove();
             svg.selectAll(".fixedNode").transition().duration(550).remove();
@@ -382,9 +387,43 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             setMapView();
         }
 
+        // If no longer in multiple question mode, restore yAxisMode
         if (yAxisMode == "" && numberOfQuestions < 2){
             yAxisMode = "All";
         }
+    }
+
+    function updateHeatMap(){
+         var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion], value:data.rows[b + 1][selectedQuestion]}});
+            var counts = _(zipCodes).countBy("zipcode");    // Array to keep track of the number of participants in each zip code
+            var totals = {};                                // Array to keep track of the total concern by all participants in each zip code
+
+            for (var obj in counts){
+                totals[obj] = 0;
+            }
+
+            for (var zip in zipCodes){
+                totals[zipCodes[zip].zipcode] += zipCodes[zip].value;   // Populate totals
+            }
+
+            for (var zip in totals) {
+                var path = d3.select('path[data-zip="' + zip + '"]');
+                if (path[0][0] != null) {
+                    path.on("mouseover", function (obj) {
+                        var zip = obj.properties.zip;
+                        var content = "<span class=\"name\">Zip code: </span><span class=\"value\">" + zip + "</span><br/>" +
+                            "<span class=\"name\">Avg: </span><span class=\"value\">" + parseFloat((totals[zip] / counts[zip])).toFixed(2) + "</span><br/>";
+                            tooltip.showTooltip(content, d3.event);
+                    });
+                    path.attr("class", function(d) {
+                        var zip = d.properties.zip;
+                        return quantize((totals[zip] / counts[zip]) / 5);
+                    });
+                }
+                else{
+                    console.log("Warning: path not found for zip code " + zip + " which contains " + totals[zip] + " participants.");
+                }
+            }
     }
 
 
@@ -472,13 +511,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             questionNodes[j] = [];
             for (var i = 0; i < nodesCopy.length; i++){
                 var tempNode = {
-                    radius: radius,
                     value: data.rows[i + 1][tempQuestions[j]],
                     info:nodesCopy[i].info,
                     temp:true,
-                    tempPosY:j,
-                    cx: w/2,
-                    cy: (h - margin.bottom) / 2
+                    tempPosY:j
                 }
                 questionNodes[j].push(tempNode);
             }
@@ -561,49 +597,57 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".map-container").show();
 
         drawOuterRect();
-
-        $('path[data-zip="84321"]').attr("fill","red")  // Mark Logan, UT as red
     }
 
     var quantize = d3.scale.quantize()
-    .domain([0, .15])
+    .domain([0, 1])
     .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
 
     function loadZipMap() {
-        queue()
-            .defer(d3.json, "/static/files/zips_us_utah_topo.json")
-            .await(plotZipCodes);
 
         queue()
             .defer(d3.json, "/static/files/counties_us_topo.json")
             .await(plotStates);
+        queue()
+            .defer(d3.json, "/static/files/zips_us_topo.json")
+            .await(plotZipCodes);
+
 
         function plotZipCodes(error, us) {
-            // Append polygons for counties
+            var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion]}});
+            zipCodes = _(zipCodes).countBy("zipcode");
+            // Append polygons for zip codes
             mapContainer.append("g")
                 .attr("class", "zips")
                 .selectAll("path")
-                .data(topojson.feature(us, us.objects.zip_codes_for_utah).features)
-                .enter().append("path")
-                .attr("data-zip", function (d) {
-                    return d.properties.ZCTA5CE10;
+                .data(topojson.feature(us, us.objects.zip_codes_for_the_usa).features)
+                .enter()
+                .append("path")
+                .filter(function(d) {
+                    if (zipCodes[d.properties.zip]) {
+                        return true; //This item will be included in the selection
+                    } else {
+                        return false; //This item will be excluded, e.g. "cheese"
+                    }
                 })
-
-                //.attr("class", function (d) {
-                //    return quantize(0.1);
-                //})
-                .attr("d", path)
+                .attr("data-zip", function (d) {
+                    return d.properties.zip;
+                })
                 .on("mouseover", function (d) {
-                    var content = "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.ZCTA5CE10 + "</span><br/>";
+                    var content = "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.zip + "</span><br/>" +
                     tooltip.showTooltip(content, d3.event);
                 })
                 .on("mouseout", function () {
                     tooltip.hideTooltip();
-                });
+                })
+                //.attr("class", function (d) {
+                //    return quantize(0.1);
+                //})
+                .attr("d", path);
         }
 
         function plotStates(error, us) {
-            // Append polygons for counties
+            // Append polygons for states
           mapContainer.append("g")
               .attr("id", "states")
             .selectAll("path")
@@ -736,8 +780,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
-
-
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode")
             .attr("fill", "#FFF")
@@ -815,7 +857,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                 return function(t) {
                     var value = (i(t) * round / round).toFixed(2);
-                    this.textContent = value + "%";
+                    this.textContent = value + "%, " + d.amount;
                     // Center the label
                     var textWidth = d3.select(this).node().getBBox().width;
                     this.setAttribute("x" , x - textWidth / 2);
@@ -985,52 +1027,54 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return;
         }
 
-        // Draw color gradient
-        var colorScale = [];
-        colorScale["-1"] = "#44FF44";   // Red
-        colorScale["0"] = "#FFFFFF";    // Neutral
-        colorScale["1"] = "#FF4444";    // Green
-        var gradientOpacity = 0.4;
-        var gradientLength = answers.length;
+        if (view == "percentage"){
+            // Draw color gradient
+            var colorScale = [];
+            colorScale["-1"] = "#44FF44";   // Red
+            colorScale["0"] = "#FFFFFF";    // Neutral
+            colorScale["1"] = "#FF4444";    // Green
+            var gradientOpacity = 0.4;
+            var gradientLength = answers.length;
 
-        // Substract "Not sure" answers from the color gradient
-        for (var i = 0; i < answers.length; i++){
-            var label = getLabel(selectedQuestion, answers[i]);
-            if (label != 0 && label.trim() == "Not sure"){
-                gradientLength--;
+            // Substract "Not sure" answers from the color gradient
+            for (var i = 0; i < answers.length; i++){
+                var label = getLabel(selectedQuestion, answers[i]);
+                if (label != 0 && label.trim() == "Not sure"){
+                    gradientLength--;
+                }
             }
-        }
 
-        for (var i = 0; i < answers.length; i++){
-            // Ignore "Not sure" answers
-            var label = getLabel(selectedQuestion, answers[i]);
-            if (label != 0 && label.trim() == "Not sure"){
-                continue;
+            for (var i = 0; i < answers.length; i++){
+                // Ignore "Not sure" answers
+                var label = getLabel(selectedQuestion, answers[i]);
+                if (label != 0 && label.trim() == "Not sure"){
+                    continue;
+                }
+                 var rect = svg.append("svg:rect")
+                    .attr("width", x(i) - x(i-1))
+                    .attr("class", "colorShade")
+                    .attr("height", h - margin.bottom)
+                    .attr("transform", "translate(" + (marginLeft + x(i)) + "," + margin.top + ")")
+                    .attr("opacity", function(d){
+                         if (i == (gradientLength - 1) / 2)
+                            return gradientOpacity / (i + 1);
+                         else if (i < (gradientLength - 1) / 2)
+                            return gradientOpacity / (i + 1);
+                         else{
+                            return gradientOpacity / (gradientLength - i);
+                         }
+                     })
+                    .style("fill", function(d){
+                         if (i == (gradientLength - 1) / 2)
+                            return colorScale["0"];
+                         else if (i < (gradientLength - 1) / 2)
+                            return colorScale["1"];
+                         else{
+                             return colorScale["-1"];
+                         }
+                     });
+                rect.moveToBack();
             }
-             var rect = svg.append("svg:rect")
-                .attr("width", x(i) - x(i-1))
-                .attr("class", "colorShade")
-                .attr("height", h - margin.bottom)
-                .attr("transform", "translate(" + (marginLeft + x(i)) + "," + margin.top + ")")
-                .attr("opacity", function(d){
-                     if (i == (gradientLength - 1) / 2)
-                        return gradientOpacity / (i + 1);
-                     else if (i < (gradientLength - 1) / 2)
-                        return gradientOpacity / (i + 1);
-                     else{
-                        return gradientOpacity / (gradientLength - i);
-                     }
-                 })
-                .style("fill", function(d){
-                     if (i == (gradientLength - 1) / 2)
-                        return colorScale["0"];
-                     else if (i < (gradientLength - 1) / 2)
-                        return colorScale["1"];
-                     else{
-                         return colorScale["-1"];
-                     }
-                 });
-            rect.moveToBack();
         }
     }
 

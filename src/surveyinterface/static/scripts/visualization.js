@@ -889,12 +889,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode")
             .attr("fill", "#FFF")
-            .attr("stroke-width", "3")
+            .attr("stroke-width", "2")
             .on("mouseover", function(d){
-                d3.select(this).attr("stroke-width", "5");
+                d3.select(this).attr("stroke-width", "3");
             })
             .on("mouseout", function(){
-                d3.select(this).attr("stroke-width", "3");
+                d3.select(this).attr("stroke-width", "2");
             });
 
         var redToGreenScale = d3.scale.linear()
@@ -911,15 +911,24 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         fixedNodesContainers.append("svg:circle")
-            /*.style("stroke", function(d, i){
-                var myColor = d3.scale.category10().range();
-                var index = options.length - Math.floor(i / answers.length);
-                return myColor[index];
-            })*/
-            .style("stroke", "#AAA")
+            .style("stroke", function(d){
+                var label = getLabel(selectedQuestion, answers[d.pos.x]);
+                if (getLabel(selectedQuestion, "data-type") != "gradient") {
+                    return "#888";
+                }
+
+                if ((label || label == 0) && label.trim() != "Not sure")
+                    return d3.rgb(redToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2) ;
+
+                return "#888";
+            })
             .attr("r", "15")
             .attr("fill", function(d){
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
+                if (getLabel(selectedQuestion, "data-type") != "gradient") {
+                    return "#FFF";
+                }
+
                 if ((label || label == 0) && label.trim() != "Not sure")
                     return redToGreenScale(d.pos.x / (numberOfAnswers - 1));
 
@@ -1208,7 +1217,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawVerticalLines(marginLeft, x);
         drawHorizontalLines(y, marginLeft);
         drawLegendContainers(marginLeft);
-        //drawColorGradient(marginLeft, x);
 
         drawYAxisPanel();
     }

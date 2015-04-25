@@ -46,8 +46,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var questionNodes = [];
     var centered;
     var projection = d3.geo.albersUsa()
-    .scale(1070)
-    .translate([w / 2, h / 2]);
+    .scale(7000)
+    .translate([w/2, h/2]);
     var zipQuestion = "Q15E";
 
     var mapContainer;
@@ -97,7 +97,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     self.drawPivotView = function() {
         loadQuestions();
         initializeGraph();
-
     };
 
     // Returns the cell value given a question ID and the name of the column
@@ -118,7 +117,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function getLabel(questionID, value){
         for (var i = 0; i < metadata.rows.length; i++){
             if (metadata.rows[i]["ID"] == questionID){
-                return metadata.rows[i][value] == null ? "No response" : metadata.rows[i][value];
+                return metadata.rows[i][value] == null ? "No response" : String(metadata.rows[i][value]);
             }
         }
     }
@@ -146,7 +145,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "map-container");
         $("map-container").hide();
 
-        loadZipMap();
+        loadHeatMap();
         drawTable();
         setPercentageView();
         //setMapView();
@@ -339,7 +338,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if ($(this.parentElement).hasClass("indented")){
             $(this.parentElement.parentElement).find(".btnAdd").show();
              $(this.parentElement).find(".btnAdd").hide();
-
         }
         else{
              $(".btnAdd").hide();
@@ -371,8 +369,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // If the question is an interval, update the heat map
-        if (getLabel(selectedQuestion, "data-type") == "gradient"){
-           updateHeatMap();
+        if (getLabel(selectedQuestion, "data-type") == "gradient") {
+            updateHeatMap();
+            $("#map-view")[0].disabled = false;
+        }
+        else {
+            $("#map-view")[0].disabled = true;
         }
 
         if (view == "percentage"){
@@ -381,6 +383,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".node").transition().duration(550).remove();
             svg.selectAll(".fixedNode").transition().duration(550).remove();
             svg.selectAll(".fixedNode text").remove();
+            $(".heat-map-legend").hide();
             addFixedNodes();
         }
         else{
@@ -394,41 +397,127 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function updateHeatMap(){
-         var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion], value:data.rows[b + 1][selectedQuestion]}});
-            var counts = _(zipCodes).countBy("zipcode");    // Array to keep track of the number of participants in each zip code
-            var totals = {};                                // Array to keep track of the total concern by all participants in each zip code
+        refreshValues();
+        var responses = _.map(nodes, function (a, b) {
+            return {zipcode: data.rows[b + 1][zipQuestion], value: data.rows[b + 1][selectedQuestion]}
+        });
 
-            for (var obj in counts){
-                totals[obj] = 0;
-            }
+        var numberOfAnswers = answers.length;
 
-            for (var zip in zipCodes){
-                totals[zipCodes[zip].zipcode] += zipCodes[zip].value;   // Populate totals
+        // Substract "Not sure" answers
+        for (var i = 0; i < answers.length; i++) {
+            var label = getLabel(selectedQuestion, answers[i]);
+            if (label != 0 && label.trim() == "Not sure") {
+                responses = _.filter(responses, function(resp){
+                    return resp.value != i + 1;
+                })
+                numberOfAnswers--;
             }
+        }
 
-            for (var zip in totals) {
-                var path = d3.select('path[data-zip="' + zip + '"]');
-                if (path[0][0] != null) {
-                    path.on("mouseover", function (obj) {
-                        var zip = obj.properties.zip;
-                        var content = "<span class=\"name\">Zip code: </span><span class=\"value\">" + zip + "</span><br/>" +
-                            "<span class=\"name\">Avg: </span><span class=\"value\">" + parseFloat((totals[zip] / counts[zip])).toFixed(2) + "</span><br/>";
-                            tooltip.showTooltip(content, d3.event);
-                    });
-                    path.attr("class", function(d) {
-                        var zip = d.properties.zip;
-                        return quantize((totals[zip] / counts[zip]) / 5);
-                    });
-                }
-                else{
-                    console.log("Warning: path not found for zip code " + zip + " which contains " + totals[zip] + " participants.");
-                }
+        var participants = _(responses).countBy("zipcode");     // Array to keep track of the number of participants in each zip code
+        var totals = {};                                        // Array to keep track of the total concern by all participants in each zip code
+
+        for (var obj in participants) {
+            totals[obj] = 0;
+        }
+
+        for (var zip in responses) {
+            if (responses[zip].zipcode != null)
+                totals[responses[zip].zipcode] += responses[zip].value;   // Populate totals
+        }
+
+        //console.log("--------------------------------------------------");
+
+        var redToGreenScale = d3.scale.linear()
+        .domain([0,0.5, 1])
+        .range(["#FEB3B3", "#FFF", "#B3FEB3"]); // Red to White to Green
+
+        // Reset background nad hover functions for all paths
+        var paths = d3.selectAll('path[data-zip]');
+            paths.attr("fill", "#3D4348");
+            paths.on("mouseover", function (d) {
+                var content =   "<span class=\"name\">" + d.properties.NAME + "</span><span class=\"value\"></span><br/>" +
+                                "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.ZIP5 + "</span><br/>";
+                tooltip.showTooltip(content, d3.event);
+            })
+
+        for (var zip in totals) {
+            var path = d3.select('path[data-zip="' + zip + '"]');
+            if (path[0][0] != null) {
+                path.on("mouseover", function (obj) {
+                    var zip = obj.properties.ZIP5;
+                    var content =   "<span class=\"name\">" + obj.properties.NAME + "</span><span class=\"value\"></span><br/>" +
+                                    "<span class=\"name\">Zip code: </span><span class=\"value\">" + zip + "</span><br/>" +
+                                    //"<span class=\"name\">Avg: </span><span class=\"value\">" + parseFloat((totals[zip] / participants[zip])).toFixed(2) + "</span><br/>" +
+                                    "<span class=\"name\">Participants: </span><span class=\"value\">" + participants[zip] + "</span><br/>";
+                        tooltip.showTooltip(content, d3.event);
+                });
+                path.attr("fill",function(d){
+                    return redToGreenScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                });
             }
+            else{
+                //console.log("Warning: path not found for zip code " + zip + " which contains " + participants[zip] + " participants.");
+            }
+        }
+        // Update legend
+        var rHeight = 150;
+        var rWidth = 300;
+        svg.select(".heat-map-legend").remove();
+        var heatMapLegendArea = svg.append("g")
+            .attr("transform", "translate(" + (w - rWidth) + "," + (h - rHeight - margin.top) + ")")
+            .attr("class", "heat-map-legend");
+
+        heatMapLegendArea.append("svg:rect")
+            .attr("width", rWidth)
+            .attr("height", rHeight)
+            .attr("class", "heat-map-legend-rect")
+            .style("fill", "none")
+            .style("stroke", "#000")
+            .style("stroke-width", "1px")
+
+        var counter = 0;
+        for (var i = 0; i < answers.length; i++) {
+            var label = getLabel(selectedQuestion, answers[i]);
+            if (label != 0 && label.trim() != "Not sure") {
+
+                heatMapLegendArea.append("svg:rect")
+                    .attr("width", 30)
+                    .attr("height", 20)
+                    .style("fill", redToGreenScale(answers[i] / numberOfAnswers))
+                    .attr("class", "color-block")
+                    .style("stroke", "#000")
+                    .style("stroke-width", "1px")
+                    .attr("transform", "translate(" + 10 + "," + (10 + counter * 30) + ")")
+
+                heatMapLegendArea.append("svg:text")
+                    .attr("x", 50)
+                    .attr("y", (counter * 30) + 20)
+                    .attr("dy", ".31em")
+                    .attr("class", "hm-legend")
+                    .style("fill", "#000")
+                    .text(label)
+
+                counter++;
+            }
+        }
     }
 
+    function showOnlyHeatMapQuestions(){
+        var items = $(".clickable");
+        for (var i = 0; i < items.length; i++){
+            var question = items[i].getAttribute("data-value");
+            if (getLabel(question, "data-type") != "gradient"){
+               $(items[i]).parent().hide();
+            }
+        }
+    }
 
-
-
+    function showAllQuestions(){
+        $(".clickable").parent().show();
+    }
+    
     function onBtnAddClick(e){
         $(this).closest("li").addClass("active");
         $(this).hide();
@@ -445,9 +534,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (svg != null){
             svg.selectAll(".x-legend").remove();
             svg.selectAll(".y-legend").remove();
-            svg.selectAll("rect").remove();
+            svg.selectAll("rect.table-rect").remove();
+            svg.selectAll("rect.color-shade").remove();
+            svg.selectAll("rect.gray-alternation").remove();
             svg.selectAll("line").remove();
-            svg.selectAll("rect").remove();
             svg.selectAll(".yPanelLabel").remove();
             //svg.selectAll(".countLabel").remove();
         }
@@ -489,8 +579,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawHorizontalLines(y, marginLeft);
 
         drawLegendContainers(marginLeft);
-
-        drawColorGradient(marginLeft, x);
 
         drawYAxisPanel();
 
@@ -568,6 +656,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         view = "percentage";
         $(".map-container").hide();
+        $(".heat-map-legend").hide();
 
         $("#percentage-view").addClass("disabled");
         $("#map-view").removeClass("disabled");
@@ -575,9 +664,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.selectAll(".countLabel").remove();
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
 
-        drawTable();
+        $("#btnCategories").show();
 
+        drawTable();
         addFixedNodes();
+        showAllQuestions();
     }
 
     function setMapView(){
@@ -591,11 +682,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.selectAll(".countLabel").remove();
         svg.selectAll(".fixedNode").remove();
         svg.selectAll("line").remove();
-        svg.selectAll("text").remove();
-        svg.selectAll("rect").remove();
-
+        svg.selectAll("text:not(.hm-legend)").remove();
+        svg.selectAll("rect.table-rect").remove();
+        svg.selectAll("rect.gray-alternation").remove();
+        svg.selectAll("rect.color-shade").remove();
         $(".map-container").show();
-
+        $(".heat-map-legend").show();
+        showOnlyHeatMapQuestions();
+        $(".btnAdd").hide();
+        $("#btnCategories").hide();
         drawOuterRect();
     }
 
@@ -603,47 +698,59 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     .domain([0, 1])
     .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
 
-    function loadZipMap() {
-
+    function loadHeatMap() {
         queue()
-            .defer(d3.json, "/static/files/counties_us_topo.json")
-            .await(plotStates);
-        queue()
-            .defer(d3.json, "/static/files/zips_us_topo.json")
+            .defer(d3.json, "/static/files/ZipCodes.json")
             .await(plotZipCodes);
 
+        //queue()
+        //    .defer(d3.json, "/static/files/counties_us_topo.json")
+        //    .await(plotStates);
 
         function plotZipCodes(error, us) {
             var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion]}});
             zipCodes = _(zipCodes).countBy("zipcode");
+            var centroid;
+
             // Append polygons for zip codes
             mapContainer.append("g")
                 .attr("class", "zips")
                 .selectAll("path")
-                .data(topojson.feature(us, us.objects.zip_codes_for_the_usa).features)
+                .data(topojson.feature(us, us.objects.zip_codes_for_utah).features)
                 .enter()
                 .append("path")
-                .filter(function(d) {
-                    if (zipCodes[d.properties.zip]) {
-                        return true; //This item will be included in the selection
-                    } else {
-                        return false; //This item will be excluded, e.g. "cheese"
-                    }
-                })
+                //.filter(function(d) {
+                //    if (zipCodes[d.properties.ZIP5] == "84632") {
+                //        return true; //This item will be included in the selection
+                //    } else {
+                //        return false; //This item will be excluded, e.g. "cheese"
+                //    }
+                //})
                 .attr("data-zip", function (d) {
-                    return d.properties.zip;
+                    if (d.properties.ZIP5 == "84632") {   // zipcode used as reference to center the map
+                        centroid = d;
+                    }
+                    return d.properties.ZIP5;
+                })
+                .attr("data-name", function (d) {
+                    return d.properties.NAME;
                 })
                 .on("mouseover", function (d) {
-                    var content = "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.zip + "</span><br/>" +
+                    var content =   "<span class=\"name\">" + d.properties.NAME + "</span><span class=\"value\"></span><br/>" +
+                                    "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.ZIP5 + "</span><br/>";
                     tooltip.showTooltip(content, d3.event);
                 })
                 .on("mouseout", function () {
                     tooltip.hideTooltip();
                 })
-                //.attr("class", function (d) {
-                //    return quantize(0.1);
-                //})
+                .attr("fill", "#3D4348")
                 .attr("d", path);
+
+                clicked(centroid);  // Center the map
+        }
+
+        function getRandomArbitrary(min, max) {
+            return Math.random() * (max - min) + min;
         }
 
         function plotStates(error, us) {
@@ -670,7 +777,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             var centroid = path.centroid(d);
             x = centroid[0];
             y = centroid[1];
-            k = 7;  // Zoom level
+            k = 1;  // Zoom level
             centered = d;
         } else {
             x = w / 2;
@@ -686,8 +793,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         mapContainer.transition()
             .duration(750)
-            .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
-            .style("stroke-width", 1.5 / k + "px");
+            .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")");
     }
 
     function refreshValues(){
@@ -789,7 +895,20 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             })
             .on("mouseout", function(){
                 d3.select(this).attr("stroke-width", "3");
-            })
+            });
+
+        var redToGreenScale = d3.scale.linear()
+            .domain([0, 0.5, 1])
+            .range(["#FEB3B3", "#FFF", "#B3FEB3"]); // Red to White to Green
+
+        var numberOfAnswers = answers.length;
+        // Substract "Not sure" answers from the color gradient
+        for (var i = 0; i < answers.length; i++){
+            var label = getLabel(selectedQuestion, answers[i]);
+            if (label && label != 0 && label.trim() == "Not sure"){
+                numberOfAnswers--;
+            }
+        }
 
         fixedNodesContainers.append("svg:circle")
             /*.style("stroke", function(d, i){
@@ -799,6 +918,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             })*/
             .style("stroke", "#AAA")
             .attr("r", "15")
+            .attr("fill", function(d){
+                var label = getLabel(selectedQuestion, answers[d.pos.x]);
+                if ((label || label == 0) && label.trim() != "Not sure")
+                    return redToGreenScale(d.pos.x / (numberOfAnswers - 1));
+
+                return "#FFF";
+            })
             .attr("visibility", function(d){
                 if (d.amount == 0){
                     return "hidden";
@@ -822,57 +948,44 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                 var customScale = d3.scale.pow().exponent(0.5).domain([0, rowTotal]).range([2, maxRadius]);
                 return customScale(d.amount);
-            })
-            .attr("opacity", 0.6);
+            });
 
         fixedNodesContainers.append("svg:text")
-          .attr("x", function(d) {
-                return d.x;
-           })
-          .attr("y", function(d) {
-                return d.y;
-          })
-          .attr("visibility", function(d){
-                if (d.amount == 0){
+            .attr("x", function (d) {
+                var delta = (w - marginLeft)/(answers.length);
+                return (d.pos.x) * delta + marginLeft + 3;
+            })
+            .attr("y", function (d) {
+                var delta = (h - margin.bottom)/(options.length);
+                return (d.pos.y + 1) * delta - 10;
+            })
+            .attr("visibility", function (d) {
+                if (d.amount == 0) {
                     return "hidden";
                 }
                 return "visible";
-          })
-          .attr("dy", ".31em")
-          //.style("text-decoration", "underline")
-          .style("fill", "#000")
-          .text(0).transition().duration(700).tween("text", function(d) {
+            })
+            .attr("dy", ".31em")
+            //.style("text-decoration", "underline")
+            .style("fill", "#000")
+            .text(0).transition().duration(700).tween("text", function (d) {
                 var rowTotal = 0;   // Percentage is calculated per row
-                fixedNodes.forEach(function(o){
-                   if (o.y == d.y){
-                       rowTotal += o.amount;
-                   }
+
+                fixedNodes.forEach(function (o) {
+                    if (o.y == d.y) {
+                        rowTotal += o.amount;
+                    }
                 });
-                var i = d3.interpolate(this.textContent, (100/ rowTotal) * d.amount),
+
+                var i = d3.interpolate(this.textContent, (100 / rowTotal) * d.amount),
                     prec = (d.amount + "").split("."),
                     round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
 
-                var x = parseFloat(this.getAttribute("x"));
-                var y = parseFloat(this.getAttribute("y"));
-
-                return function(t) {
+                return function (t) {
                     var value = (i(t) * round / round).toFixed(2);
-                    this.textContent = value + "%, " + d.amount;
-                    // Center the label
-                    var textWidth = d3.select(this).node().getBBox().width;
-                    this.setAttribute("x" , x - textWidth / 2);
-
-                    // Label starts outside the circle since the circle is too small at the beginning
-                    if (parseFloat(this.getAttribute("y")) == y){
-                        this.setAttribute("y" , y + yPanelWidth);
-                    }
-
-                    // Once the circle is large enough, move the label to the center
-                    //if (value > 12 && parseFloat(this.getAttribute("y")) != y){
-                        this.setAttribute("y" , y);
-                    //}
+                    this.textContent = value + "% (n = " + d.amount + ")";
                 };
-          });
+            });
 
         svg.selectAll("circle").attr("transform", transform);
     }
@@ -886,7 +999,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         .style("stroke", tableColor)
         .style("stroke-width", "2px")
         .style("border-radius", "4px")
-        .style("fill", "none");
+        .style("fill", "none")
+        .attr("class", "table-rect");
     }
 
     function drawXAxisLegend(marginLeft, x){
@@ -987,12 +1101,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Gray alternation
         for (var i = 0; i <= options.length - 1; i++){
-           var grad = svg.append("svg:rect")
-            .attr("width", w)
-            .attr("height", y(1) - y(0))
-            .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
-            .attr("opacity", (i%2 == 0) ? 0 : 0.1)
-            .style("fill", "#000");
+            var grad = svg.append("svg:rect")
+                .attr("width", w)
+                .attr("height", y(1) - y(0))
+                .attr("class", "gray-alternation")
+                .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
+                .attr("opacity", (i % 2 == 0) ? 0 : 0.1)
+                .style("fill", "#000");
 
             grad.moveToBack();
         }
@@ -1020,62 +1135,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("class", "vertical-line")
                 .style("stroke", tableColor)
                 .attr("stroke-width", "1.3px");
-    }
-
-    function drawColorGradient(marginLeft, x){
-        if (getLabel(selectedQuestion, "data-type") != "gradient"){
-            return;
-        }
-
-        if (view == "percentage"){
-            // Draw color gradient
-            var colorScale = [];
-            colorScale["-1"] = "#44FF44";   // Red
-            colorScale["0"] = "#FFFFFF";    // Neutral
-            colorScale["1"] = "#FF4444";    // Green
-            var gradientOpacity = 0.4;
-            var gradientLength = answers.length;
-
-            // Substract "Not sure" answers from the color gradient
-            for (var i = 0; i < answers.length; i++){
-                var label = getLabel(selectedQuestion, answers[i]);
-                if (label != 0 && label.trim() == "Not sure"){
-                    gradientLength--;
-                }
-            }
-
-            for (var i = 0; i < answers.length; i++){
-                // Ignore "Not sure" answers
-                var label = getLabel(selectedQuestion, answers[i]);
-                if (label != 0 && label.trim() == "Not sure"){
-                    continue;
-                }
-                 var rect = svg.append("svg:rect")
-                    .attr("width", x(i) - x(i-1))
-                    .attr("class", "colorShade")
-                    .attr("height", h - margin.bottom)
-                    .attr("transform", "translate(" + (marginLeft + x(i)) + "," + margin.top + ")")
-                    .attr("opacity", function(d){
-                         if (i == (gradientLength - 1) / 2)
-                            return gradientOpacity / (i + 1);
-                         else if (i < (gradientLength - 1) / 2)
-                            return gradientOpacity / (i + 1);
-                         else{
-                            return gradientOpacity / (gradientLength - i);
-                         }
-                     })
-                    .style("fill", function(d){
-                         if (i == (gradientLength - 1) / 2)
-                            return colorScale["0"];
-                         else if (i < (gradientLength - 1) / 2)
-                            return colorScale["1"];
-                         else{
-                             return colorScale["-1"];
-                         }
-                     });
-                rect.moveToBack();
-            }
-        }
     }
 
     function drawYAxisPanel(){
@@ -1120,9 +1179,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (svg != null){
             svg.selectAll(".x-legend").remove();
             svg.selectAll(".y-legend").remove();
-            svg.selectAll("rect").remove();
+            svg.selectAll("rect.table-rect").remove();
+            svg.selectAll("rect.color-shade").remove();
+            svg.selectAll("rect.gray-alternation").remove();
             svg.selectAll("line").remove();
-            svg.selectAll("rect").remove();
             svg.selectAll(".yPanelLabel").remove();
             //svg.selectAll(".countLabel").remove();
         }
@@ -1148,7 +1208,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawVerticalLines(marginLeft, x);
         drawHorizontalLines(y, marginLeft);
         drawLegendContainers(marginLeft);
-        drawColorGradient(marginLeft, x);
+        //drawColorGradient(marginLeft, x);
 
         drawYAxisPanel();
     }

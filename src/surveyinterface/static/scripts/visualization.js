@@ -48,7 +48,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var questionNodes = [];
     var centered;
     var projection = d3.geo.albersUsa()
-    .scale(7000)
+    .scale(6500)
     .translate([w/2, h/2]);
     var zipQuestion = "Q15E";
 

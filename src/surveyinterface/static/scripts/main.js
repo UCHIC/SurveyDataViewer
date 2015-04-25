@@ -23,6 +23,8 @@ requirejs.config({
             '//cdnjs.cloudflare.com/ajax/libs/nvd3/1.1.15-beta/nv.d3.min',
             'vendor/d3/nv.d3.min'
         ],
+        queue:'http://d3js.org/queue.v1.min',
+        topojson:'http://d3js.org/topojson.v1.min',
         underscore: [
             '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min',
             'vendor/underscore/underscore-min'
@@ -38,7 +40,7 @@ requirejs.config({
 });
 
 define('generalLibraries', ['jquery', 'bootstrap']);
-define('d3Libraries', ['d3', 'd3_nvd3', 'csvjson', 'custom_tooltip']);
+define('d3Libraries', ['d3', 'd3_nvd3', 'queue','csvjson', 'custom_tooltip', 'topojson']);
 define('mapLibraries', ['async!https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyANPfBBVteHSTx4o9O-kgjC8RVMuXW0O2o&sensor=false&libraries=geometry']);
 
 define('d3_global', ['d3'], function(d3Module) {

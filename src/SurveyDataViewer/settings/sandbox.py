@@ -16,5 +16,5 @@ SITE_URL = os.environ['APPL_VIRTUAL_PATH'] + "/"
 STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
 STATIC_URL = SITE_URL + 'static/'
 
-MEDIA_ROOT = os.path.join('surveyinterface', 'surveyfiles')
+MEDIA_ROOT = os.path.join(SITE_ROOT, 'surveyfiles')
 MEDIA_URL = SITE_URL + 'surveyfiles/'

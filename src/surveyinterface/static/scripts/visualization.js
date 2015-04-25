@@ -700,7 +700,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function loadHeatMap() {
         queue()
-            .defer(d3.json, "/static/files/ZipCodes.json")
+            .defer(d3.json, "/static/files/zipcodes.json")
             .await(plotZipCodes);
 
         //queue()

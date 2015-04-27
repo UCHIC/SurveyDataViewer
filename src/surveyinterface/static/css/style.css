@@ -478,6 +478,7 @@ li .checkbox{
 path[data-zip]:hover{
     /*fill: rgba(206, 252, 255, 0.71);*/
     stroke-width: 2px;
+    /*stroke: #ff9e18*/
 }
 
 path[data-zip]{

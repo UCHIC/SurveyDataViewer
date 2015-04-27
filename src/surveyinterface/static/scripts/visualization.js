@@ -49,6 +49,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     .scale(6500)
     .translate([w/2, h/2]);
     var zipQuestion = "Q15E";
+    var centerZip;
 
     var mapContainer;
 
@@ -316,7 +317,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return;
         }
 
-        $("#btnCategories").disabled=false;
+        $("#btnCategories")[0].disabled=false;
+        $("#map-view")[0].disabled=false;
         numberOfQuestions = 1;
         $('#listQuestions li').removeClass("active");
         that.closest("li").addClass("active");
@@ -391,7 +393,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // If no longer in multiple question mode, restore yAxisMode
-        if (yAxisMode == "" && numberOfQuestions < 2){
+        if (yAxisMode == "" && numberOfQuestions < 2) {
             yAxisMode = "All";
         }
     }
@@ -473,9 +475,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("width", rWidth)
             .attr("height", rHeight)
             .attr("class", "heat-map-legend-rect")
-            .style("fill", "none")
+            .style("fill", "#FFF")
             .style("stroke", "#000")
             .style("stroke-width", "1px")
+            .style("opacity", 0.75);
 
         var counter = 0;
         for (var i = 0; i < answers.length; i++) {
@@ -619,7 +622,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             addFixedNodes();
         }
 
-        $("#btnCategories").disabled=true;
+        $("#btnCategories")[0].disabled=true;
+        $("#map-view")[0].disabled=true
     }
 
      function removeTempNodes(){
@@ -710,7 +714,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         function plotZipCodes(error, us) {
             var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion]}});
             zipCodes = _(zipCodes).countBy("zipcode");
-            var centroid;
 
             // Append polygons for zip codes
             mapContainer.append("g")
@@ -728,7 +731,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 //})
                 .attr("data-zip", function (d) {
                     if (d.properties.ZIP5 == "84632") {   // zipcode used as reference to center the map
-                        centroid = d;
+                        centerZip = d;
                     }
                     return d.properties.ZIP5;
                 })
@@ -739,14 +742,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     var content =   "<span class=\"name\">" + d.properties.NAME + "</span><span class=\"value\"></span><br/>" +
                                     "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.ZIP5 + "</span><br/>";
                     tooltip.showTooltip(content, d3.event);
+                    this.parentNode.appendChild(this);
                 })
                 .on("mouseout", function () {
                     tooltip.hideTooltip();
                 })
                 .attr("fill", "#3D4348")
+                .on("click", clicked)
                 .attr("d", path);
 
-                clicked(centroid);  // Center the map
+                centerAt(centerZip);  // Center the map
         }
 
         function getRandomArbitrary(min, max) {
@@ -770,6 +775,23 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
           }
     }
 
+    function centerAt(d){
+        var x, y, k;
+
+        var centroid = path.centroid(d);
+        x = centroid[0];
+        y = centroid[1];
+        k = 1;  // Zoom level
+
+        mapContainer.selectAll("path")
+            .classed("active", centered && function (d) {
+                return d === centered;
+            });
+
+        mapContainer.transition()
+            .duration(750).attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")");
+    }
+
     function clicked(d) {
         var x, y, k;
 
@@ -777,12 +799,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             var centroid = path.centroid(d);
             x = centroid[0];
             y = centroid[1];
-            k = 1;  // Zoom level
+            k = 3;  // Zoom level
             centered = d;
         } else {
-            x = w / 2;
-            y = h / 2;
-            k = 1;
             centered = null;
         }
 
@@ -791,9 +810,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 return d === centered;
             });
 
-        mapContainer.transition()
+        if (centered){
+            mapContainer.transition()
             .duration(750)
             .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")");
+        }
+        else{
+            centerAt(centerZip);
+        }
+
+
     }
 
     function refreshValues(){
@@ -1212,12 +1238,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Draw stuff
         drawOuterRect();
-
         drawXAxisLegend(marginLeft, x);
         drawVerticalLines(marginLeft, x);
         drawHorizontalLines(y, marginLeft);
         drawLegendContainers(marginLeft);
-
         drawYAxisPanel();
     }
 

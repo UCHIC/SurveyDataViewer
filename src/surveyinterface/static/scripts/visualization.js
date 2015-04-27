@@ -698,22 +698,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawOuterRect();
     }
 
-    var quantize = d3.scale.quantize()
-    .domain([0, 1])
-    .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
-
     function loadHeatMap() {
         queue()
             .defer(d3.json, "/static/files/zipcodes.json")
             .await(plotZipCodes);
 
-        //queue()
-        //    .defer(d3.json, "/static/files/counties_us_topo.json")
-        //    .await(plotStates);
-
         function plotZipCodes(error, us) {
-            var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion]}});
-            zipCodes = _(zipCodes).countBy("zipcode");
+            //var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion]}});
+            //zipCodes = _(zipCodes).countBy("zipcode");
 
             // Append polygons for zip codes
             mapContainer.append("g")
@@ -753,26 +745,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                 centerAt(centerZip);  // Center the map
         }
-
-        function getRandomArbitrary(min, max) {
-            return Math.random() * (max - min) + min;
-        }
-
-        function plotStates(error, us) {
-            // Append polygons for states
-          mapContainer.append("g")
-              .attr("id", "states")
-            .selectAll("path")
-              .data(topojson.feature(us, us.objects.states).features)
-            .enter().append("path")
-              .attr("d", path)
-              .on("click", clicked);
-
-          mapContainer.append("path")
-              .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
-              .attr("id", "state-borders")
-              .attr("d", path);
-          }
     }
 
     function centerAt(d){

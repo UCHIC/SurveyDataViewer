@@ -818,8 +818,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else{
             centerAt(centerZip);
         }
-
-
     }
 
     function refreshValues(){

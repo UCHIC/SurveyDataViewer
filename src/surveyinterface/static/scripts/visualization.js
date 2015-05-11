@@ -1,9 +1,3 @@
-/**
- * Created by Juan on 4/6/14.
- */
-
-
-
 if (typeof Array.prototype.getUnique != 'function') {
     Array.prototype.getUnique = function(){
        var u = {}, a = [];
@@ -48,7 +42,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var projection = d3.geo.albersUsa()
     .scale(6500)
     .translate([w/2, h/2]);
-    var zipQuestion = "Q15E";
+    var zipQuestion = "Q16";
     var centerZip;
 
     var mapContainer;
@@ -72,8 +66,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     };
 
     // Multiple choices (s:select one, m:select multiple) - Single choice group - Single choice
-    var regExp = {reMS: /^Q([0-9]+)E_([0-9]+)/,  reS:/^Q([0-9])+E/};
-    var infoQuestions = {Gender:"Q12E", OriginallyFromUtah: "Q8E", SurveyVenue:"VX", Site:"Q15E", FarmTies: "Q11E", Education:"Q14E", Age:"Q13E"}
+    var regExp = {multipleQuestionSelectOne: /^Q([0-9]+)([a-z])/,  singleChoice:/^Q([0-9])/};
+    var infoQuestions = {};
 
     self.loadData = function() {
         $.ajax(self.dataFile, {
@@ -114,26 +108,60 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
     }
 
-    // Returns the column name in the metadata file given the question id and a value
-    function getLabel(questionID, value){
-        for (var i = 0; i < metadata.rows.length; i++){
-            if (metadata.rows[i]["ID"] == questionID){
-                return metadata.rows[i][value] == null ? "No response" : String(metadata.rows[i][value]);
+    function getLabel(question, value){
+        for (var j = 0; j < metadata.rows.length; j++) {
+            var reGetQuestionID = /Q[0-9]+[a-z]*/;
+            var questionID = reGetQuestionID.exec(metadata.rows[j]["NewVar"]);
+            if (questionID && questionID[0] == question) {
+                // Get the labels for this question
+                var labels;
+                for (var prop in metadata.rows[j]) {
+                    if (prop.trim() == "ValueLabels")
+                        labels = metadata.rows[j][prop];
+                }
+
+                labels = labels.split(";");
+                var labelsArray = {};
+
+                // Put the labels in an object for easy access
+                for (var i = 0; i < labels.length; i++) {
+                    var pos = labels[i].indexOf("=");
+                    var index = parseInt(labels[i].substr(0, pos).trim());
+                    var val = labels[i].substr(pos + 1, labels[i].length).trim();
+                    labelsArray[index] = val;
+                }
+                return labelsArray[value];
             }
         }
     }
 
     function initializeGraph(){
         radius_scale = d3.scale.pow().exponent(0.5).domain([0, data.rows.length - 1]).range([2, 85]);
+
+        // Get the list of demographic questions
+        for (var j = 0; j < metadata.rows.length; j++) {
+            var questionID = metadata.rows[j]["NewVar"];
+            var questionLabel = metadata.rows[j]["NewVarLabel"];
+            var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
+            for (var i = 0; i < pluggins.length; i++) {
+                if (pluggins[i] == "isDemographic") {
+                    infoQuestions[questionLabel] = questionID;
+                }
+            }
+        }
+
         nodes = d3.range(data.rows.length - 1).map(function(d, i) {
-            var OriginallyFromUtah =      getLabel(infoQuestions.OriginallyFromUtah, data.rows[i + 1][infoQuestions.OriginallyFromUtah]);
-            var Gender =        getLabel(infoQuestions.Gender, data.rows[i + 1][infoQuestions.Gender]);
-            var Education =     getLabel(infoQuestions.Education, data.rows[i + 1][infoQuestions.Education]);
-            var Age =           getLabel(infoQuestions.Age, data.rows[i + 1][infoQuestions.Age]);
-            var FarmTies =      getLabel(infoQuestions.FarmTies, data.rows[i + 1][infoQuestions.FarmTies]);
-            var SurveyVenue = data.rows[i + 1][infoQuestions.SurveyVenue];
-            var Site = data.rows[i + 1][infoQuestions.Site];
-            var info = {OriginallyFromUtah: OriginallyFromUtah, SurveyVenue:SurveyVenue, Site:Site, FarmTies:FarmTies, Gender: Gender, Education: Education, Age: Age};
+            var info = {};
+            for (var j = 0; j < metadata.rows.length; j++) {
+                var questionID = metadata.rows[j]["NewVar"];
+                var questionLabel = metadata.rows[j]["NewVarLabel"];
+                var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
+                for (var p = 0; p < pluggins.length; p++) {
+                    if (pluggins[p] == "isDemographic") {
+                        info[questionLabel] = data.rows[i + 1][questionID];
+                    }
+                }
+            }
 
             return {value: 0, info: info, temp:false, tempPosY:0};
         });
@@ -157,6 +185,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
         //loadMarkerData(question);
 
+         // Add demographic items to dropdown
+        for (var j = 0; j < metadata.rows.length; j++) {
+            //var questionID = metadata.rows[j]["NewVar"];
+            var questionLabel = metadata.rows[j]["NewVarLabel"];
+            var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
+            for (var i = 0; i < pluggins.length; i++) {
+                if (pluggins[i] == "isDemographic") {
+                    $("#lstYAxisMode").append('<li><a data-axis="'+ questionLabel +'" href="#">'+ questionLabel +'</a></li>')
+                }
+            }
+        }
+
         $("#percentage-view").click(setPercentageView);
         $("#map-view").click(setMapView);
 
@@ -166,7 +206,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
         $(".btnAdd").click(onBtnAddClick);
     }
-
 
     function initializeMap() {
         if (map != null){
@@ -324,10 +363,22 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         that.closest("li").addClass("active");
         selectedQuestion = that.attr("data-value");
 
-        var title = data.rows[0][selectedQuestion].substr(0, data.rows[0][selectedQuestion].lastIndexOf('-'));
+        var pos;
+        if (data.rows[0][selectedQuestion]){
+            pos = data.rows[0][selectedQuestion].lastIndexOf('-')
+        }
+
+        var title = "";
+        if (pos && pos != -1){
+            title = data.rows[0][selectedQuestion].substr(0, pos);
+        }
+        else{
+            title = data.rows[0][selectedQuestion];
+        }
+
         var content;
-        if (data.rows[0][selectedQuestion].lastIndexOf('-') != -1){
-            content = data.rows[0][selectedQuestion].substr(data.rows[0][selectedQuestion].lastIndexOf('-') + 1, data.rows[0][selectedQuestion].length);
+        if (pos && pos != -1){
+            content = data.rows[0][selectedQuestion].substr(pos + 1, data.rows[0][selectedQuestion].length);
         }
         else{
             content = data.rows[0][selectedQuestion];
@@ -371,7 +422,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // If the question is an interval, update the heat map
-        if (getLabel(selectedQuestion, "data-type") == "gradient") {
+        if (hasPluggin(selectedQuestion, "heatmap")) {
             updateHeatMap();
             $("#map-view")[0].disabled = false;
         }
@@ -401,7 +452,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function updateHeatMap(){
         refreshValues();
         var responses = _.map(nodes, function (a, b) {
-            return {zipcode: data.rows[b + 1][zipQuestion], value: data.rows[b + 1][selectedQuestion]}
+            for (var prop in data.rows[b + 1]) {
+                if (prop.trim() == zipQuestion)
+                    return {zipcode: data.rows[b + 1][prop], value: data.rows[b + 1][selectedQuestion]}
+            }
         });
 
         var numberOfAnswers = answers.length;
@@ -409,7 +463,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Substract "Not sure" answers
         for (var i = 0; i < answers.length; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
-            if (label != 0 && label.trim() == "Not sure") {
+            if (label && label.trim() == "Not sure") {
                 responses = _.filter(responses, function(resp){
                     return resp.value != i + 1;
                 })
@@ -483,8 +537,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var counter = 0;
         for (var i = 0; i < answers.length; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
-            if (label != 0 && label.trim() != "Not sure") {
-
+            if (label && label.trim() != "not sure") {
                 heatMapLegendArea.append("svg:rect")
                     .attr("width", 30)
                     .attr("height", 20)
@@ -501,7 +554,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("class", "hm-legend")
                     .style("fill", "#000")
                     .text(label)
-
                 counter++;
             }
         }
@@ -511,7 +563,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var items = $(".clickable");
         for (var i = 0; i < items.length; i++){
             var question = items[i].getAttribute("data-value");
-            if (getLabel(question, "data-type") != "gradient"){
+            if (!hasPluggin(question, "heatmap")){
                $(items[i]).parent().hide();
             }
         }
@@ -740,10 +792,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     tooltip.hideTooltip();
                 })
                 .attr("fill", "#3D4348")
+                //.attr("transform", "rotate(-10)")
                 .on("click", clicked)
                 .attr("d", path);
 
-                centerAt(centerZip);  // Center the map
+            centerAt(centerZip);  // Center the map
+
         }
     }
 
@@ -841,13 +895,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                   pos: {x:(i % answers.length), y:Math.floor(i / answers.length)}};
         });
 
-        // Replace each value for its label, except for text input questions
-        if (getLabel(infoQuestions[yAxisMode], 1) != "(text)"){
-            for (var i = 0; i < options.length; i++){
-                options[i] = getLabel(infoQuestions[yAxisMode], options[i]);
-            }
-        }
-
         if (questionNodes < 2){
             nodes.forEach(function(d) {
                 var posAnswer = ($.inArray(d.value, answers));
@@ -886,10 +933,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "fixedNode")
             .attr("fill", "#FFF")
             .attr("stroke-width", "2")
-            .on("mouseover", function(d){
+            .on("mouseover", function (d) {
                 d3.select(this).attr("stroke-width", "3");
             })
-            .on("mouseout", function(){
+            .on("mouseout", function () {
                 d3.select(this).attr("stroke-width", "2");
             });
 
@@ -901,7 +948,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Substract "Not sure" answers from the color gradient
         for (var i = 0; i < answers.length; i++){
             var label = getLabel(selectedQuestion, answers[i]);
-            if (label && label != 0 && label.trim() == "Not sure"){
+            if (label && label != 0 && label.trim() == "not sure"){
                 numberOfAnswers--;
             }
         }
@@ -913,7 +960,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     return "#888";
                 }
 
-                if ((label || label == 0) && label.trim() != "Not sure")
+                if ((label || label == 0) && label.trim() != "not sure")
                     return d3.rgb(redToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2) ;
 
                 return "#888";
@@ -921,11 +968,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("r", "15")
             .attr("fill", function(d){
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
-                if (getLabel(selectedQuestion, "data-type") != "gradient") {
+                if (!hasPluggin(selectedQuestion, "heatmap")) {
                     return "#FFF";
                 }
 
-                if ((label || label == 0) && label.trim() != "Not sure")
+                if (!label || label.trim() != "not sure")
                     return redToGreenScale(d.pos.x / (numberOfAnswers - 1));
 
                 return "#FFF";
@@ -1008,38 +1055,75 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         .attr("class", "table-rect");
     }
 
+    function hasPluggin(question, pluggin){
+        for (var j = 0; j < metadata.rows.length; j++) {
+            var questionID = metadata.rows[j]["NewVar"];
+            if (questionID  == question) {
+                var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
+                for (var i = 0; i < pluggins.length; i++){
+                    if (pluggins[i] == pluggin){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     function drawXAxisLegend(marginLeft, x){
         var value = $(".active label").attr("data-value");
         var delta = (x(1) - x(0));
-        for (var i = 0; i < answers.length; i++){
-           svg.append("text")
-              .attr("dx", 0)
-              .attr("dy", 0)
-              .attr("class", "x-legend")
-              .attr("text-anchor", "middle")
-              .attr("font-weight", "normal")
-              .attr("fill", legendColor)
-              .attr("y", h - margin.bottom + 30)
-              .attr("id", "x-legend" + i)
-              .attr("transform", "translate(" + ( x(i) + marginLeft + delta/2) + "," + 0 + ")")
-              .attr("data-id", i)
-              .text(function(){
-                   for (var j = 0; j < metadata.rows.length; j++){
-                       var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
-                       var questionID = reGetQuestionID.exec(metadata.rows[j]["ID"])[0];
-                       if (questionID == value){
-                           if (metadata.rows[j][answers[i]] == null){
-                               return "No response";
+
+        for (var j = 0; j < metadata.rows.length; j++) {
+            //var reGetQuestionID = /Q[0-9]+[a-z]*/;
+            var questionID = metadata.rows[j]["NewVar"];
+            if (questionID == value){
+                // Get the labels for this question
+                var labels;
+                for (var prop in metadata.rows[j]) {
+                    if (prop.trim() == "ValueLabels")
+                        labels = String(metadata.rows[j][prop]);
+                }
+
+                labels = labels.split(";");
+                var labelsArray = {};
+
+                // Put the labels in an object for easy access
+                for (var i = 0; i < labels.length; i++){
+                    var pos = labels[i].indexOf("=");
+                    var index = parseInt(labels[i].substr(0, pos).trim());
+                    var value = labels[i].substr(pos + 1, labels[i].length).trim();
+                    labelsArray[index] = value;
+                }
+
+                // Draw legend for each answer
+                for (var i = 0; i < answers.length; i++){
+                   svg.append("text")
+                      .attr("dx", 0)
+                      .attr("dy", 0)
+                      .attr("class", "x-legend")
+                      .attr("text-anchor", "middle")
+                      .attr("font-weight", "normal")
+                      .attr("fill", legendColor)
+                      .attr("y", h - margin.bottom + 30)
+                      .attr("id", "x-legend" + i)
+                      .attr("transform", "translate(" + ( x(i) + marginLeft + delta/2) + "," + 0 + ")")
+                      .attr("data-id", i)
+                      .text(function(){
+                           if (!selectedQuestion){
+                               return "";
                            }
-                           return metadata.rows[j][answers[i]] == "0" ? " " : metadata.rows[j][answers[i]];
-                       }
-                   }
-                   if (data.rows[0][value] != null)
-                        return data.rows[0][value] + ": " + answers[i];
-                   else
-                        return "";
-              })
-              .call(wrap, delta);
+
+                           // Just return the actual value for text input questions
+                           if (selectedQuestion.indexOf("- Text") != -1){
+                               return answers[i];
+                           }
+
+                           return labelsArray[answers[i]];
+                      })
+                      .call(wrap, delta);
+                }
+            }
         }
     }
 
@@ -1059,18 +1143,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
               .text(function(d){
                    if (yAxisMode == 'All')
                        return "";
-                   // case for non standard formatted question
-                   if (getLabel(infoQuestions[yAxisMode], 1) == "(text)"){
-                        return options[i];
-                   }
+
                    for (var j = 0; j < metadata.rows.length; j++){
-                       var reGetQuestionID = /^[a-z|A-Z|0-9|_]*/;
-                       var questionID = reGetQuestionID.exec(metadata.rows[j]["ID"])[0];
+                       var questionID = metadata.rows[j]["NewVar"];
                        if (questionID == infoQuestions[yAxisMode]){
-                           if (metadata.rows[j][options[i]] == null){
-                               return "No response";
+                           if (getLabel(questionID, options[i]) == null){
+                               return options[i];
                            }
-                           return metadata.rows[j][options[i]] == "0" ? " " : metadata.rows[j][options[i]];
+                           return getLabel(questionID, options[i]);
                        }
                    }
                    return options[i];
@@ -1248,27 +1328,61 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 markerQuestions.push(question);
             }
 
-            if (question != null && (regExp['reMS'].exec(question))){
+            if (question != null && isMultipleSelectOne(question)){
                 var answer = questionContent.substr(questionContent.lastIndexOf('-') + 1, questionContent.length);
-                if (title != questionContent.substr(0, questionContent.lastIndexOf('-'))){
-                    title = questionContent.substr(0, questionContent.lastIndexOf('-'));
-                    var id = regExp['reMS'].exec(question)[1];
-                    $("#listQuestions").append('<li class="'+ evenOddCounter +'"><a data-toggle="collapse" class="accordion-toggle" data-parent="#listQuestions" href="' + "#Q" + id + '">' + title + '</a><span class="caret"></span></li>' +
-                                                    '<div id="Q' + id + '"  class="panel-collapse collapse">' + '</div>'
-                                                );
+                var id = regExp['multipleQuestionSelectOne'].exec(question)[1];
+                if ($("#Q" + id).length == 0){
+                    title = getQuestionTitle(question);
+
+                    $("#listQuestions").append('<li class="'+ evenOddCounter +'"><a data-toggle="collapse" class="accordion-toggle" data-parent="#listQuestions" href="' + "#Q" + id + '">' +
+                        title +
+                        '</a><span class="caret"></span></li>' + '<div id="Q' + id + '"  class="panel-collapse collapse">' + '</div>');
                     evenOddCounter = evenOddTick(evenOddCounter);
                 }
 
                 $("#Q" + id ).append('<li class="indented"><label class="clickable" data-value="' + question+ '">' +
                                                                 answer + '</label><span class="btnAdd glyphicon glyphicon-plus"></span></li>');
             }
-            else if (question != null && regExp['reS'].exec(question)){
-                var id = regExp['reS'].exec(question)[1];
+            else if (question != null && isSingleChoice(question)){
+                var id = regExp['singleChoice'].exec(question)[1];
                 $("#listQuestions").append('<li class="'+ evenOddCounter +'"><label  class="clickable" data-value="'+ question + '" id="Q' + id + '">' +
                                                questionContent + '</label></li>');
                 evenOddCounter = evenOddTick(evenOddCounter);
             }
         }
+    }
+
+    function isMultipleSelectOne(questionID){
+        if(regExp['multipleQuestionSelectOne'].exec(questionID)){
+            return true;
+        }
+        return false;
+    }
+
+    function isSingleChoice(questionID){
+        if (regExp['singleChoice'].exec(questionID)){
+            return true;
+        }
+        return false;
+    }
+
+    function getQuestionTitle(questionID){
+        for (var i = 0; i < metadata.rows.length; i++){
+            if (metadata.rows[i]["NewVar"] == questionID){
+                if(regExp['multipleQuestionSelectOne'].exec(questionID)){
+                    var title = metadata.rows[i]["NewVarLabel"];
+                    var titleEnd = title.indexOf('-');
+                    if (titleEnd > -1){
+                        title = title.substr(0, titleEnd);
+                    }
+                    return title;
+                }
+                return metadata.rows[i]["NewVarLabel"];
+
+            }
+
+        }
+        return "";
     }
 
     function wrap(text, width) {

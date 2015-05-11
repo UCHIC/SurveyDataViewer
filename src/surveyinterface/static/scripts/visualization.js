@@ -954,14 +954,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         fixedNodesContainers.append("svg:circle")
-            .style("stroke", function(d){
+            .style("stroke", function (d) {
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
-                if (getLabel(selectedQuestion, "data-type") != "gradient") {
+                if (!hasPluggin(selectedQuestion, "heatmap")) {
                     return "#888";
                 }
 
-                if ((label || label == 0) && label.trim() != "not sure")
-                    return d3.rgb(redToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2) ;
+                if (!label || label.trim() != "not sure")
+                    return d3.rgb(redToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
 
                 return "#888";
             })

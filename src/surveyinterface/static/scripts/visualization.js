@@ -366,6 +366,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $("#btnCategories")[0].disabled=false;
         $("#map-view")[0].disabled=false;
+        $("#mean-view")[0].disabled=false;
         numberOfQuestions = 1;
         $('#listQuestions li').removeClass("active");
         that.closest("li").addClass("active");
@@ -429,12 +430,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             $("#map-canvas").hide();
         }
 
-        // If the question is an interval, update the heat map
+
         if (hasPluggin(selectedQuestion, "heatmap")) {
             $("#map-view")[0].disabled = false;
         }
         else {
             $("#map-view")[0].disabled = true;
+        }
+
+        if (hasPluggin(selectedQuestion, "mean")) {
+            $("#mean-view")[0].disabled = false;
+        }
+        else {
+            $("#mean-view")[0].disabled = true;
         }
 
         if (view == "percentage"){
@@ -447,8 +455,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
         else if (view == "heatmap") {
             updateHeatMap();
+            $(".btnAdd").hide();
         }
         else if (view == "mean") {
+            $(".btnAdd").hide();
             updateMeanView();
         }
 
@@ -903,8 +913,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             addFixedNodes();
         }
 
-        $("#btnCategories")[0].disabled=true;
-        $("#map-view")[0].disabled=true
+        $("#btnCategories")[0].disabled = true;
+        $("#map-view")[0].disabled = true
+        $("#mean-view")[0].disabled = true;
     }
 
      function removeTempNodes(){
@@ -1010,7 +1021,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function loadHeatMap() {
         queue()
-            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing 'surveydata/' to push to production
+            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
             .await(plotZipCodes);
 
         function plotZipCodes(error, us) {

@@ -791,7 +791,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 });
                 // Map refresh animation
                 path.transition().duration(100).attr("fill","#3D4348");
-                path.transition().duration(500).delay(200).attr("fill",function(d){
+                path.transition().duration(500).delay(100).attr("fill",function(d){
                     return redToGreenScale((totals[zip] / participants[zip]) / numberOfAnswers);
                 });
             }

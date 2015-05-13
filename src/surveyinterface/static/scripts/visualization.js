@@ -685,7 +685,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 };
             });
 
+            // TODO: ignore 'not sure' answers from the code below
+
             nodes.forEach(function (d) {
+                if (getLabel(selectedQuestion, d.value) == "not sure"){
+                    return;
+                }
                 var posOption = ($.inArray(d.info[yAxisMode], options));
                 if (yAxisMode == "") {
                     posOption = d.tempPosY;
@@ -711,7 +716,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .style("stroke", tableColor)
                     .style("stroke-width", "5px");
             }
-
         }
 
         drawLegendContainers(marginLeft);

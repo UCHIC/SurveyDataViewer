@@ -706,15 +706,23 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
 
             for (var i = 1; i <= options.length; i++) {
-                // Draw pivot points
+                // Draw mean
                 var xCord = nodeRows[i - 1].total / nodeRows[i - 1].participants;
-                svg.append("svg:line")
-                    .attr("x1", x(xCord))
-                    .attr("x2", x(xCord))
+                var currLine = svg.append("svg:line")
+                    .attr("x1", x(answers.length / 2))
+                    .attr("x2", x(answers.length / 2))
                     .attr("y1", y(i) - deltaY / 2 - 15)
                     .attr("y2", y(i) - deltaY / 2 + 15)
                     .style("stroke", tableColor)
                     .style("stroke-width", "5px");
+
+                currLine.transition()
+                    .duration(400)
+                    .ease("linear")
+                    .attr({
+                        'x1': x(xCord),
+                        'x2': x(xCord)
+                    })
             }
         }
 
@@ -1053,7 +1061,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function loadHeatMap() {
         queue()
-            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
+            .defer(d3.json, "/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
             .await(plotZipCodes);
 
         function plotZipCodes(error, us) {

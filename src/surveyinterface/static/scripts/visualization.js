@@ -40,10 +40,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var questionNodes = [];
     var centered;
     var projection = d3.geo.albersUsa()
-    .scale(6500)
-    .translate([w/2, h/2]);
+        .scale(6500)
+        .translate([w / 2, h / 2]);
     var zipQuestion = "Q16";
     var centerZip;
+
+    var redToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
+        .domain([0, 0.5, 1])
+        .range(["#FEB3B3", "#FFF", "#B3FEB3"]); // Red to White to Green
+
+    var redToYellowToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
+        .domain([0,0.5, 1])
+        .range(["#FEB3B3", "#FF0", "#B3FEB3"]); // Red to White to Green
 
     var mapContainer;
 
@@ -176,8 +184,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         loadHeatMap();
         drawTable();
-        setPercentageView();
-        //setMapView();
+        setPercentageView();    // start the site in percentage view
 
         // Pre-load markers for questions that use the map
         for (var i = 0; i < markerQuestions.length; i++){
@@ -198,7 +205,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         $("#percentage-view").click(setPercentageView);
-        $("#map-view").click(setMapView);
+        $("#map-view").click(setHeatMapView);
+        $("#mean-view").click(setMeanView);
 
         $('#listQuestions .clickable').click(onListQuestionClick);
         $('#listQuestions li').click(onListQuestionClick);
@@ -423,7 +431,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // If the question is an interval, update the heat map
         if (hasPluggin(selectedQuestion, "heatmap")) {
-            updateHeatMap();
             $("#map-view")[0].disabled = false;
         }
         else {
@@ -436,17 +443,246 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".node").transition().duration(550).remove();
             svg.selectAll(".fixedNode").transition().duration(550).remove();
             svg.selectAll(".fixedNode text").remove();
-            $(".heat-map-legend").hide();
             addFixedNodes();
         }
-        else{
-            setMapView();
+        else if (view == "heatmap") {
+            updateHeatMap();
+        }
+        else if (view == "mean") {
+            updateMeanView();
         }
 
         // If no longer in multiple question mode, restore yAxisMode
         if (yAxisMode == "" && numberOfQuestions < 2) {
             yAxisMode = "All";
         }
+    }
+
+    function drawMeanViewTable() {
+        if (svg != null) {
+            svg.selectAll(".x-legend").remove();
+            svg.selectAll(".y-legend").remove();
+            svg.selectAll("rect.table-rect").remove();
+            svg.selectAll("rect.color-shade").remove();
+            svg.selectAll("rect.gray-alternation").remove();
+            svg.selectAll("line").remove();
+            svg.selectAll(".yPanelLabel").remove();
+            svg.selectAll(".mean-base-line").remove();
+            svg.selectAll(".vertical-mean-line").remove()
+
+            //svg.selectAll(".countLabel").remove();
+        }
+
+        drawYAxisLegend();
+
+        var marginLeft = getYLabelSize() + yPanelWidth;
+
+        var x = d3.scale.linear()
+            .domain([0, answers.length])
+            .range([0, w - marginLeft]);
+
+        var y = d3.scale.linear()
+            .domain([0, options.length])
+            .range([0, h - margin.bottom - margin.top]);
+
+        drawOuterRect();
+
+        // Draw x axis legend and ignore not sure responses
+        var value = $(".active label").attr("data-value");
+        var deltaX = (x(1) - x(0));
+        var deltaY = y(1) - y(0);
+
+        for (var j = 0; j < metadata.rows.length; j++) {
+            var questionID = metadata.rows[j]["NewVar"];
+            if (questionID == value) {
+                // Get the labels for this question
+                var labels;
+                for (var prop in metadata.rows[j]) {
+                    if (prop.trim() == "ValueLabels")
+                        labels = String(metadata.rows[j][prop]);
+                }
+
+                labels = labels.split(";");
+                var labelsArray = {};
+
+                // Put the labels in an object for easy access
+                for (var i = 0; i < labels.length; i++) {
+                    var pos = labels[i].indexOf("=");
+                    var index = parseInt(labels[i].substr(0, pos).trim());
+                    var value = labels[i].substr(pos + 1, labels[i].length).trim();
+
+                    labelsArray[index] = value;
+
+                    if (value == "not sure") {
+                        x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
+                        deltaX = (x(1) - x(0));
+                    }
+                }
+
+                // Draw legend for each answer
+                for (var i = 0; i < answers.length; i++) {
+                    if (labelsArray[answers[i]] != "not sure"){
+                        svg.append("text")
+                            .attr("dx", 0)
+                            .attr("dy", 0)
+                            .attr("class", "x-legend")
+                            .attr("text-anchor", "middle")
+                            .attr("font-weight", "normal")
+                            .attr("fill", legendColor)
+                            .attr("y", h - margin.bottom + 30)
+                            .attr("id", "x-legend" + i)
+                            .attr("transform", "translate(" + ( x(i) + marginLeft + deltaX / 2) + "," + 0 + ")")
+                            .attr("data-id", i)
+                            .text(function () {
+                                if (!selectedQuestion) {
+                                    return "";
+                                }
+
+                                // Just return the actual value for text input questions
+                                if (selectedQuestion.indexOf("- Text") != -1) {
+                                    return answers[i];
+                                }
+
+                                return labelsArray[answers[i]];
+                            })
+                            .call(wrap, deltaX);
+                    }
+                }
+            }
+        }
+        // -----
+
+        // Draw vertical dotted lines
+        for (var i = 1; i < answers.length + 1; i++) {
+            if ((answers[i - 1] && labelsArray[answers[i - 1]] != "not sure") || answers.length == 1) {
+                svg.append("svg:line")
+                    .attr("x1", x(i) + marginLeft - deltaX / 2)
+                    .attr("x2", x(i) + marginLeft - deltaX / 2)
+                    .attr("y1", margin.top)
+                    .attr("y2", h - margin.bottom)
+                    .attr("class", "vertical-mean-line")
+                    .attr("stroke-dasharray", "1, 5")
+                    .attr("stroke-linecap", "round")
+                    .style("stroke", tableColor)
+            }
+        }
+
+        // Draw table horizontal lines
+        for (var i = 1; i <= options.length; i++) {
+            svg.append("svg:line")
+                .attr("x1", yPanelWidth)
+                .attr("x2", yPanelWidth + getYLabelSize())
+                .attr("y1", y(i))
+                .attr("y2", y(i))
+                //.attr("id", "line" + i)
+                .attr("data-id", i)
+                .attr("class", "horizontal-line")
+                .attr("transform", "translate(" + 0 + "," + margin.top + ")")
+                .style("stroke", tableColor)
+                .style("stroke-width", "1.3px")
+        }
+
+        // Gray alternation
+        //for (var i = 0; i <= options.length - 1; i++){
+        //    var grad = svg.append("svg:rect")
+        //        .attr("width", w)
+        //        .attr("height", y(1) - y(0))
+        //        .attr("class", "gray-alternation")
+        //        .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
+        //        .attr("opacity", (i % 2 == 0) ? 0 : 0.1)
+        //        .style("fill", "#000");
+        //
+        //    grad.moveToBack();
+        //}
+
+        // Line at the top of x axis legend
+        svg.append("svg:line")
+            .attr("x1", 0)
+            .attr("x2", w)
+            .attr("y1", h - margin.bottom)
+            .attr("y2", h - margin.bottom)
+            .attr("class", "horizontal-line")
+            .style("stroke", tableColor)
+            .style("stroke-width", "1.3px");
+
+        marginLeft = getYLabelSize() + yPanelWidth;
+
+        var colorData = [];
+        var stops = $(".vertical-mean-line").length - 1;
+        for (var i = 0; i <= stops; i++){
+            var offset = i * 100/stops;
+            colorData.push({offset:  offset + "%", color:redToYellowToGreenScale(offset / 100)})
+        }
+
+        var left = yPanelWidth + deltaX / 2 + getYLabelSize();
+        var right = w - deltaX / 2;
+
+        $("linearGradient").remove();
+        svg.append("linearGradient")
+            .attr("id", "line-gradient")
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("x1", left).attr("y1", 0)
+            .attr("x2", right).attr("y2", 0)
+            .selectAll("stop")
+            .data(colorData)
+            .enter().append("stop")
+            .attr("offset", function (d) {
+                return d.offset;
+            })
+            .attr("stop-color", function (d) {
+                return d.color;
+            });
+
+        //Draw mean base lines
+        for (var i = 1; i <= options.length; i++){
+            svg.append("svg:line")
+                .attr("x1", left)
+                .attr("x2", right)
+                .attr("y1", y(i) - deltaY/2)
+                .attr("y2", y(i) - deltaY/2)
+                .attr("data-id", i)
+                .attr("class", "mean-base-line")
+                .attr("transform", "translate(" + 0 + "," + margin.top + ")")
+
+            // Draw pivot points
+            svg.append("svg:line")
+                    .attr("x1", left)
+                    .attr("x2", left)
+                    .attr("y1", y(i) - deltaY/2 - 10)
+                    .attr("y2", y(i) - deltaY/2 + 10)
+                    .attr("class", "mean-base-line")
+
+            svg.append("svg:line")
+                    .attr("x1", right)
+                    .attr("x2", right)
+                    .attr("y1", y(i) - deltaY/2 - 10)
+                    .attr("y2", y(i) - deltaY/2 + 10)
+                    .attr("class", "mean-base-line")
+        }
+
+        drawLegendContainers(marginLeft);
+
+        drawYAxisPanel();
+    }
+
+    function updateMeanView(){
+        refreshValues();
+        drawMeanViewTable();
+
+        var marginLeft = getYLabelSize() + yPanelWidth;
+
+        var x = d3.scale.linear()
+            .domain([0, answers.length])
+            .range([0, w - marginLeft]);
+
+
+        var y = d3.scale.linear()
+            .domain([0, options.length])
+            .range([0, h - margin.bottom - margin.top]);
+
+        var deltaX = x(1) - x(0);
+        var deltaY = y(1) - y(0);
+
     }
 
     function updateHeatMap(){
@@ -482,12 +718,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             if (responses[zip].zipcode != null)
                 totals[responses[zip].zipcode] += responses[zip].value;   // Populate totals
         }
-
-        //console.log("--------------------------------------------------");
-
-        var redToGreenScale = d3.scale.linear()
-        .domain([0,0.5, 1])
-        .range(["#FEB3B3", "#FFF", "#B3FEB3"]); // Red to White to Green
 
         // Reset background nad hover functions for all paths
         var paths = d3.selectAll('path[data-zip]');
@@ -559,11 +789,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
     }
 
-    function showOnlyHeatMapQuestions(){
+    function showOnly(questionType){
         var items = $(".clickable");
         for (var i = 0; i < items.length; i++){
             var question = items[i].getAttribute("data-value");
-            if (!hasPluggin(question, "heatmap")){
+            if (!hasPluggin(question, questionType)){
                $(items[i]).parent().hide();
             }
         }
@@ -663,11 +893,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
         // Move each set of nodes
-        if (view == "map"){
+        if (view == "heatmap"){
 
         }
-        else{
-
+        else if (view == "percentage"){
             svg.selectAll(".fixedNode").remove();
             svg.selectAll(".countLabel").remove();
             svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
@@ -692,10 +921,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // $("#btnCategories").text(yAxisMode);
         drawTable();
 
-        if (view == "map"){
+        if (view == "heatmap"){
 
         }
-        else{
+        else if (view == "percentage"){
             svg.selectAll("circle").remove();
             svg.selectAll(".node").transition().duration(550).remove();
             svg.selectAll(".fixedNode").transition().duration(550).remove();
@@ -703,8 +932,35 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".countLabel").remove();
             addFixedNodes();
         }
+        else if (view == "mean"){
+            updateMeanView();
+        }
     }
 
+    function setMeanView(){
+        $("#percentage-view").removeClass("disabled");
+        $("#map-view").removeClass("disabled");
+        $("#mean-view").addClass("disabled");
+
+        view = "mean";
+
+        svg.selectAll(".countLabel").remove();
+        svg.selectAll(".fixedNode").remove();
+        svg.selectAll("line").remove();
+        svg.selectAll("text:not(.hm-legend)").remove();
+        svg.selectAll("rect.table-rect").remove();
+        svg.selectAll("rect.gray-alternation").remove();
+        svg.selectAll("rect.color-shade").remove();
+
+        $(".map-container").hide();
+        $(".heat-map-legend").hide();
+
+        $("#btnCategories").show();
+
+        showOnly("mean");
+
+        updateMeanView();
+    }
 
     function setPercentageView(){
         if (view == "percentage")
@@ -716,6 +972,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $("#percentage-view").addClass("disabled");
         $("#map-view").removeClass("disabled");
+        $("#mean-view").removeClass("disabled");
 
         svg.selectAll(".countLabel").remove();
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
@@ -727,13 +984,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         showAllQuestions();
     }
 
-    function setMapView(){
-        if (view == "node" && yAxisMode != "")
-            return;
-        view = "map";
+
+    function setHeatMapView(){
+        view = "heatmap";
+        updateHeatMap();
 
         $("#map-view").addClass("disabled");
         $("#percentage-view").removeClass("disabled");
+        $("#mean-view").removeClass("disabled");
 
         svg.selectAll(".countLabel").remove();
         svg.selectAll(".fixedNode").remove();
@@ -744,7 +1002,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.selectAll("rect.color-shade").remove();
         $(".map-container").show();
         $(".heat-map-legend").show();
-        showOnlyHeatMapQuestions();
+        showOnly("heatmap");
         $(".btnAdd").hide();
         $("#btnCategories").hide();
         drawOuterRect();

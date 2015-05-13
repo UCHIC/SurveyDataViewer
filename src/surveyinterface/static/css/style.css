@@ -1,4 +1,4 @@
-﻿html, body{
+﻿html, body {
     width: 100%;
     height: 100%;
     overflow-y: hidden;
@@ -15,38 +15,39 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-#visualizationContent{
+#visualizationContent {
     height: 100%;
     text-align: center;
-    width:calc(100% - 300px);
-    float:right;
+    width: calc(100% - 300px);
+    float: right;
     overflow: hidden;
 }
 
-#visualizationContent .dropdown{
+#visualizationContent .dropdown {
     margin-top: 5px;
     margin-left: 17px
 }
 
-.thumbnail{
-    width:300px;
-    float:left;
+.thumbnail {
+    width: 300px;
+    float: left;
     position: absolute;
     border: #ddd solid black;
     border-radius: 0;
 }
 
-#surveyContainer .thumbnail{
+#surveyContainer .thumbnail {
     text-align: center;
-    width:200px;
+    width: 200px;
 }
 
-#surveyContainer .caption{
-    width:100%;
+#surveyContainer .caption {
+    width: 100%;
 }
+
 .thumbnail .caption {
     padding: 9px;
     color: #333;
@@ -54,33 +55,34 @@ h6 {
     width: 150px;
 }
 
-#listQuestions .thumbnail img{
-    float:left;
-    display:inline;
+#listQuestions .thumbnail img {
+    float: left;
+    display: inline;
 }
 
-#listQuestions .thumbnail h4, #listQuestions .thumbnail p{
-    display:inline;
-    float:left;
-    width:auto;
+#listQuestions .thumbnail h4, #listQuestions .thumbnail p {
+    display: inline;
+    float: left;
+    width: auto;
 }
 
-.dropdown{
+.dropdown {
     text-align: left;
-    position:fixed;
+    position: fixed;
 }
 
-.dropdown-menu{
+.dropdown-menu {
     margin-top: 10px;
 }
 
-.dropdown-menu li:not(.divider) a:hover{
-    background:#ddd;
+.dropdown-menu li:not(.divider) a:hover {
+    background: #ddd;
 }
 
-.thumbnail img{
+.thumbnail img {
     height: 50px;
 }
+
 /*
 .accordion-toggle:after {
     font-family: 'Glyphicons Halflings';
@@ -89,41 +91,41 @@ h6 {
     color: grey;
 }*/
 
-#surveyContainer{
-    width:1000px;
-    height:calc(100% - 71px);
-    margin:auto;
-    margin-top:71px;
+#surveyContainer {
+    width: 1000px;
+    height: calc(100% - 71px);
+    margin: auto;
+    margin-top: 71px;
 }
 
-svg{
+svg {
     cursor: default;
 
 }
 
-#mainContent{
-    height:calc(100% - 70px);
-    overflow:auto;
+#mainContent {
+    height: calc(100% - 70px);
+    overflow: auto;
     margin-top: 70px;
 }
 
-#listQuestions{
+#listQuestions {
     width: 300px;
     height: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
-    float:left;
+    float: left;
     margin-bottom: 0;
     border-right: 1px solid #ddd;
 }
 
-#listQuestions a, #listQuestions h4{
+#listQuestions a, #listQuestions h4 {
     /*width:270px;*/
     color: #000000 !important;
-    cursor:default;
+    cursor: default;
     text-decoration: none;
     font-size: 14px;
-    margin:0 !important;
+    margin: 0 !important;
     display: inline-block;
 }
 
@@ -133,57 +135,57 @@ text.shadow {
     opacity: 0.9;
 }
 
-#options{
-    width:300px;
-    height:100px;
-    float:right;
+#options {
+    width: 300px;
+    height: 100px;
+    float: right;
 }
 
-#labels{
-    width:30%;
-    height:100px;
-    float:left;
+#labels {
+    width: 30%;
+    height: 100px;
+    float: left;
 }
 
 .radio input[type=radio], .radio-inline input[type=radio], .checkbox input[type=checkbox], .checkbox-inline input[type=checkbox] {
     float: left;
     margin-left: -10px;
-    margin-right:5px;
+    margin-right: 5px;
 }
 
-#options .dropdown{
+#options .dropdown {
     width: 198px;
-    float:right;
+    float: right;
 }
 
-#top-bar .btn-group{
+#top-bar .btn-group {
     margin: 5px;
     float: right;
     right: 0;
 }
 
-#top-bar{
-    width:100%;
-    padding:4px;
-    margin-bottom:5px;
+#top-bar {
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 5px;
     height: 90px;
 }
 
-#map-canvas{
+#map-canvas {
     height: calc(100% - 172px);
     width: calc(100% - 320px);
     margin: 0px 10px;
     border: 1px solid #666;
     position: absolute;
-    display:none;
+    display: none;
 }
 
 .panel-primary {
     border-color: #000000;
 }
 
-#captionContainer{
-    width: calc(100% - 106px);
+#captionContainer {
+    width: calc(100% - 146px);
     float: left;
     margin-bottom: 0;
     margin-left: 6px;
@@ -193,19 +195,19 @@ text.shadow {
     /* border-top-right-radius: 4px; */
 }
 
-.btn-default.disabled{
+.btn-default.disabled {
     color: #FFF;
-    background-color: #3D4348  !important;
+    background-color: #3D4348 !important;
     border-color: #333 !important;
-    -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.2);
-    box-shadow: inset 0 3px 5px rgba(0,0,0,.2);
+    -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
 }
 
-#viewContainer{
-    width:93px;
+#viewContainer {
+    width: 133px;
     height: 90px;
-    float:right;
-    margin-bottom:0;
+    float: right;
+    margin-bottom: 0;
     margin-right: 6px;
     -webkit-border-radius: 0px;
     -webkit-border-top-left-radius: 4px;
@@ -217,19 +219,19 @@ text.shadow {
     border-color: #8A7878;
 }
 
-#captionContainer .panel-heading, #viewContainer .panel-heading{
-    height:38px;
+#captionContainer .panel-heading, #viewContainer .panel-heading {
+    height: 38px;
     background-color: #3D4348;
     border-color: #6D6E72;
     border-top-right-radius: 0px;
     border-top-left-radius: 0px;
 }
 
-.caption p{
-    clear:left;
+.caption p {
+    clear: left;
 }
 
-#btnCategories{
+#btnCategories {
     width: 20px;
     height: 24px;
     border-radius: 1px;
@@ -238,11 +240,11 @@ text.shadow {
     border: 1px solid #BBB;
 }
 
-#btnCategories:hover{
+#btnCategories:hover {
     border: 1px solid #999;
 }
 
-#btnCategories span{
+#btnCategories span {
     margin-left: -7px;
     top: -3px;
 }
@@ -255,16 +257,16 @@ span.btnAdd {
     display: none;
     float: right;
     right: 15px;
-    width:0;
-    height:0;
+    width: 0;
+    height: 0;
 }
 
 span.btnAdd:hover {
-    color:#777
+    color: #777
 }
 
-hr{
-    margin:0;
+hr {
+    margin: 0;
 }
 
 .radio, .checkbox {
@@ -275,7 +277,7 @@ hr{
     padding-left: 0;
 }
 
-#listQuestions .caret{
+#listQuestions .caret {
     margin-left: -15px;
     margin-top: 5px;
 }
@@ -284,54 +286,52 @@ hr{
     border-top: 6px solid;
     border-right: 6px solid transparent;
     border-left: 6px solid transparent;
-    color:#666;
+    color: #666;
 }
 
-#listQuestions li{
+#listQuestions li {
     /*padding:10px 10px;*/
     outline: none;
     list-style-type: none;
 }
 
-.panel-collapse li{
+.panel-collapse li {
     border-bottom: 1px solid #aaa;
 }
 
-.panel-collapse li{
+.panel-collapse li {
     /*padding-top:3px !important;*/
     /*padding-bottom:3px !important;*/
 }
 
-.even{
-    background:#FFF;
+.even {
+    background: #FFF;
 }
 
-.odd{
-    background:#EFEFEF;
+.odd {
+    background: #EFEFEF;
 }
 
-#listQuestions li:not(.indented){
+#listQuestions li:not(.indented) {
     border: 1px solid #aaa;
-    border-top:0px;
+    border-top: 0px;
 }
 
-
-#listQuestions li:hover{
+#listQuestions li:hover {
     background-color: rgb(200, 250, 255);
 }
 
-.indented{
+.indented {
     /*padding-left:20px !important;*/
     border-left: 10px solid rgb(131, 131, 131);
-    border-right:1px solid #aaa;
+    border-right: 1px solid #aaa;
 }
 
-
-#CollisionToggleContainer{
+#CollisionToggleContainer {
     display: inline;
 }
 
-.node text{
+.node text {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -341,31 +341,31 @@ hr{
 }
 
 .tooltip {
-	position: absolute;
-	top: 100px;
-	left: 100px;
-    -moz-border-radius:5px;
-	border-radius: 5px;
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
     border: 2px solid #000;
-	/* background: #222222; */
+    /* background: #222222; */
     background: #fff;
-	opacity: .9;
-	/* color: #eeeeee; */
+    opacity: .9;
+    /* color: #eeeeee; */
     color: black;
-	padding: 10px;
-	font-size: 12px;
-	z-index: 10;
+    padding: 10px;
+    font-size: 12px;
+    z-index: 10;
 }
 
 .tooltip .title {
-	font-size: 13px;
+    font-size: 13px;
 }
 
 .tooltip .name {
-  font-weight:bold;
+    font-weight: bold;
 }
 
-#listQuestions a, #listQuestions label{
+#listQuestions a, #listQuestions label {
     font-weight: normal;
     color: #000;
     margin-bottom: 0;
@@ -374,13 +374,11 @@ hr{
     width: 100%;
 }
 
-
-
-li .checkbox{
-    margin-left:10px;
+li .checkbox {
+    margin-left: 10px;
 }
 
-.active{
+.active {
     background: #C2DBF0 !important;
 }
 
@@ -392,6 +390,7 @@ li .checkbox{
 .navbar-nav.navbar-right:last-child {
     margin-right: 0px;
 }
+
 .navbar-brand img {
     max-height: 68px;
 }
@@ -399,11 +398,11 @@ li .checkbox{
 .navbar > .container {
     margin-left: 15px;
 }
+
 .navbar .container {
     position: absolute;
     width: 100%;
 }
-
 
 .navbar-brand {
     color: #c8c8c8;
@@ -430,7 +429,7 @@ li .checkbox{
     color: #c9c9c9;
 }
 
-.navbar-inverse .navbar-nav>li>a {
+.navbar-inverse .navbar-nav > li > a {
     color: #c9c9c9;
 }
 
@@ -451,7 +450,7 @@ li .checkbox{
 
 .intro-message > h1 {
     margin: 0;
-    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.6);
     font-size: 5em;
 }
 
@@ -459,40 +458,48 @@ li .checkbox{
     width: 100%;
     margin-top: 73px;
     border-top: 1px solid #f8f8f8;
-    border-bottom: 1px solid rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .intro-message > h3 {
-    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.6);
 }
 
-
 #states {
-  fill: #98cac7;
+    fill: #98cac7;
 }
 
 #states .active {
-  /*fill: orange;*/
+    /*fill: orange;*/
 }
 
-path[data-zip]:hover{
+path[data-zip]:hover {
     /*fill: rgba(206, 252, 255, 0.71);*/
     stroke-width: 2px;
     /*stroke: #ff9e18*/
 }
 
-path[data-zip]{
-    stroke:#999;
+path[data-zip] {
+    stroke: #999;
     stroke-width: 1px;
 }
 
 #state-borders {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 1px;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  pointer-events: none;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    pointer-events: none;
+}
+.mean-base-line{
+    fill: none;
+    stroke: url(#line-gradient);
+    stroke-width: 5px;
+}
+
+.vertical-mean-line{
+    stroke-width: 2px;
 }
 
 

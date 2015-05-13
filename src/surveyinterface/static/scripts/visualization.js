@@ -451,7 +451,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".node").transition().duration(550).remove();
             svg.selectAll(".fixedNode").transition().duration(550).remove();
             svg.selectAll(".fixedNode text").remove();
-            addFixedNodes();
+            updatePercentageView();
         }
         else if (view == "heatmap") {
             updateHeatMap();
@@ -644,10 +644,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
 
         //Draw mean base lines
+
+         x = d3.scale.linear()
+            .domain([0, answers.length])
+            .range([left, right]);
+
         for (var i = 1; i <= options.length; i++){
             svg.append("svg:line")
-                .attr("x1", left)
-                .attr("x2", right)
+                .attr("x1", x(0))
+                .attr("x2", x(answers.length))
                 .attr("y1", y(i) - deltaY/2)
                 .attr("y2", y(i) - deltaY/2)
                 .attr("data-id", i)
@@ -670,6 +675,45 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("class", "mean-base-line")
         }
 
+        if (selectedQuestion) {
+            // ---------- Draw means ----------------------
+            var nodeRows = d3.range(options.length).map(function (i) {
+                return {
+                    total: 0,
+                    participants: 0,
+                    y: i
+                };
+            });
+
+            nodes.forEach(function (d) {
+                var posOption = ($.inArray(d.info[yAxisMode], options));
+                if (yAxisMode == "") {
+                    posOption = d.tempPosY;
+                }
+                var val = d.value;
+
+                nodeRows.forEach(function (o) {
+                    if (o.y == posOption) {
+                        o.participants += 1;
+                        o.total += val;
+                    }
+                })
+            });
+
+            for (var i = 1; i <= options.length; i++) {
+                // Draw pivot points
+                var xCord = nodeRows[i - 1].total / nodeRows[i - 1].participants;
+                svg.append("svg:line")
+                    .attr("x1", x(xCord))
+                    .attr("x2", x(xCord))
+                    .attr("y1", y(i) - deltaY / 2 - 15)
+                    .attr("y2", y(i) - deltaY / 2 + 15)
+                    .style("stroke", tableColor)
+                    .style("stroke-width", "5px");
+            }
+
+        }
+
         drawLegendContainers(marginLeft);
 
         drawYAxisPanel();
@@ -678,21 +722,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function updateMeanView(){
         refreshValues();
         drawMeanViewTable();
-
-        var marginLeft = getYLabelSize() + yPanelWidth;
-
-        var x = d3.scale.linear()
-            .domain([0, answers.length])
-            .range([0, w - marginLeft]);
-
-
-        var y = d3.scale.linear()
-            .domain([0, options.length])
-            .range([0, h - margin.bottom - margin.top]);
-
-        var deltaX = x(1) - x(0);
-        var deltaY = y(1) - y(0);
-
     }
 
     function updateHeatMap(){
@@ -910,7 +939,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".fixedNode").remove();
             svg.selectAll(".countLabel").remove();
             svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
-            addFixedNodes();
+            updatePercentageView();
         }
 
         $("#btnCategories")[0].disabled = true;
@@ -941,7 +970,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".fixedNode").transition().duration(550).remove();
             svg.selectAll(".fixedNode text").remove();
             svg.selectAll(".countLabel").remove();
-            addFixedNodes();
+            updatePercentageView();
         }
         else if (view == "mean"){
             updateMeanView();
@@ -967,9 +996,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".heat-map-legend").hide();
 
         $("#btnCategories").show();
-
+        $(".btnAdd").hide();
         showOnly("mean");
-
         updateMeanView();
     }
 
@@ -991,7 +1019,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#btnCategories").show();
 
         drawTable();
-        addFixedNodes();
+        updatePercentageView();
         showAllQuestions();
     }
 
@@ -1148,7 +1176,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         answers = valuesX.getUnique().sort(function(a, b){return a-b});
     }
 
-    function addFixedNodes(){
+    function updatePercentageView(){
         // Add fixed nodes
         refreshValues();
 

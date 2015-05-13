@@ -367,7 +367,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#btnCategories")[0].disabled=false;
         $("#map-view")[0].disabled=false;
         $("#mean-view")[0].disabled=false;
+
+        // Refresh y-axis mode
         numberOfQuestions = 1;
+        var mode = $("#lstYAxisMode .disabled a")[0].getAttribute("data-axis");
+        yAxisMode = mode;
+
         $('#listQuestions li').removeClass("active");
         that.closest("li").addClass("active");
         selectedQuestion = that.attr("data-value");
@@ -460,11 +465,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else if (view == "mean") {
             $(".btnAdd").hide();
             updateMeanView();
-        }
-
-        // If no longer in multiple question mode, restore yAxisMode
-        if (yAxisMode == "" && numberOfQuestions < 2) {
-            yAxisMode = "All";
         }
     }
 
@@ -893,8 +893,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
               .attr("text-anchor", "start")
               .attr("y", ((h - margin.bottom) / (numberOfQuestions)) * i + 30)
               .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
-              .text(function(){return labels[i];})
-              .call(wrap, 150);
+              .text(function(){
+                    return labels[i];
+                })
+              //.call(wrap, 150);
         }
         var marginLeft = getYLabelSize() + yPanelWidth;
 

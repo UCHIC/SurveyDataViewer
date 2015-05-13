@@ -772,7 +772,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Reset background nad hover functions for all paths
         var paths = d3.selectAll('path[data-zip]');
-            paths.attr("fill", "#3D4348");
             paths.on("mouseover", function (d) {
                 var content =   "<span class=\"name\">" + d.properties.NAME + "</span><span class=\"value\"></span><br/>" +
                                 "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.ZIP5 + "</span><br/>";
@@ -790,7 +789,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                                     "<span class=\"name\">Participants: </span><span class=\"value\">" + participants[zip] + "</span><br/>";
                         tooltip.showTooltip(content, d3.event);
                 });
-                path.attr("fill",function(d){
+                // Map refresh animation
+                path.transition().duration(100).attr("fill","#3D4348");
+                path.transition().duration(500).delay(200).attr("fill",function(d){
                     return redToGreenScale((totals[zip] / participants[zip]) / numberOfAnswers);
                 });
             }
@@ -823,6 +824,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("width", 30)
                     .attr("height", 20)
                     .style("fill", redToGreenScale(answers[i] / numberOfAnswers))
+                    //.style("fill", redToGreenScale(answers[i] / numberOfAnswers))
                     .attr("class", "color-block")
                     .style("stroke", "#000")
                     .style("stroke-width", "1px")

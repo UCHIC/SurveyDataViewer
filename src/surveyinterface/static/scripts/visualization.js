@@ -1402,7 +1402,29 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 return customScale(d.amount);
             });
 
-        // Append percentages
+        var deltaX = (w - marginLeft)/(answers.length);
+        var deltaY = (h - margin.bottom)/(options.length);
+
+        // ----------- Append percentages --------------
+
+        getGradient("#555", gradientCount);
+
+        fixedNodesContainers.append("svg:rect")
+            .attr("width", deltaX - 2)
+            .attr("height", "20px")
+            .attr("transform", function(d){
+                var left, top;
+                left = (d.pos.x * deltaX) + marginLeft + 1;
+                top = (d.pos.y + 1) * deltaY - 21;
+                return "translate(" + left + "," + top + ")";
+            })
+            .style("stroke-width", "2px")
+            .style("border-radius", "4px")
+            .style("fill", "url(#gradient" + gradientCount + ")")
+            .attr("class", "table-rect");
+
+        gradientCount++;
+
         fixedNodesContainers.append("svg:text")
             .attr("x", function (d) {
                 var delta = (w - marginLeft)/(answers.length);
@@ -1422,7 +1444,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             })
             .attr("dy", ".31em")
             //.style("text-decoration", "underline")
-            .style("fill", "#000")
+            .style("fill", "#FFF")
             .text(0).transition().duration(700).tween("text", function (d) {
                 var rowTotal = 0;   // Percentage is calculated per row
 
@@ -1462,7 +1484,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             })
             .attr("dy", ".31em")
             //.style("text-decoration", "underline")
-            .style("fill", "#000")
+            .style("fill", "#FFF")
             .text(0).transition().duration(700).tween("text", function(d) {
                 var i = d3.interpolate(this.textContent, d.amount)
 

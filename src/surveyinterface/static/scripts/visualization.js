@@ -1280,6 +1280,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 if (!label || label.trim() != "not sure")
                     return d3.rgb(redToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
 
+                if (!label || label.trim() == "not sure")
+                    return d3.rgb("#9c9c9c").darker(2);
+
                 return "#888";
             })
             .attr("r", "15")

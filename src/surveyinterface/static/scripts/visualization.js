@@ -1050,6 +1050,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".btnAdd").hide();
         showOnly("mean");
 
+        updateMeanView();
     }
 
     function setPercentageView(){

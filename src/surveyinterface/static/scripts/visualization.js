@@ -1243,6 +1243,28 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         answers = valuesX.getUnique().sort(function(a, b){return a-b});
     }
 
+    function getGradient(color, id){
+        var gradient = svg.append("svg:defs")
+            .append("svg:linearGradient")
+            .attr("id", "gradient" + (id))
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "100%")
+            .attr("spreadMethod", "pad");
+
+        // Define the gradient colors
+        gradient.append("svg:stop")
+            .attr("offset", "0%")
+            .attr("stop-color", color)
+            .attr("stop-opacity", 1);
+
+        gradient.append("svg:stop")
+            .attr("offset", "100%")
+            .attr("stop-color", d3.rgb(color).darker(2))
+            .attr("stop-opacity", 1);
+    }
+
     function updatePercentageView(){
         // Add fixed nodes
         refreshValues();
@@ -1314,6 +1336,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
+        // Define the gradient
+        $("linearGradient").remove();
+        var gradientCount = 2;
+        getGradient(defaultBubbleColor, 0); // gradient0 - default gradient
+        getGradient("#9c9c9c", 1);          // gradient1 - not sure
+
         fixedNodesContainers.append("svg:circle")
             .style("stroke", function (d) {
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
@@ -1333,14 +1361,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("fill", function(d){
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
                 if (!hasPluggin(selectedQuestion, "heatmap")) {
-                    return defaultBubbleColor;
+                    //return defaultBubbleColor;
+                    return 'url(#gradient0)';   // Default gradient
                 }
 
-                if (!label || label.trim() != "not sure")
-                    return redToWhiteToGreenScale(d.pos.x / (numberOfAnswers - 1));
-
+                if (!label || label.trim() != "not sure") {
+                    var color = redToWhiteToGreenScale(d.pos.x / (numberOfAnswers - 1));
+                    getGradient(color,gradientCount);
+                    var gradient = 'url(#gradient' + gradientCount +')';
+                    gradientCount++;
+                    return gradient;
+                }
                 if (!label || label.trim() == "not sure")
-                    return "#9c9c9c";
+                    return 'url(#gradient1)';
 
                 return defaultBubbleColor;
             })

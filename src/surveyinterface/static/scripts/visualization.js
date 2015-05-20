@@ -181,7 +181,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         mapContainer = svg.append("g")
             .attr("class", "map-container");
         $("map-container").hide();
-
+        $("#btnCategories")[0].disabled = true;
         loadHeatMap();
         drawTable();
         setPercentageView();    // start the site in percentage view

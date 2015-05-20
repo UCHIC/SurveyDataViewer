@@ -43,10 +43,24 @@ h6 {
 #surveyContainer .thumbnail {
     text-align: center;
     width: 200px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    padding-top: 10px;
+    box-shadow: 3px 3px 6px #D0D0D0;
+    border: 1px solid rgb(163, 163, 163);
 }
 
-#txtDescription{
-    height:50px;
+#surveyContainer .thumbnail h4 {
+    background: rgb(100, 100, 100);
+    color: white;
+    margin-left: -10px;
+    margin-right: -10px;
+    border: 1px solid rgb(92, 92, 92);
+}
+
+#txtDescription {
+    height: 50px;
 }
 
 #surveyContainer .caption {
@@ -123,14 +137,14 @@ svg {
     border-right: 1px solid #ddd;
 }
 
-#listQuestions label.disabled{
-    color:#969696 !important;
-    cursor:not-allowed;
+#listQuestions label.disabled {
+    color: #969696 !important;
+    cursor: not-allowed;
 }
 
 #listQuestions a, #listQuestions h4 {
     /*width:270px;*/
-    color: #000000 ;
+    color: #000000;
     cursor: default;
     text-decoration: none;
     font-size: 14px;
@@ -211,8 +225,6 @@ text.shadow {
     -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
 }
-
-
 
 #viewContainer {
     width: 133px;
@@ -477,11 +489,11 @@ li .checkbox {
 }
 
 /*#states {*/
-    /*fill: #98cac7;*/
+/*fill: #98cac7;*/
 /*}*/
 
 /*#states .active {*/
-    /*fill: orange;*/
+/*fill: orange;*/
 /*}*/
 
 path[data-zip]:hover {
@@ -496,20 +508,20 @@ path[data-zip] {
 }
 
 /*#state-borders {*/
-    /*fill: none;*/
-    /*stroke: #fff;*/
-    /*stroke-width: 1px;*/
-    /*stroke-linejoin: round;*/
-    /*stroke-linecap: round;*/
-    /*pointer-events: none;*/
+/*fill: none;*/
+/*stroke: #fff;*/
+/*stroke-width: 1px;*/
+/*stroke-linejoin: round;*/
+/*stroke-linecap: round;*/
+/*pointer-events: none;*/
 /*}*/
-.mean-base-line{
+.mean-base-line {
     fill: none;
     stroke: url(#line-gradient);
     stroke-width: 5px;
 }
 
-.vertical-mean-line{
+.vertical-mean-line {
     stroke-width: 2px;
 }
 

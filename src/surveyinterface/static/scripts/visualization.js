@@ -213,6 +213,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $('#lstYAxisMode li:not(.disabled)').click(onYAxisModeChange);
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
         $(".btnAdd").click(onBtnAddClick);
+        $(".btnSubstract").click(onBtnSubstractClick);
     }
 
     function initializeMap() {
@@ -400,6 +401,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Toggle add button visibility
         $(".btnAdd").hide();
+        $(".btnSubstract").hide();
         removeTempNodes();
 
         if ($(this.parentElement).hasClass("indented")){
@@ -853,16 +855,39 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function showAllQuestions(){
         $(".clickable").removeClass("disabled");
     }
-    
+
+    function onBtnSubstractClick(e){
+        $(this).closest("li").removeClass("active");
+        $(this).hide();
+
+        $(this).parent().find(".btnAdd").show();
+
+        updateOnMultipleQuestions($(this));
+    }
+
     function onBtnAddClick(e){
         $(this).closest("li").addClass("active");
         $(this).hide();
 
+        $(this).parent().find(".btnSubstract").show();
+        updateOnMultipleQuestions($(this));
+    }
+
+    function updateOnMultipleQuestions(element){
         yAxisMode = "";
-        numberOfQuestions = $(this).parent().parent().find(".active").length;
+        numberOfQuestions = element.parent().parent().find(".active").length;
+
+        if (numberOfQuestions > 1){
+            // Show substract button for this item
+            element.parent().parent().find(".active .clickable").parent().find(".btnSubstract").show();
+        }
+        else{
+            $(".btnSubstract").hide();
+        }
+
 
         // Load labels for y-axis
-        var labels = $(this).parent().parent().find(".active .clickable");
+        var labels = element.parent().parent().find(".active .clickable");
         for (var i = 0; i < labels.length; i++){
             labels[i] = $(labels[i]).text();
         }
@@ -878,7 +903,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             //svg.selectAll(".countLabel").remove();
         }
 
-        var options = _.range(numberOfQuestions);
+        options = _.range(numberOfQuestions);
 
         // Draw y-axis legend
         for (var i = 0; i < numberOfQuestions; i++){
@@ -895,7 +920,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
               .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
               .text(function(){
                     return labels[i];
-                })
+                });
               //.call(wrap, 150);
         }
         var marginLeft = getYLabelSize() + yPanelWidth;
@@ -910,21 +935,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Draw stuff
         drawOuterRect();
-
         //drawXAxisLegend(marginLeft, x);
-
         drawVerticalLines(marginLeft, x);
         drawHorizontalLines(y, marginLeft);
-
         drawLegendContainers(marginLeft);
-
         drawYAxisPanel();
-
         drawXAxisLegend(marginLeft, x);
+
         // Add a set of nodes for each selected question
         removeTempNodes();
         var nodesCopy = nodes.slice();
-        var tempQuestions = $(this).parent().parent().find(".active .clickable");
+        var tempQuestions = element.parent().parent().find(".active .clickable");
 
         // Get list of selected questions
         for (var i = 0; i < labels.length; i++){
@@ -957,9 +978,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         $("#btnCategories")[0].disabled = true;
-        $("#map-view")[0].disabled = true
+        $("#map-view")[0].disabled = true;
         $("#mean-view")[0].disabled = true;
     }
+
 
      function removeTempNodes(){
         questionNodes = [];
@@ -1031,6 +1053,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
 
         $("#btnCategories").show();
+
         //$("#btnCategories")[0].disabled = false;
 
         drawTable();
@@ -1664,7 +1687,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
 
                 $("#Q" + id ).append('<li class="indented"><label class="clickable" data-value="' + question+ '">' +
-                                                                answer + '</label><span class="btnAdd glyphicon glyphicon-plus"></span></li>');
+                                                                answer + '</label><span class="btnAdd glyphicon glyphicon-plus"></span></label><span class="btnSubstract glyphicon glyphicon-minus"></span></li>');
             }
             else if (question != null && isSingleChoice(question)){
                 var id = regExp['singleChoice'].exec(question)[1];

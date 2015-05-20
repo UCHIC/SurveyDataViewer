@@ -256,7 +256,7 @@ text.shadow {
     top: -3px;
 }
 
-span.btnAdd {
+span.btnAdd, span.btnSubstract {
     cursor: pointer;
     font-size: 12px;
     color: #AAA;

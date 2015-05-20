@@ -564,7 +564,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
         // -----
-
+        drawGradientBackground(marginLeft);
         // Draw vertical dotted lines
         for (var i = 1; i < answers.length + 1; i++) {
             if ((answers[i - 1] && labelsArray[answers[i - 1]] != "not sure") || answers.length == 1) {
@@ -618,8 +618,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("stroke", tableColor)
             .style("stroke-width", "1.3px");
 
-        marginLeft = getYLabelSize() + yPanelWidth;
-
         var colorData = [];
         var stops = $(".vertical-mean-line").length - 1;
         for (var i = 0; i <= stops; i++){
@@ -630,7 +628,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var left = yPanelWidth + deltaX / 2 + getYLabelSize();
         var right = w - deltaX / 2;
 
+        $("defs").remove();
         $("linearGradient").remove();
+
         svg.append("linearGradient")
             .attr("id", "line-gradient")
             .attr("gradientUnits", "userSpaceOnUse")
@@ -712,10 +712,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 var currLine = svg.append("svg:line")
                     .attr("x1", x((answers.length + 1) / 2))
                     .attr("x2", x((answers.length + 1) / 2))
-                    .attr("y1", y(i) - deltaY / 2 - 15)
-                    .attr("y2", y(i) - deltaY / 2 + 15)
+                    .attr("y1", y(i) - deltaY / 2 - 30)
+                    .attr("y2", y(i) - deltaY / 2 + 30)
                     .style("stroke", tableColor)
-                    .style("stroke-width", "7px");
+                    .style("stroke-width", "10px");
 
                 currLine.transition()
                     .duration(400)
@@ -728,7 +728,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         drawLegendContainers(marginLeft);
-
         drawYAxisPanel();
     }
 
@@ -1339,6 +1338,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // Define the gradient
+        $("defs").remove();
         $("linearGradient").remove();       // Remove previous ones
         var gradientCount = 2;
         getGradient(defaultBubbleColor, 0); // gradient0 - default gradient
@@ -1647,7 +1647,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("height", y(1) - y(0))
                 .attr("class", "gray-alternation")
                 .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
-                .attr("opacity", (i % 2 == 0) ? 0 : 0.1)
+                .attr("opacity", (i % 2 == 0) ? 0 : 0.03)
                 .style("fill", "#000");
 
             grad.moveToBack();
@@ -1716,6 +1716,33 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".yPanelLabel").attr("y", yPanelWidth - textHeight - textHeight/2)
     }
 
+    function drawGradientBackground(marginLeft){
+        if ($("#dash-pattern").length == 0) {
+            var dashWidth = 5;
+            $("pattern").remove();
+            var g = svg.append("pattern")
+                .attr('id', 'dash-pattern')
+                .attr('patternUnits', 'userSpaceOnUse')
+                .attr('width', dashWidth)
+                .attr('height', dashWidth)
+                .attr("x", 0).attr("y", 0)
+                .append("g").style("fill", "none").style("stroke", "#e5e5e5").style("stroke-width", 0.5);
+            g.append("path").attr("d", "M0,0 l" + dashWidth + "," + dashWidth);
+            g.append("path").attr("d", "M" + dashWidth + ",0 l-" + dashWidth + "," + dashWidth);
+        }
+
+
+        svg.append("svg:rect")
+            .attr("width", w - marginLeft)
+            .attr("height", h - margin.top - margin.bottom)
+            .attr("transform", "translate(" + marginLeft + "," + margin.top + ")")
+            .style("stroke", tableColor)
+            .style("stroke-width", "2px")
+            .style("border-radius", "4px")
+            .style("fill", "url(#dash-pattern)")
+            .attr("class", "table-rect");
+    }
+
     function drawTable(){
         if (svg != null){
             svg.selectAll(".x-legend").remove();
@@ -1743,12 +1770,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .range([0, h - margin.bottom - margin.top]);
 
         // Draw stuff
+
         drawOuterRect();
         drawXAxisLegend(marginLeft, x);
-        drawVerticalLines(marginLeft, x);
+        drawGradientBackground(marginLeft);
         drawHorizontalLines(y, marginLeft);
+
+        drawVerticalLines(marginLeft, x);
+
         drawLegendContainers(marginLeft);
         drawYAxisPanel();
+
     }
 
     function getYLabelSize(){

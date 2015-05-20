@@ -519,7 +519,7 @@ path[data-zip] {
 .mean-base-line {
     fill: none;
     stroke: url(#line-gradient);
-    stroke-width: 12px;
+    stroke-width: 24px;
 }
 
 .vertical-mean-line {

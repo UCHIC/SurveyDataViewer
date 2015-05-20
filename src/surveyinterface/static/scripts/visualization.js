@@ -1318,7 +1318,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode")
             .attr("fill", "#FFF")
-            .attr("stroke-width", "2")
+            .attr("stroke-width", "1")
             .on("mouseover", function (d) {
                 d3.select(this).attr("stroke-width", "3");
             })
@@ -1337,7 +1337,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // Define the gradient
-        $("linearGradient").remove();
+        $("linearGradient").remove();       // Remove previous ones
         var gradientCount = 2;
         getGradient(defaultBubbleColor, 0); // gradient0 - default gradient
         getGradient("#9c9c9c", 1);          // gradient1 - not sure

@@ -1320,10 +1320,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("fill", "#FFF")
             .attr("stroke-width", "1")
             .on("mouseover", function (d) {
-                d3.select(this).attr("stroke-width", "3");
+                d3.select(this).attr("stroke-width", "2");
             })
             .on("mouseout", function () {
-                d3.select(this).attr("stroke-width", "2");
+                d3.select(this).attr("stroke-width", "1");
             });
 
 

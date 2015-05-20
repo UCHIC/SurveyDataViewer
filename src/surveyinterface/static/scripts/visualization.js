@@ -371,8 +371,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Refresh y-axis mode
         numberOfQuestions = 1;
-        var mode = $("#lstYAxisMode .disabled a")[0].getAttribute("data-axis");
-        yAxisMode = mode;
+        restoreYAxisMode();
 
         $('#listQuestions li').removeClass("active");
         that.closest("li").addClass("active");
@@ -421,7 +420,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else{
             $(".titleContainer").show();
         }
-        $("#txtDescription").text(" " + content);
+        $("#txtDescription").text(content);
         if ($("#txtDescription").text() == ""){
             $(".descriptionContainer").hide();
         }
@@ -873,6 +872,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         updateOnMultipleQuestions($(this));
     }
 
+    function restoreYAxisMode(){
+        var mode = $("#lstYAxisMode .disabled a")[0].getAttribute("data-axis");
+        yAxisMode = mode;
+    }
+
     function updateOnMultipleQuestions(element){
         yAxisMode = "";
         numberOfQuestions = element.parent().parent().find(".active").length;
@@ -880,11 +884,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (numberOfQuestions > 1){
             // Show substract button for this item
             element.parent().parent().find(".active .clickable").parent().find(".btnSubstract").show();
+            $("#btnCategories")[0].disabled = true;
         }
         else{
             $(".btnSubstract").hide();
+            restoreYAxisMode();
+            $("#btnCategories")[0].disabled = false;
         }
-
 
         // Load labels for y-axis
         var labels = element.parent().parent().find(".active .clickable");
@@ -905,23 +911,30 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         options = _.range(numberOfQuestions);
 
-        // Draw y-axis legend
-        for (var i = 0; i < numberOfQuestions; i++){
-            svg.append("text")
-              .attr("class", "y-legend")
-              .attr("data-id", i)
-              .attr("id", "y-legend" + i)
-              .attr("font-weight", "normal")
-              .attr("fill", legendColor)
-              .attr("dx", 0)
-              .attr("dy", 0)
-              .attr("text-anchor", "start")
-              .attr("y", ((h - margin.bottom) / (numberOfQuestions)) * i + 30)
-              .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
-              .text(function(){
-                    return labels[i];
-                });
-              //.call(wrap, 150);
+        if (numberOfQuestions > 1) {
+            // Draw y-axis legend
+            for (var i = 0; i < numberOfQuestions; i++) {
+                svg.append("text")
+                    .attr("class", "y-legend")
+                    .attr("data-id", i)
+                    .attr("id", "y-legend" + i)
+                    .attr("font-weight", "normal")
+                    .attr("fill", legendColor)
+                    .attr("dx", 0)
+                    .attr("dy", 0)
+                    .attr("text-anchor", "start")
+                    .attr("y", ((h - margin.bottom) / (numberOfQuestions)) * i + 30)
+                    .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
+                    .text(function () {
+                        return labels[i];
+                    });
+                //.call(wrap, 150);
+                $("#txtDescription").text("");
+            }
+        }
+        else{
+            drawYAxisLegend();
+            $("#txtDescription").text(element.parent().parent().find(".active .clickable").text());
         }
         var marginLeft = getYLabelSize() + yPanelWidth;
 
@@ -976,8 +989,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
             updatePercentageView();
         }
+        else if (view == "mean"){
 
-        $("#btnCategories")[0].disabled = true;
+        }
+
         $("#map-view")[0].disabled = true;
         $("#mean-view")[0].disabled = true;
     }
@@ -1034,7 +1049,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#btnCategories").show();
         $(".btnAdd").hide();
         showOnly("mean");
-        updateMeanView();
+
     }
 
     function setPercentageView(){
@@ -1057,7 +1072,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         //$("#btnCategories")[0].disabled = false;
 
         drawTable();
-        updatePercentageView();
+
+        // If a question has been clicked, update
+        if ($("#listQuestions").find(".active").length > 0)
+            updatePercentageView();
+
         showAllQuestions();
     }
 

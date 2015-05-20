@@ -35,7 +35,7 @@ h6 {
     width: 300px;
     float: left;
     position: absolute;
-    border: #ddd solid;
+    border: 1px solid #ddd;
     border-radius: 0;
     z-index: 999;
 }
@@ -43,6 +43,10 @@ h6 {
 #surveyContainer .thumbnail {
     text-align: center;
     width: 200px;
+}
+
+#txtDescription{
+    height:50px;
 }
 
 #surveyContainer .caption {

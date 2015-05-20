@@ -47,13 +47,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     var redToWhiteToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 0.5, 1])
-        .range(["#FF0000", "#FFF", "#00FF00"]); // Red to White to Green
+        .range(["#cc0000", "#CCC", "#00cc00"]); // Red to White to Green
 
     var redToYellowToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0,0.5, 1])
-        .range(["#FF0000", "#FFFF00", "#00FF00"]); // Red to White to Green
+        .range(["#cc0000", "#ccff00", "#00cc00"]); // Red to Yellow to Green
 
     var defaultBubbleColor = "#C2DBF0";
+
+    var notSureColor = "#D6DB00";
 
     var mapContainer;
 
@@ -1340,7 +1342,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("linearGradient").remove();       // Remove previous ones
         var gradientCount = 2;
         getGradient(defaultBubbleColor, 0); // gradient0 - default gradient
-        getGradient("#9c9c9c", 1);          // gradient1 - not sure
+        getGradient(notSureColor, 1);          // gradient1 - not sure
 
         fixedNodesContainers.append("svg:circle")
             .style("stroke", function (d) {
@@ -1353,7 +1355,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     return d3.rgb(redToWhiteToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
 
                 if (!label || label.trim() == "not sure")
-                    return d3.rgb("#9c9c9c").darker(2);
+                    return d3.rgb(notSureColor).darker(2);
 
                 return d3.rgb(defaultBubbleColor).darker(2);
             })

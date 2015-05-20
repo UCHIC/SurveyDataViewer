@@ -1348,15 +1348,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 return customScale(d.amount);
             });
 
+        // Append percentages
         fixedNodesContainers.append("svg:text")
             .attr("x", function (d) {
                 var delta = (w - marginLeft)/(answers.length);
-                return (d.pos.x) * delta + marginLeft + 3;
+                return (d.pos.x * delta) + marginLeft + delta/2;
             })
             .attr("y", function (d) {
                 var delta = (h - margin.bottom)/(options.length);
                 return (d.pos.y + 1) * delta - 10;
             })
+            .style("text-anchor", "middle")
+            .style("font-size", "14px")
             .attr("visibility", function (d) {
                 if (d.amount == 0) {
                     return "hidden";
@@ -1381,7 +1384,36 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                 return function (t) {
                     var value = (i(t) * round / round).toFixed(2);
-                    this.textContent = value + "% (n = " + d.amount + ")";
+                    this.textContent = value + "%";
+                };
+            });
+
+        // Append (n)
+        fixedNodesContainers.append("svg:text")
+            .attr("x", function (d) {
+                var delta = (w - marginLeft)/(answers.length);
+                return (d.pos.x * delta) + marginLeft + delta - 3;
+            })
+            .attr("y", function (d) {
+                var delta = (h - margin.bottom)/(options.length);
+                return (d.pos.y + 1) * delta - 10;
+            })
+            .style("text-anchor", "end")
+            .style("font-size", "12px")
+            .attr("visibility", function (d) {
+                if (d.amount == 0) {
+                    return "hidden";
+                }
+                return "visible";
+            })
+            .attr("dy", ".31em")
+            //.style("text-decoration", "underline")
+            .style("fill", "#000")
+            .text(0).transition().duration(700).tween("text", function(d) {
+                var i = d3.interpolate(this.textContent, d.amount)
+
+                return function(t) {
+                    this.textContent = "(n = " + (Math.round(i(t))) + ")";
                 };
             });
 

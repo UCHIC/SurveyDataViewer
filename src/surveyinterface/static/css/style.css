@@ -51,6 +51,7 @@ h6 {
     border: 1px solid rgb(163, 163, 163);
 }
 
+
 #surveyContainer .thumbnail h4 {
     background: rgb(100, 100, 100);
     color: white;
@@ -518,7 +519,7 @@ path[data-zip] {
 .mean-base-line {
     fill: none;
     stroke: url(#line-gradient);
-    stroke-width: 5px;
+    stroke-width: 12px;
 }
 
 .vertical-mean-line {

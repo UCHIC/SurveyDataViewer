@@ -45,13 +45,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var zipQuestion = "Q16";
     var centerZip;
 
-    var redToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
+    var redToWhiteToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 0.5, 1])
-        .range(["#FEB3B3", "#FFF", "#B3FEB3"]); // Red to White to Green
+        .range(["#FF0000", "#FFF", "#00FF00"]); // Red to White to Green
 
     var redToYellowToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0,0.5, 1])
-        .range(["#FEB3B3", "#FF0", "#B3FEB3"]); // Red to White to Green
+        .range(["#FF0000", "#FFFF00", "#00FF00"]); // Red to White to Green
+
+    var defaultBubbleColor = "#C2DBF0";
 
     var mapContainer;
 
@@ -659,19 +661,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("transform", "translate(" + 0 + "," + margin.top + ")")
 
             // Draw pivot points
-            svg.append("svg:line")
-                    .attr("x1", left)
-                    .attr("x2", left)
-                    .attr("y1", y(i) - deltaY/2 - 10)
-                    .attr("y2", y(i) - deltaY/2 + 10)
-                    .attr("class", "mean-base-line")
-
-            svg.append("svg:line")
-                    .attr("x1", right)
-                    .attr("x2", right)
-                    .attr("y1", y(i) - deltaY/2 - 10)
-                    .attr("y2", y(i) - deltaY/2 + 10)
-                    .attr("class", "mean-base-line")
+            //svg.append("svg:line")
+            //        .attr("x1", left)
+            //        .attr("x2", left)
+            //        .attr("y1", y(i) - deltaY/2 - 10)
+            //        .attr("y2", y(i) - deltaY/2 + 10)
+            //        .attr("class", "mean-base-line");
+            //
+            //svg.append("svg:line")
+            //        .attr("x1", right)
+            //        .attr("x2", right)
+            //        .attr("y1", y(i) - deltaY/2 - 10)
+            //        .attr("y2", y(i) - deltaY/2 + 10)
+            //        .attr("class", "mean-base-line");
         }
 
         if (selectedQuestion) {
@@ -683,8 +685,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     y: i
                 };
             });
-
-            // TODO: ignore 'not sure' answers from the code below
 
             nodes.forEach(function (d) {
                 if (getLabel(selectedQuestion, d.value) == "not sure"){
@@ -713,7 +713,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("y1", y(i) - deltaY / 2 - 15)
                     .attr("y2", y(i) - deltaY / 2 + 15)
                     .style("stroke", tableColor)
-                    .style("stroke-width", "5px");
+                    .style("stroke-width", "7px");
 
                 currLine.transition()
                     .duration(400)
@@ -749,7 +749,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Substract "Not sure" answers
         for (var i = 0; i < answers.length; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
-            if (label && label.trim() == "Not sure") {
+            if (label && label.trim() == "not sure") {
                 responses = _.filter(responses, function(resp){
                     return resp.value != i + 1;
                 })
@@ -791,7 +791,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 // Map refresh animation
                 path.transition().duration(100).attr("fill","#3D4348");
                 path.transition().duration(500).delay(100).attr("fill",function(d){
-                    return redToGreenScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                    return redToWhiteToGreenScale((totals[zip] / participants[zip]) / numberOfAnswers);
                 });
             }
             else{
@@ -799,7 +799,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
         // Update legend
-        var rHeight = 150;
+        var rHeight = numberOfAnswers * (20 + 12);
         var rWidth = 300;
         svg.select(".heat-map-legend").remove();
         var heatMapLegendArea = svg.append("g")
@@ -816,14 +816,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("opacity", 0.75);
 
         var counter = 0;
-        for (var i = 0; i < answers.length; i++) {
+        for (var i = 0; i < numberOfAnswers; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
-            if (label && label.trim() != "not sure") {
+            if (label)
+                label = label.trim();
+            if (label != "not sure") {
                 heatMapLegendArea.append("svg:rect")
                     .attr("width", 30)
                     .attr("height", 20)
-                    .style("fill", redToGreenScale(answers[i] / numberOfAnswers))
-                    //.style("fill", redToGreenScale(answers[i] / numberOfAnswers))
+                    .style("fill", redToWhiteToGreenScale(answers[i] / numberOfAnswers))
+                    //.style("fill", redToWhiteToGreenScale(answers[i] / numberOfAnswers))
                     .attr("class", "color-block")
                     .style("stroke", "#000")
                     .style("stroke-width", "1px")
@@ -1302,9 +1304,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 d3.select(this).attr("stroke-width", "2");
             });
 
-        var redToGreenScale = d3.scale.linear()
-            .domain([0, 0.5, 1])
-            .range(["#FEB3B3", "#FFF", "#B3FEB3"]); // Red to White to Green
 
         var numberOfAnswers = answers.length;
         // Substract "Not sure" answers from the color gradient
@@ -1323,27 +1322,27 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
 
                 if (!label || label.trim() != "not sure")
-                    return d3.rgb(redToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
+                    return d3.rgb(redToWhiteToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
 
                 if (!label || label.trim() == "not sure")
                     return d3.rgb("#9c9c9c").darker(2);
 
-                return "#888";
+                return d3.rgb(defaultBubbleColor).darker(2);
             })
             .attr("r", "15")
             .attr("fill", function(d){
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
                 if (!hasPluggin(selectedQuestion, "heatmap")) {
-                    return "#FFF";
+                    return defaultBubbleColor;
                 }
 
                 if (!label || label.trim() != "not sure")
-                    return redToGreenScale(d.pos.x / (numberOfAnswers - 1));
+                    return redToWhiteToGreenScale(d.pos.x / (numberOfAnswers - 1));
 
                 if (!label || label.trim() == "not sure")
                     return "#9c9c9c";
 
-                return "#FFF";
+                return defaultBubbleColor;
             })
             .attr("visibility", function(d){
                 if (d.amount == 0){

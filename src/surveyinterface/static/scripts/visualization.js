@@ -355,8 +355,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function onListQuestionClick(e){
         var that = $(e.target).closest(".clickable").length > 0 ? $(e.target).closest(".clickable") :$(e.target).find(".clickable");
 
-        // Prevents the event from triggering twice with the same question
-        if(that.length == 0 || that[0].getAttribute("data-value") == selectedQuestion){
+        // Prevents the event from triggering twice with the same question or triggering when the button is disabled
+        if(that.length == 0 || that[0].getAttribute("data-value") == selectedQuestion || that.hasClass("disabled")){
             return;
         }
 
@@ -479,8 +479,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             svg.selectAll(".yPanelLabel").remove();
             svg.selectAll(".mean-base-line").remove();
             svg.selectAll(".vertical-mean-line").remove()
-
-            //svg.selectAll(".countLabel").remove();
         }
 
         drawYAxisLegend();
@@ -646,12 +644,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         //Draw mean base lines
 
          x = d3.scale.linear()
-            .domain([0, answers.length])
+            .domain([1, answers.length])
             .range([left, right]);
 
         for (var i = 1; i <= options.length; i++){
             svg.append("svg:line")
-                .attr("x1", x(0))
+                .attr("x1", x(1))
                 .attr("x2", x(answers.length))
                 .attr("y1", y(i) - deltaY/2)
                 .attr("y2", y(i) - deltaY/2)
@@ -707,10 +705,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
             for (var i = 1; i <= options.length; i++) {
                 // Draw mean
-                var xCord = nodeRows[i - 1].total / nodeRows[i - 1].participants;
+                var xCord = (nodeRows[i - 1].total) / nodeRows[i - 1].participants;
                 var currLine = svg.append("svg:line")
-                    .attr("x1", x(answers.length / 2))
-                    .attr("x2", x(answers.length / 2))
+                    .attr("x1", x((answers.length + 1) / 2))
+                    .attr("x2", x((answers.length + 1) / 2))
                     .attr("y1", y(i) - deltaY / 2 - 15)
                     .attr("y2", y(i) - deltaY / 2 + 15)
                     .style("stroke", tableColor)
@@ -847,13 +845,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         for (var i = 0; i < items.length; i++){
             var question = items[i].getAttribute("data-value");
             if (!hasPluggin(question, questionType)){
-               $(items[i]).parent().hide();
+               $(items[i]).addClass("disabled");
             }
         }
     }
 
     function showAllQuestions(){
-        $(".clickable").parent().show();
+        $(".clickable").removeClass("disabled");
     }
     
     function onBtnAddClick(e){
@@ -1010,7 +1008,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $(".map-container").hide();
         $(".heat-map-legend").hide();
-
+        //$("#btnCategories")[0].disabled = true;
         $("#btnCategories").show();
         $(".btnAdd").hide();
         showOnly("mean");
@@ -1033,6 +1031,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
 
         $("#btnCategories").show();
+        //$("#btnCategories")[0].disabled = false;
 
         drawTable();
         updatePercentageView();
@@ -1042,7 +1041,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function setHeatMapView(){
         view = "heatmap";
-        updateHeatMap();
 
         $("#map-view").addClass("disabled");
         $("#percentage-view").removeClass("disabled");
@@ -1055,12 +1053,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.selectAll("rect.table-rect").remove();
         svg.selectAll("rect.gray-alternation").remove();
         svg.selectAll("rect.color-shade").remove();
+
         $(".map-container").show();
         $(".heat-map-legend").show();
+
         showOnly("heatmap");
+
         $(".btnAdd").hide();
         $("#btnCategories").hide();
+
         drawOuterRect();
+
+        updateHeatMap();
     }
 
     function loadHeatMap() {

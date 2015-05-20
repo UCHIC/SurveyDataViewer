@@ -35,8 +35,9 @@ h6 {
     width: 300px;
     float: left;
     position: absolute;
-    border: #ddd solid black;
+    border: #ddd solid;
     border-radius: 0;
+    z-index: 999;
 }
 
 #surveyContainer .thumbnail {
@@ -100,7 +101,6 @@ h6 {
 
 svg {
     cursor: default;
-
 }
 
 #mainContent {
@@ -119,9 +119,14 @@ svg {
     border-right: 1px solid #ddd;
 }
 
+#listQuestions label.disabled{
+    color:#969696 !important;
+    cursor:not-allowed;
+}
+
 #listQuestions a, #listQuestions h4 {
     /*width:270px;*/
-    color: #000000 !important;
+    color: #000000 ;
     cursor: default;
     text-decoration: none;
     font-size: 14px;
@@ -202,6 +207,8 @@ text.shadow {
     -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
 }
+
+
 
 #viewContainer {
     width: 133px;

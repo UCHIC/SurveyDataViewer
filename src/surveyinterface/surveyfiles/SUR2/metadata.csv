@@ -40,6 +40,6 @@ Q10,Community Satisfacation Rating,heatmap;mean,1= Very Dissatisfied; 5= Very sa
 Q11,Own or Rent,isDemographic,1= Own; 2 = Rent
 Q12,Farming,isDemographic,1= Yes; 2 = No
 Q13,Sex,isDemographic,1= Female; 2 = Male
-Q14,Bithday/ Age,heatmap;mean,1=18-29; 2=30-39; 3=40-49; 4=50-59; 5=60 and over
+Q14,Bithday/ Age,heatmap;mean;isDemographic,1=18-29; 2=30-39; 3=40-49; 4=50-59; 5=60 and over
 Q15,Highest Level of School,isDemographic;mean,1= Some High School or High School Dipolma/ GED; 2= Some College and/ or Vocational School; 3= 4 Year College Degree; 4= Graduate Degree
 Q16,Zip,,

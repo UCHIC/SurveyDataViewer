@@ -1292,6 +1292,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 if (!label || label.trim() != "not sure")
                     return redToGreenScale(d.pos.x / (numberOfAnswers - 1));
 
+                if (!label || label.trim() == "not sure")
+                    return "#9c9c9c";
+
                 return "#FFF";
             })
             .attr("visibility", function(d){

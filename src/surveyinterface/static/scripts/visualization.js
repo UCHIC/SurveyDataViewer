@@ -885,20 +885,24 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             // Show substract button for this item
             element.parent().parent().find(".active .clickable").parent().find(".btnSubstract").show();
             $("#btnCategories")[0].disabled = true;
+            $("#map-view")[0].disabled = true;
+            $("#mean-view")[0].disabled = true;
         }
         else{
             $(".btnSubstract").hide();
             restoreYAxisMode();
             $("#btnCategories")[0].disabled = false;
+            $("#map-view")[0].disabled = false;
+            $("#mean-view")[0].disabled = false;
         }
 
         // Load labels for y-axis
         var labels = element.parent().parent().find(".active .clickable");
-        for (var i = 0; i < labels.length; i++){
+        for (var i = 0; i < labels.length; i++) {
             labels[i] = $(labels[i]).text();
         }
 
-        if (svg != null){
+        if (svg != null) {
             svg.selectAll(".x-legend").remove();
             svg.selectAll(".y-legend").remove();
             svg.selectAll("rect.table-rect").remove();
@@ -993,8 +997,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         }
 
-        $("#map-view")[0].disabled = true;
-        $("#mean-view")[0].disabled = true;
     }
 
 

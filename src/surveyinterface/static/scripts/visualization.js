@@ -30,7 +30,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var options = [];
     var tableColor = "#666";
     var legendColor = "#000";
-    var yPanelWidth = 40;
+    var yPanelWidth = 80;
     var map;
     var markers = [];
     var nodes = [];
@@ -45,22 +45,20 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var zipQuestion = "Q16";
     var centerZip;
 
-    var redToWhiteToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
+    var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 0.5, 1])
-        .range(["#cc0000", "#CCC", "#00cc00"]); // Red to White to Green
-
-    var redToYellowToGreenScale = d3.scale.linear()     // To be used in nodes and heat map
-        .domain([0,0.5, 1])
-        .range(["#cc0000", "#ccff00", "#00cc00"]); // Red to Yellow to Green
+        .range(["#cc0000", "#ccff00", "#00cc00"]); // Red to White to Green
 
     var defaultBubbleColor = "#C2DBF0";
 
-    var notSureColor = "#D6DB00";
+    var notSureColor = "#C2DBF0";
 
     var mapContainer;
 
     var path = d3.geo.path()
         .projection(projection);
+
+    var independetColors = d3.scale.category10();
 
     d3.selection.prototype.moveToBack = function() {
         return this.each(function() {
@@ -457,9 +455,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         if (view == "percentage"){
             drawTable();
-            svg.selectAll("circle").remove();
-            svg.selectAll(".node").transition().duration(550).remove();
-            svg.selectAll(".fixedNode").transition().duration(550).remove();
+            $("circle").fadeOut(250);
+            svg.selectAll(".node").remove();
+            $(".fixedNode").fadeOut(250);
             svg.selectAll(".fixedNode text").remove();
             updatePercentageView();
         }
@@ -622,7 +620,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var stops = $(".vertical-mean-line").length - 1;
         for (var i = 0; i <= stops; i++){
             var offset = i * 100/stops;
-            colorData.push({offset:  offset + "%", color:redToYellowToGreenScale(offset / 100)})
+            colorData.push({offset:  offset + "%", color:bidirectionalScale(offset / 100)})
         }
 
         var left = yPanelWidth + deltaX / 2 + getYLabelSize();
@@ -792,7 +790,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 // Map refresh animation
                 path.transition().duration(100).attr("fill","#3D4348");
                 path.transition().duration(500).delay(100).attr("fill",function(d){
-                    return redToWhiteToGreenScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                    return bidirectionalScale((totals[zip] / participants[zip]) / numberOfAnswers);
                 });
             }
             else{
@@ -825,8 +823,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 heatMapLegendArea.append("svg:rect")
                     .attr("width", 30)
                     .attr("height", 20)
-                    .style("fill", redToWhiteToGreenScale(answers[i] / numberOfAnswers))
-                    //.style("fill", redToWhiteToGreenScale(answers[i] / numberOfAnswers))
+                    .style("fill", bidirectionalScale((answers[i] - 1) / (numberOfAnswers - 1)))
+                    //.style("fill", bidirectionalScale(answers[i] / numberOfAnswers))
                     .attr("class", "color-block")
                     .style("stroke", "#000")
                     .style("stroke-width", "1px")
@@ -991,9 +989,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         }
         else if (view == "percentage"){
-            svg.selectAll(".fixedNode").remove();
+            $(".fixedNode").fadeOut(250);
             svg.selectAll(".countLabel").remove();
-            svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
+            $("circle").fadeOut(250);
             updatePercentageView();
         }
         else if (view == "mean"){
@@ -1021,9 +1019,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         }
         else if (view == "percentage"){
-            svg.selectAll("circle").remove();
-            svg.selectAll(".node").transition().duration(550).remove();
-            svg.selectAll(".fixedNode").transition().duration(550).remove();
+            $("circle").fadeOut(250);
+            svg.selectAll(".node").remove();
+            $(".fixedNode").fadeOut(250);
             svg.selectAll(".fixedNode text").remove();
             svg.selectAll(".countLabel").remove();
             updatePercentageView();
@@ -1071,7 +1069,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#mean-view").removeClass("disabled");
 
         svg.selectAll(".countLabel").remove();
-        svg.selectAll("circle").transition().duration(500).attr("r", 1e-6).remove();
+        $("circle").fadeOut(250);
 
         $("#btnCategories").show();
 
@@ -1277,8 +1275,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                   radius: 0,
                   fixed:true,
                   amount:0,
-                  x: (i % answers.length) * ((w - marginLeft) / answers.length) + ((w - marginLeft)/(answers.length * 2)) + marginLeft,
-                  y: margin.top + Math.floor(i / answers.length) * ((h - margin.bottom - margin.top) / options.length) + ((h - margin.bottom - margin.top)/(options.length * 2)),
+                  x: (i % answers.length) * ((w - marginLeft) / answers.length) + ((w - marginLeft)/(answers.length * 2)) + marginLeft, // x coordinate computation for the grid
+                  y: margin.top - 10 + Math.floor(i / answers.length) * ((h - margin.bottom - margin.top) / options.length) + ((h - margin.bottom - margin.top)/(options.length * 2)),  // y coordinate computation for the grid
                   pos: {x:(i % answers.length), y:Math.floor(i / answers.length)}};
         });
 
@@ -1327,7 +1325,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 d3.select(this).attr("stroke-width", "1");
             });
 
-
         var numberOfAnswers = answers.length;
         // Substract "Not sure" answers from the color gradient
         for (var i = 0; i < answers.length; i++){
@@ -1339,10 +1336,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Define the gradient
         $("defs").remove();
-        $("linearGradient").remove();       // Remove previous ones
-        var gradientCount = 2;
-        getGradient(defaultBubbleColor, 0); // gradient0 - default gradient
-        getGradient(notSureColor, 1);          // gradient1 - not sure
+        $("linearGradient").remove();                               // Remove previous ones
+        var gradientCount = 0;
+        getGradient(defaultBubbleColor, gradientCount++);           // gradient0 - default gradient
+        getGradient(notSureColor, gradientCount++);                 // gradient1 - not sure gradient
+        for (var i = 0; i < answers.length; i++){
+            getGradient(independetColors(i), gradientCount++);      // From 2 to answers.length, color for each column
+        }
 
         fixedNodesContainers.append("svg:circle")
             .style("stroke", function (d) {
@@ -1352,23 +1352,22 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
 
                 if (!label || label.trim() != "not sure")
-                    return d3.rgb(redToWhiteToGreenScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
-
-                if (!label || label.trim() == "not sure")
+                    return d3.rgb(bidirectionalScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
+                else{
                     return d3.rgb(notSureColor).darker(2);
-
-                return d3.rgb(defaultBubbleColor).darker(2);
+                }
             })
-            .attr("r", "15")
+            .attr("r", "1")
             .attr("fill", function(d){
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
                 if (!hasPluggin(selectedQuestion, "heatmap")) {
                     //return defaultBubbleColor;
-                    return 'url(#gradient0)';   // Default gradient
+
+                    return 'url(#gradient' + (d.pos.x + 2) +')';   // Independent gradients
                 }
 
                 if (!label || label.trim() != "not sure") {
-                    var color = redToWhiteToGreenScale(d.pos.x / (numberOfAnswers - 1));
+                    var color = bidirectionalScale(d.pos.x / (numberOfAnswers - 1));
                     getGradient(color,gradientCount);
                     var gradient = 'url(#gradient' + gradientCount +')';
                     gradientCount++;
@@ -1397,11 +1396,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .range([0, w - marginLeft]);
                 var y = d3.scale.linear()
                     .domain([0, options.length])
-                    .range([0, h - margin.bottom - margin.top]);
+                    .range([0, h - margin.bottom - margin.top - 20]);
                 var maxRadius = (Math.min(x(1) - x(0), y(1) - y(0))) / 2 - 10;
+                var maxArea = maxRadius *maxRadius * Math.PI;
 
-                var customScale = d3.scale.pow().exponent(0.5).domain([0, rowTotal]).range([2, maxRadius]);
-                return customScale(d.amount);
+                var customScale = d3.scale.linear()
+                    .domain([0, rowTotal])
+                    .range([2, maxArea]);
+
+                var curArea = customScale(d.amount);
+                var curRadius = Math.pow(curArea / Math.PI, 0.5);
+                return curRadius;
             });
 
         var deltaX = (w - marginLeft)/(answers.length);
@@ -1411,6 +1416,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         getGradient("#555", gradientCount);
 
+        // Append box containers
         fixedNodesContainers.append("svg:rect")
             .attr("width", deltaX - 2)
             .attr("height", "20px")
@@ -1420,24 +1426,84 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 top = (d.pos.y + 1) * deltaY - 21;
                 return "translate(" + left + "," + top + ")";
             })
-            .style("stroke-width", "2px")
-            .style("border-radius", "4px")
             .style("fill", "url(#gradient" + gradientCount + ")")
             .attr("class", "table-rect");
+
+        // Append total container box and labels
+        if (yAxisMode == "All"){
+            svg.append("svg:rect")
+                .attr("width", yPanelWidth - 2)
+                .attr("height", "20px")
+                .attr("transform", function (d) {
+                    var left, top;
+                    left = 1;
+                    top = h - margin.bottom - 21;
+                    return "translate(" + left + "," + top + ")";
+                })
+                .style("fill", "url(#gradient" + gradientCount + ")")
+                .attr("class", "table-rect");
+
+            svg.append("svg:text")
+                .attr("x", yPanelWidth / 2)
+                .attr("y", h - margin.bottom - 7)
+                .style("text-anchor", "middle")
+                .style("font-size", "12px")
+                .attr("class", "yPanelLabel")
+                .style("fill", "rgb(194, 219, 240)")
+                .text(function () {
+                    var total = 0;   // Percentage is calculated per row
+                    fixedNodes.forEach(function (o) {
+                        total += o.amount;
+                    });
+                    return "n = " + total;
+                });
+        }
+        else{
+            var mWidth = getYLabelSize();
+            for (var i = 0; i < options.length; i++){
+                svg.append("svg:rect")
+                    .attr("width", mWidth)
+                    .attr("height", "20px")
+                    .attr("transform", function (d) {
+                        var left, top;
+                        left = yPanelWidth;
+                        top = (i + 1) * deltaY - 21;
+                        return "translate(" + left + "," + top + ")";
+                    })
+                    .style("fill", "url(#gradient" + gradientCount + ")")
+                    .attr("class", "table-rect");
+
+                svg.append("svg:text")
+                    .attr("x", yPanelWidth + getYLabelSize()/2)
+                    .attr("y", (i + 1) * deltaY - 6)
+                    .style("text-anchor", "middle")
+                    .attr("class", "yPanelLabel")
+                    .style("font-size", "12px")
+                    .style("fill", "rgb(194, 219, 240)")
+                    .text(function () {
+                        var rowTotal = 0;   // Percentage is calculated per row
+                        fixedNodes.forEach(function (o) {
+                            if (o.pos.y == i) {
+                                rowTotal += o.amount;
+                            }
+                        });
+                        return "n = " + rowTotal;
+                    });
+            }
+        }
 
         gradientCount++;
 
         fixedNodesContainers.append("svg:text")
             .attr("x", function (d) {
-                var delta = (w - marginLeft)/(answers.length);
-                return (d.pos.x * delta) + marginLeft + delta/2;
+                //var delta = (w - marginLeft)/(answers.length);
+                return (d.pos.x * deltaX) + marginLeft + deltaX/4;
             })
             .attr("y", function (d) {
-                var delta = (h - margin.bottom)/(options.length);
-                return (d.pos.y + 1) * delta - 10;
+                return (d.pos.y + 1) * deltaY - 10;
             })
             .style("text-anchor", "middle")
-            .style("font-size", "14px")
+            .style("font-size", "16px")
             .attr("visibility", function (d) {
                 if (d.amount == 0) {
                     return "hidden";
@@ -1470,13 +1536,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         fixedNodesContainers.append("svg:text")
             .attr("x", function (d) {
                 var delta = (w - marginLeft)/(answers.length);
-                return (d.pos.x * delta) + marginLeft + delta - 3;
+                return (d.pos.x * delta) + marginLeft + delta - deltaX/4;
             })
             .attr("y", function (d) {
                 var delta = (h - margin.bottom)/(options.length);
                 return (d.pos.y + 1) * delta - 10;
             })
-            .style("text-anchor", "end")
+            .style("text-anchor", "middle")
             .style("font-size", "12px")
             .attr("visibility", function (d) {
                 if (d.amount == 0) {
@@ -1486,12 +1552,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             })
             .attr("dy", ".31em")
             //.style("text-decoration", "underline")
-            .style("fill", "#FFF")
+            .style("fill", "rgb(194, 219, 240)")
             .text(0).transition().duration(700).tween("text", function(d) {
                 var i = d3.interpolate(this.textContent, d.amount)
+                var rowTotal = 0;   // Percentage is calculated per row
+
+                fixedNodes.forEach(function (o) {
+                    if (o.y == d.y) {
+                        rowTotal += o.amount;
+                    }
+                });
 
                 return function(t) {
-                    this.textContent = "(n = " + (Math.round(i(t))) + ")";
+                    this.textContent = "n = " + (Math.round(i(t)));
                 };
             });
 
@@ -1596,7 +1669,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
               .attr("text-anchor", "start")
               .attr("y", ((h - margin.bottom) / (options.length)) * i + 30)
               .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
-              .text(function(d){
+              .text(function(){
                    if (yAxisMode == 'All')
                        return "";
 
@@ -1647,7 +1720,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("height", y(1) - y(0))
                 .attr("class", "gray-alternation")
                 .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
-                .attr("opacity", (i % 2 == 0) ? 0 : 0.03)
+                .attr("opacity", (i % 2 == 0) ? 0 : 0.1)
                 .style("fill", "#000");
 
             grad.moveToBack();
@@ -1693,9 +1766,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.append("svg:text")
             .attr("transform", "rotate(-90)")
             .attr("class", "yPanelLabel")
-            .attr("dy", ".71em")
             .attr("fill", legendColor)
-            .style("text-anchor", "end")
+            .style("text-anchor", "middle")
             .style("font-size", "14px")
             .text(yAxisMode);
 
@@ -1713,24 +1785,23 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Reposition y-panelLabel
         $(".yPanelLabel").attr("x", -((h - textWidth - margin.bottom) / 2));
-        $(".yPanelLabel").attr("y", yPanelWidth - textHeight - textHeight/2)
+        $(".yPanelLabel").attr("y", yPanelWidth - textHeight * 2)
     }
 
     function drawGradientBackground(marginLeft){
         if ($("#dash-pattern").length == 0) {
-            var dashWidth = 5;
+            var dashWidth = 7;
             $("pattern").remove();
             var g = svg.append("pattern")
                 .attr('id', 'dash-pattern')
                 .attr('patternUnits', 'userSpaceOnUse')
                 .attr('width', dashWidth)
                 .attr('height', dashWidth)
-                .attr("x", 0).attr("y", 0)
-                .append("g").style("fill", "none").style("stroke", "#e5e5e5").style("stroke-width", 0.5);
+                //.attr("x", 0).attr("y", 0)
+                .append("g").style("fill", "none").style("stroke", "#CCC").style("stroke-width", 0.5);
             g.append("path").attr("d", "M0,0 l" + dashWidth + "," + dashWidth);
-            g.append("path").attr("d", "M" + dashWidth + ",0 l-" + dashWidth + "," + dashWidth);
+            //g.append("path").attr("d", "M" + dashWidth + ",0 l-" + dashWidth + "," + dashWidth);
         }
-
 
         svg.append("svg:rect")
             .attr("width", w - marginLeft)
@@ -1790,7 +1861,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             labelWidth = Math.max(labelWidth, $(".y-legend")[i].getBBox().width)
         }
 
-        return labelWidth == 0 ? 0 : labelWidth + 20;
+        return labelWidth == 0 ? 0 : Math.max(labelWidth + 20, 70);
     }
 
 

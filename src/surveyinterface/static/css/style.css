@@ -517,9 +517,7 @@ path[data-zip] {
 /*pointer-events: none;*/
 /*}*/
 .mean-base-line {
-    fill: none;
-    stroke: url(#line-gradient);
-    stroke-width: 24px;
+    fill: url(#line-gradient);
 }
 
 .vertical-mean-line {

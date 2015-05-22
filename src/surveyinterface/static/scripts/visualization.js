@@ -455,15 +455,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         if (view == "percentage"){
             drawTable();
-            $("circle").fadeOut(250);
-            svg.selectAll(".node").remove();
-            $(".fixedNode").fadeOut(250);
-            svg.selectAll(".fixedNode text").remove();
             updatePercentageView();
         }
         else if (view == "heatmap") {
-            updateHeatMap();
             $(".btnAdd").hide();
+            updateHeatMap();
         }
         else if (view == "mean") {
             $(".btnAdd").hide();
@@ -472,17 +468,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function drawMeanViewTable() {
-        if (svg != null) {
-            svg.selectAll(".x-legend").remove();
-            svg.selectAll(".y-legend").remove();
-            svg.selectAll("rect.table-rect").remove();
-            svg.selectAll("rect.color-shade").remove();
-            svg.selectAll("rect.gray-alternation").remove();
-            svg.selectAll("line").remove();
-            svg.selectAll(".yPanelLabel").remove();
-            svg.selectAll(".mean-base-line").remove();
-            svg.selectAll(".vertical-mean-line").remove()
-        }
+        clearCanvas();
 
         drawYAxisLegend();
 
@@ -536,7 +522,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         svg.append("text")
                             .attr("dx", 0)
                             .attr("dy", 0)
-                            .attr("class", "x-legend")
+                            .attr("class", "x-legend graph-object")
                             .attr("text-anchor", "middle")
                             .attr("font-weight", "normal")
                             .attr("fill", legendColor)
@@ -571,7 +557,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("x2", x(i) + marginLeft - deltaX / 2)
                     .attr("y1", margin.top)
                     .attr("y2", h - margin.bottom)
-                    .attr("class", "vertical-mean-line")
+                    .attr("class", "vertical-mean-line graph-object")
                     .attr("stroke-dasharray", "1, 5")
                     .attr("stroke-linecap", "round")
                     .style("stroke", tableColor)
@@ -587,7 +573,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("y2", y(i))
                 //.attr("id", "line" + i)
                 .attr("data-id", i)
-                .attr("class", "horizontal-line")
+                .attr("class", "horizontal-line graph-object")
                 .attr("transform", "translate(" + 0 + "," + margin.top + ")")
                 .style("stroke", tableColor)
                 .style("stroke-width", "1.3px")
@@ -612,7 +598,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("x2", w)
             .attr("y1", h - margin.bottom)
             .attr("y2", h - margin.bottom)
-            .attr("class", "horizontal-line")
+            .attr("class", "horizontal-line graph-object")
             .style("stroke", tableColor)
             .style("stroke-width", "1.3px");
 
@@ -661,7 +647,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .style("fill", "url(#line-gradient)")
                 //.style("opacity", 0.75)
                 .attr("transform", "translate(" + 0 + ","  + (-20) + ")")
-                .attr("class", "mean-base-line");
+                .attr("class", "mean-base-line graph-object");
 
             // Draw pivot points
             //svg.append("svg:line")
@@ -720,7 +706,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("width", "20")
                     .attr("height", "80")
                     .attr("x", (left + right)/2 )
-                    .attr("class", "vertical-mean-line")
+                    .attr("class", "vertical-mean-line graph-object")
                     .style("stroke", d3.rgb("#888").darker(2))
                     .style("fill", 'url(#gradient0)')
                     .style("stroke-width", "1px")
@@ -811,7 +797,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.select(".heat-map-legend").remove();
         var heatMapLegendArea = svg.append("g")
             .attr("transform", "translate(" + (w - rWidth) + "," + (h - rHeight - margin.top) + ")")
-            .attr("class", "heat-map-legend");
+            .attr("class", "heat-map-legend graph-object");
 
         heatMapLegendArea.append("svg:rect")
             .attr("width", rWidth)
@@ -911,16 +897,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             labels[i] = $(labels[i]).text();
         }
 
-        if (svg != null) {
-            svg.selectAll(".x-legend").remove();
-            svg.selectAll(".y-legend").remove();
-            svg.selectAll("rect.table-rect").remove();
-            svg.selectAll("rect.color-shade").remove();
-            svg.selectAll("rect.gray-alternation").remove();
-            svg.selectAll("line").remove();
-            svg.selectAll(".yPanelLabel").remove();
-            //svg.selectAll(".countLabel").remove();
-        }
+        clearCanvas();
 
         options = _.range(numberOfQuestions);
 
@@ -928,7 +905,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             // Draw y-axis legend
             for (var i = 0; i < numberOfQuestions; i++) {
                 svg.append("text")
-                    .attr("class", "y-legend")
+                    .attr("class", "y-legend graph-object")
                     .attr("data-id", i)
                     .attr("id", "y-legend" + i)
                     .attr("font-weight", "normal")
@@ -997,15 +974,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         }
         else if (view == "percentage"){
-            $(".fixedNode").fadeOut(250);
-            svg.selectAll(".countLabel").remove();
-            $("circle").fadeOut(250);
             updatePercentageView();
         }
         else if (view == "mean"){
 
         }
-
     }
 
 
@@ -1027,11 +1000,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         }
         else if (view == "percentage"){
-            $("circle").fadeOut(250);
-            svg.selectAll(".node").remove();
-            $(".fixedNode").fadeOut(250);
-            svg.selectAll(".fixedNode text").remove();
-            svg.selectAll(".countLabel").remove();
+
             updatePercentageView();
         }
         else if (view == "mean"){
@@ -1087,8 +1056,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function clearCanvas(){
-        svg.selectAll("*").remove()
+        //svg.selectAll("*:not(.map-container)").remove();
+        svg.selectAll(".graph-object").remove();
     }
+
 
     function setHeatMapView(){
         view = "heatmap";
@@ -1314,7 +1285,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
-            .attr("class", "fixedNode")
+            .attr("class", "fixedNode graph-object")
             .attr("fill", "#FFF")
             .attr("stroke-width", "1")
             .on("mouseover", function (d) {
@@ -1423,7 +1394,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 return "translate(" + left + "," + top + ")";
             })
             .style("fill", "url(#gradient" + gradientCount + ")")
-            .attr("class", "table-rect");
+            .attr("class", "table-rect graph-object");
 
         // Append total container box and labels
         if (yAxisMode == "All"){
@@ -1437,14 +1408,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     return "translate(" + left + "," + top + ")";
                 })
                 .style("fill", "url(#gradient" + gradientCount + ")")
-                .attr("class", "table-rect");
+                .attr("class", "table-rect graph-object");
 
             svg.append("svg:text")
                 .attr("x", yPanelWidth / 2)
                 .attr("y", h - margin.bottom - 7)
                 .style("text-anchor", "middle")
                 .style("font-size", "12px")
-                .attr("class", "yPanelLabel")
+                .attr("class", "yPanelLabel graph-object")
                 .style("fill", "rgb(194, 219, 240)")
                 .text(function () {
                     var total = 0;   // Percentage is calculated per row
@@ -1467,13 +1438,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         return "translate(" + left + "," + top + ")";
                     })
                     .style("fill", "url(#gradient" + gradientCount + ")")
-                    .attr("class", "table-rect");
+                    .attr("class", "table-rect graph-object");
 
                 svg.append("svg:text")
                     .attr("x", yPanelWidth + getYLabelSize()/2)
                     .attr("y", (i + 1) * deltaY - 6)
                     .style("text-anchor", "middle")
-                    .attr("class", "yPanelLabel")
+                    .attr("class", "yPanelLabel graph-object")
                     .style("font-size", "12px")
                     .style("fill", "rgb(194, 219, 240)")
                     .text(function () {
@@ -1577,7 +1548,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         .style("stroke-width", "2px")
         .style("border-radius", "4px")
         .style("fill", "none")
-        .attr("class", "table-rect");
+        .attr("class", "table-rect graph-object");
     }
 
     function hasPluggin(question, pluggin){
@@ -1626,7 +1597,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                    svg.append("text")
                       .attr("dx", 0)
                       .attr("dy", 0)
-                      .attr("class", "x-legend")
+                      .attr("class", "x-legend graph-object")
                       .attr("text-anchor", "middle")
                       .attr("font-weight", "normal")
                       .attr("fill", legendColor)
@@ -1655,7 +1626,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function drawYAxisLegend(){
         for (var i = 0; i < options.length; i++){
             svg.append("text")
-              .attr("class", "y-legend")
+              .attr("class", "y-legend graph-object")
               .attr("data-id", i)
               .attr("id", "y-legend" + i)
               .attr("font-weight", "normal")
@@ -1693,7 +1664,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("y2", y(i))
                 //.attr("id", "line" + i)
                 .attr("data-id", i)
-                .attr("class", "horizontal-line")
+                .attr("class", "horizontal-line graph-object")
                 .attr("transform", "translate(" + 0 + "," + margin.top + ")")
                 .style("stroke", tableColor)
                 .style("stroke-width", "1.3px")
@@ -1705,7 +1676,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("x2", w)
             .attr("y1", h - margin.bottom)
             .attr("y2", h- margin.bottom)
-            .attr("class", "horizontal-line")
+            .attr("class", "horizontal-line graph-object")
             .style("stroke", tableColor)
             .style("stroke-width", "1.3px")
 
@@ -1714,7 +1685,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             var grad = svg.append("svg:rect")
                 .attr("width", w)
                 .attr("height", y(1) - y(0))
-                .attr("class", "gray-alternation")
+                .attr("class", "gray-alternation graph-object")
                 .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
                 .attr("opacity", (i % 2 == 0) ? 0 : 0.1)
                 .style("fill", "#000");
@@ -1730,7 +1701,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("x2", x(i) + marginLeft)
                 .attr("y1", margin.top)
                 .attr("y2", h)
-                .attr("class", "vertical-line")
+                .attr("class", "vertical-line graph-object")
                 .style("stroke", tableColor)
                 .attr("stroke-width", "1.3px");
         }
@@ -1742,7 +1713,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("x2", marginLeft)
                 .attr("y1", margin.top)
                 .attr("y2", h)
-                .attr("class", "vertical-line")
+                .attr("class", "vertical-line graph-object")
                 .style("stroke", tableColor)
                 .attr("stroke-width", "1.3px");
     }
@@ -1754,14 +1725,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("x2", yPanelWidth)
                 .attr("y1", margin.top)
                 .attr("y2", h - margin.bottom)
-                .attr("class", "vertical-line")
+                .attr("class", "vertical-line graph-object")
                 .style("stroke", tableColor)
                 .attr("stroke-width", "1.3px");
         }
 
         svg.append("svg:text")
             .attr("transform", "rotate(-90)")
-            .attr("class", "yPanelLabel")
+            .attr("class", "yPanelLabel graph-object")
             .attr("fill", legendColor)
             .style("text-anchor", "middle")
             .style("font-size", "14px")
@@ -1807,7 +1778,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("stroke-width", "2px")
             .style("border-radius", "4px")
             .style("fill", "url(#dash-pattern)")
-            .attr("class", "table-rect");
+            .attr("class", "table-rect graph-object");
     }
 
     function drawTable(){

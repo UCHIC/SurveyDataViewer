@@ -629,6 +629,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("defs").remove();
         $("linearGradient").remove();
 
+        x = d3.scale.linear()
+            .domain([1, answers.length])
+            .range([left, right]);
+
         svg.append("linearGradient")
             .attr("id", "line-gradient")
             .attr("gradientUnits", "userSpaceOnUse")
@@ -646,28 +650,27 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         //Draw mean base lines
 
-         x = d3.scale.linear()
-            .domain([1, answers.length])
-            .range([left, right]);
-
         for (var i = 1; i <= options.length; i++){
             //svg.append("svg:line")
             //    .attr("x1", x(1))
             //    .attr("x2", x(answers.length))
             //    .attr("y1", y(i) - deltaY/2)
             //    .attr("y2", y(i) - deltaY/2)
-            //    .attr("data-id", i)
             //    .attr("class", "mean-base-line")
+            //    .style("stroke", "url(#line-gradient)")
+            //    .style("fill", "url(#line-gradient)")
+            //    .style("stroke-width", "30px")
             //    .attr("transform", "translate(" + 0 + "," + margin.top + ")");
 
             svg.append("svg:rect")
                 .attr("width", x(answers.length) - x(1))
                 .attr("height", "40")
-                .attr("class", "mean-base-line")
+                .attr("x", x(1))
+                .attr("y", y(i) - deltaY/2)
                 .style("stroke", "#777")
                 .style("stroke-width", "1px")
-                //.style("opacity", 0.75)
-                .attr("transform", "translate(" + x(1) + "," + (margin.top + y(i) - deltaY/2 - 20) + ")");
+                .style("fill", "url(#line-gradient)")
+                .attr("class", "mean-base-line");
 
             // Draw pivot points
             //svg.append("svg:line")
@@ -720,7 +723,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 // Draw mean
                 var xCord = (nodeRows[i - 1].total) / nodeRows[i - 1].participants;
 
-                var left = x((answers.length + 1) / 2);
                 var top = y(i) - deltaY / 2 - 40;
 
                 var currLine = svg.append("svg:rect")

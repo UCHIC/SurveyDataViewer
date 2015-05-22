@@ -670,6 +670,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .style("stroke", "#777")
                 .style("stroke-width", "1px")
                 .style("fill", "url(#line-gradient)")
+                //.style("opacity", 0.75)
+                .attr("transform", "translate(" + 0 + ","  + (-20) + ")")
                 .attr("class", "mean-base-line");
 
             // Draw pivot points
@@ -732,12 +734,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .style("stroke", d3.rgb("#888").darker(2))
                     .style("fill", 'url(#gradient0)')
                     .style("stroke-width", "1px")
-                    .attr("transform", "translate(" + left + "," + top + ")");
+                    .attr("transform", "translate(" + (left - 10) + "," + top + ")");
 
                 currLine.transition()
                     .duration(400)
                     .ease("linear")
-                    .attr("transform", "translate(" + x(xCord) + "," + top + ")")
+                    .attr("transform", "translate(" + (x(xCord) - 10) + "," + top + ")")
             }
         }
 

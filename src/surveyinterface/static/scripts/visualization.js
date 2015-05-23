@@ -184,6 +184,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "map-container")
             .call(d3.behavior.zoom()
                 .scaleExtent([1, 6]).on("zoom", zoom))
+            .append("g");
 
         $("map-container").hide();
         $("#btnCategories")[0].disabled = true;

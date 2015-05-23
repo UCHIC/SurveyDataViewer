@@ -183,7 +183,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         mapContainer = svg.append("g")
             .attr("class", "map-container")
             .call(d3.behavior.zoom()
-                .scaleExtent([1, 6]).on("zoom", zoom))
+                .scaleExtent([1, 8]).on("zoom", zoom))
             .append("g");
 
         $("map-container").hide();

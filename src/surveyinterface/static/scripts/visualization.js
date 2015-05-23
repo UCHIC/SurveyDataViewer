@@ -39,6 +39,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var numberOfQuestions = 0;
     var questionNodes = [];
     var centered;
+    var cutoff = 5;
 
     var zipQuestion = "Q16";
     var centerZip;
@@ -158,6 +159,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
+        // Populate demographic data on the nodes
         nodes = d3.range(data.rows.length - 1).map(function(d, i) {
             var info = {};
             for (var j = 0; j < metadata.rows.length; j++) {
@@ -620,9 +622,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 });
                 // Map refresh animation
                 curPath.transition().duration(100).attr("fill","#3D4348");
-                curPath.transition().duration(500).delay(100).attr("fill",function(d){
-                    return bidirectionalScale((totals[zip] / participants[zip]) / numberOfAnswers);
-                });
+
+                if (participants[zip] > cutoff) {        // Cut off at 5
+                    curPath.transition().duration(500).delay(100).attr("fill", function (d) {
+                        return bidirectionalScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                    });
+                }
+
             }
             else{
                 //console.log("Warning: path not found for zip code " + zip + " which contains " + participants[zip] + " participants.");

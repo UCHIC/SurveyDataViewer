@@ -337,6 +337,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         drawOuterRect();
 
+        //drawHorizontalLines(y);
+        drawGrayAlternation(y);
+
         // Draw x axis legend and ignore not sure responses
         var value = $(".active label").attr("data-value");
         var deltaX = (x(1) - x(0));
@@ -1511,8 +1514,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "horizontal-line graph-object")
             .style("stroke", tableColor)
             .style("stroke-width", "1.3px")
+    }
 
-        // Gray alternation
+    function drawGrayAlternation(y){
+                // Gray alternation
         for (var i = 0; i <= options.length - 1; i++) {
             if (i % 2 != 0) {
                 var grad = svg.append("svg:rect")
@@ -1647,6 +1652,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         drawOuterRect();
         drawXAxisLegend(marginLeft, x);
+        drawGrayAlternation(y);
         drawGradientBackground(marginLeft);
         drawHorizontalLines(y, marginLeft);
 

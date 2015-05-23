@@ -524,4 +524,7 @@ path[data-zip] {
     stroke-width: 2px;
 }
 
+.zip-path:hover{
+    opacity:0.5;
+}
 

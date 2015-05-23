@@ -39,11 +39,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var numberOfQuestions = 0;
     var questionNodes = [];
     var centered;
-    var projection = d3.geo.albersUsa()
-        .scale(6500)
-        .translate([w / 2, h / 2]);
+
     var zipQuestion = "Q16";
     var centerZip;
+    var path;
 
     var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 0.5, 1])
@@ -55,8 +54,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     var mapContainer;
 
-    var path = d3.geo.path()
-        .projection(projection);
+    var projection;
 
     var independetColors = d3.scale.category10();
 
@@ -181,18 +179,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("height", h);
 
         mapContainer = svg.append("g")
-            .attr("class", "map-container");
+            .attr("class", "map-container")
+            .call(d3.behavior.zoom()
+                .scaleExtent([1, 6]).on("zoom", zoom))
+
         $("map-container").hide();
         $("#btnCategories")[0].disabled = true;
         loadHeatMap();
-        drawTable();
         setPercentageView();    // start the site in percentage view
 
-        // Pre-load markers for questions that use the map
-        for (var i = 0; i < markerQuestions.length; i++){
-            loadMarkerData(markerQuestions[i]);
-        }
-        //loadMarkerData(question);
 
          // Add demographic items to dropdown
         for (var j = 0; j < metadata.rows.length; j++) {
@@ -206,6 +201,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
+        // Bind click events
         $("#percentage-view").click(setPercentageView);
         $("#map-view").click(setHeatMapView);
         $("#mean-view").click(setMeanView);
@@ -216,143 +212,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
         $(".btnAdd").click(onBtnAddClick);
         $(".btnSubstract").click(onBtnSubstractClick);
-    }
-
-    function initializeMap() {
-        if (map != null){
-            return;
-        }
-        var mapOptions = {
-            center: new google.maps.LatLng(38.5000, -98.0000),   // Center the map at Utah
-            zoom: 5
-        };
-
-        map = new google.maps.Map(document.getElementById('map-canvas'),
-            mapOptions);
-    }
-
-    function loadMarkerData(mapQuestion){
-        var values = [];
-        // populate value arrays
-        for (var i = 0; i < nodes.length; i++){
-            var myVal = data.rows[i + 1][mapQuestion];
-            if (myVal == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
-                continue;
-            }
-            values.push(myVal);
-        }
-
-        values = _(values).countBy();
-        var counter = 0;
-
-        _(values).keys().forEach(function(zipcode) {
-            var dataMarker;
-
-            if (localStorage[zipcode] != null){
-                dataMarker = JSON.parse(localStorage[zipcode]);
-            }
-            // Request the marker data from geocode API which has a limit of 1 request per ~300 ms
-            if (dataMarker == null){
-                setTimeout(function() {
-                    var url = 'http://maps.googleapis.com/maps/api/geocode/json?address=' + zipcode;
-                    $.getJSON(url, function(data) {
-                        if (data.results.length === 0) {
-                            return;
-                        }
-                        var result = _(data.results).first();
-                        var title = _(result.address_components).pluck("long_name").join(', ');
-                        var position = result.geometry.location;
-
-                        localStorage.setItem(zipcode, JSON.stringify({title:title, position:position}));    // Save in local storage for future use
-                    });
-                }, 300 * counter++);
-            }
-        });
-    }
-
-    function loadMarkers(values){
-        var counter = 0;
-
-        _(values).keys().forEach(function(zipcode) {
-            var dataMarker;
-
-            if (localStorage[zipcode] != null){
-                dataMarker = JSON.parse(localStorage[zipcode]);
-            }
-                                                                                                            // If the marker exists in the local storage, load it from there
-            if (dataMarker != null){
-                addMarker(dataMarker.title, values[zipcode], dataMarker.position);
-            }else{                                                                                          // Request it from geocode API which has a limit of 1 request per ~300 ms
-                setTimeout(function() {
-                    var url = 'http://maps.googleapis.com/maps/api/geocode/json?address=' + zipcode;
-                    $.getJSON(url, function(data) {
-                        if (data.results.length === 0) {
-                            return;
-                        }
-                        var result = _(data.results).first();
-                        var title = _(result.address_components).pluck("long_name").join(', ');
-                        var position = result.geometry.location;
-                        localStorage.setItem(zipcode, JSON.stringify({title:title, position:position}));    // Save in local storage for future use
-                        addMarker(title, values[zipcode], position);
-                    });
-                }, 300 * counter++);
-            }
-        });
-    }
-
-    function addMarker(title, participants, position){
-        var infoWindowContent = "<section style='text-align: left;'>\
-                                    <header><h5>" + "<b>Location: </b>" + title + "</h5></header>\
-                                    <h5>" + "<b>Participants: </b>"+ participants + "</h5></header>\
-                                </section>";
-
-        var infoWindow = new google.maps.InfoWindow({
-            content: infoWindowContent
-        });
-
-        var marker = new google.maps.Marker({
-            title: title + ". \n" + participants + ((participants > 1) ?" participants" : " participant"),
-            position: position,
-            map: map
-        });
-
-        google.maps.event.addListener(marker, 'click', function() {
-            if (openInfoWindow.hasOwnProperty("content")) {
-                openInfoWindow.close();
-            }
-            infoWindow.open(map, marker);
-            openInfoWindow = infoWindow;
-        });
-
-        markers.push(marker);
-    }
-
-    function clearMarkers(){
-        for (var i = 0; i < markers.length; i++) {
-            markers[i].setMap(null);
-        }
-    }
-
-    function loadMap(){
-        $("#map-canvas").show();
-        // Initialize google maps
-        //google.maps.event.addDomListener(window, 'load', initializeMap);
-        initializeMap();
-
-        var values = [];
-        // populate value arrays
-        for (var i = 0; i < nodes.length; i++){
-            nodes[i].value = data.rows[i + 1][selectedQuestion];
-            if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0){
-                continue;
-            }
-            values.push(nodes[i].value);
-        }
-
-        values = _(values).countBy();
-
-        clearMarkers();
-        loadMarkers(values);
     }
 
     function onListQuestionClick(e){
@@ -429,15 +288,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else{
             $(".descriptionContainer").show();
         }
-
-        if (getLabel(selectedQuestion, "data-type") == "map"){
-            loadMap();
-            return;
-        }
-        else{
-            $("#map-canvas").hide();
-        }
-
 
         if (hasPluggin(selectedQuestion, "heatmap")) {
             $("#map-view")[0].disabled = false;
@@ -578,19 +428,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .style("stroke", tableColor)
                 .style("stroke-width", "1.3px")
         }
-
-        // Gray alternation
-        //for (var i = 0; i <= options.length - 1; i++){
-        //    var grad = svg.append("svg:rect")
-        //        .attr("width", w)
-        //        .attr("height", y(1) - y(0))
-        //        .attr("class", "gray-alternation")
-        //        .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
-        //        .attr("opacity", (i % 2 == 0) ? 0 : 0.1)
-        //        .style("fill", "#000");
-        //
-        //    grad.moveToBack();
-        //}
 
         // Line at the top of x axis legend
         svg.append("svg:line")
@@ -771,9 +608,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             })
 
         for (var zip in totals) {
-            var path = d3.select('path[data-zip="' + zip + '"]');
-            if (path[0][0] != null) {
-                path.on("mouseover", function (obj) {
+            var curPath = d3.select('path[data-zip="' + zip + '"]');
+            if (curPath[0][0] != null) {
+                curPath.on("mouseover", function (obj) {
                     var zip = obj.properties.ZIP5;
                     var content =   "<span class=\"name\">" + obj.properties.NAME + "</span><span class=\"value\"></span><br/>" +
                                     "<span class=\"name\">Zip code: </span><span class=\"value\">" + zip + "</span><br/>" +
@@ -782,8 +619,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         tooltip.showTooltip(content, d3.event);
                 });
                 // Map refresh animation
-                path.transition().duration(100).attr("fill","#3D4348");
-                path.transition().duration(500).delay(100).attr("fill",function(d){
+                curPath.transition().duration(100).attr("fill","#3D4348");
+                curPath.transition().duration(500).delay(100).attr("fill",function(d){
                     return bidirectionalScale((totals[zip] / participants[zip]) / numberOfAnswers);
                 });
             }
@@ -1039,20 +876,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#map-view").removeClass("disabled");
         $("#mean-view").removeClass("disabled");
 
-        svg.selectAll(".countLabel").remove();
-        $("circle").fadeOut(250);
-
         $("#btnCategories").show();
 
         //$("#btnCategories")[0].disabled = false;
 
         drawTable();
 
+        showAllQuestions();
+
         // If a question has been clicked, update
         if ($("#listQuestions").find(".active").length > 0)
             updatePercentageView();
 
-        showAllQuestions();
     }
 
     function clearCanvas(){
@@ -1079,8 +914,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#btnCategories").hide();
 
         drawOuterRect();
+        drawGradientBackground(0);
+
 
         updateHeatMap();
+
     }
 
     function loadHeatMap() {
@@ -1092,9 +930,35 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             //var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion]}});
             //zipCodes = _(zipCodes).countBy("zipcode");
 
+            // create a first guess for the projection
+            var center = d3.geo.centroid(topojson.feature(us, us.objects.zip_codes_for_utah))
+            var scale = 6500;
+            var offset = [w / 2, (h - 20) / 2];
+            projection = d3.geo.mercator()
+                .scale(scale)
+                .center(center)
+                .translate(offset);
+
+            // create the path
+            path = d3.geo.path().projection(projection);
+
+            // using the path determine the bounds of the current map and use
+            // these to determine better values for the scale and translation
+            var bounds = path.bounds(topojson.feature(us, us.objects.zip_codes_for_utah));
+            var hscale = scale * w / (bounds[1][0] - bounds[0][0]);
+            var vscale = scale * (h - 20) / (bounds[1][1] - bounds[0][1]);
+            var scale2 = (hscale < vscale) ? hscale : vscale;
+            var offset2 = [w - (bounds[0][0] + bounds[1][0]) / 2,
+                (h - 20) - (bounds[0][1] + bounds[1][1]) / 2 + 10];
+
+            // new projection
+            projection = d3.geo.mercator().center(center)
+                .scale(scale2).translate(offset2);
+
+            path = path.projection(projection);
+
             // Append polygons for zip codes
             mapContainer.append("g")
-                .attr("class", "zips")
                 .selectAll("path")
                 .data(topojson.feature(us, us.objects.zip_codes_for_utah).features)
                 .enter()
@@ -1124,59 +988,20 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .on("mouseout", function () {
                     tooltip.hideTooltip();
                 })
+                .attr("class", "zip-path")
                 .attr("fill", "#3D4348")
-                //.attr("transform", "rotate(-10)")
-                .on("click", clicked)
                 .attr("d", path);
-
-            centerAt(centerZip);  // Center the map
-
         }
     }
 
-    function centerAt(d){
-        var x, y, k;
 
-        var centroid = path.centroid(d);
-        x = centroid[0];
-        y = centroid[1];
-        k = 1;  // Zoom level
-
-        mapContainer.selectAll("path")
-            .classed("active", centered && function (d) {
-                return d === centered;
-            });
-
-        mapContainer.transition()
-            .duration(750).attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")");
-    }
-
-    function clicked(d) {
-        var x, y, k;
-
-        if (d && centered !== d) {
-            var centroid = path.centroid(d);
-            x = centroid[0];
-            y = centroid[1];
-            k = 3;  // Zoom level
-            centered = d;
-        } else {
-            centered = null;
+    function zoom(){
+        if (d3.event) {
+           mapContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
         }
 
-        mapContainer.selectAll("path")
-            .classed("active", centered && function (d) {
-                return d === centered;
-            });
-
-        if (centered){
-            mapContainer.transition()
-            .duration(750)
-            .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")");
-        }
-        else{
-            centerAt(centerZip);
-        }
+        d3.selectAll(".zip-path")
+            .style("stroke-width", (1/d3.event.scale) + "px")
     }
 
     function refreshValues(){
@@ -1681,16 +1506,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("stroke-width", "1.3px")
 
         // Gray alternation
-        for (var i = 0; i <= options.length - 1; i++){
-            var grad = svg.append("svg:rect")
-                .attr("width", w)
-                .attr("height", y(1) - y(0))
-                .attr("class", "gray-alternation graph-object")
-                .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
-                .attr("opacity", (i % 2 == 0) ? 0 : 0.1)
-                .style("fill", "#000");
+        for (var i = 0; i <= options.length - 1; i++) {
+            if (i % 2 != 0) {
+                var grad = svg.append("svg:rect")
+                    .attr("width", w)
+                    .attr("height", y(1) - y(0))
+                    .attr("class", "gray-alternation graph-object")
+                    .attr("transform", "translate(" + yPanelWidth + "," + y(i) + ")")
+                    .attr("opacity", 0.1)
+                    .style("fill", "#000");
 
-            grad.moveToBack();
+                grad.moveToBack();
+            }
         }
     }
 
@@ -1770,15 +1597,26 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             //g.append("path").attr("d", "M" + dashWidth + ",0 l-" + dashWidth + "," + dashWidth);
         }
 
-        svg.append("svg:rect")
-            .attr("width", w - marginLeft)
-            .attr("height", h - margin.top - margin.bottom)
+        var width = w - marginLeft;
+        var height;
+        if (view == "heatmap"){
+            height = h - margin.top;    // Heat map doesn't use margin bottom
+        }
+        else{
+            height = h - margin.top - margin.bottom
+        }
+
+        var grid = svg.append("svg:rect")
+            .attr("width", width)
+            .attr("height", height)
             .attr("transform", "translate(" + marginLeft + "," + margin.top + ")")
             .style("stroke", tableColor)
             .style("stroke-width", "2px")
             .style("border-radius", "4px")
             .style("fill", "url(#dash-pattern)")
             .attr("class", "table-rect graph-object");
+
+        grid.moveToBack();
     }
 
     function drawTable(){

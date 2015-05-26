@@ -785,6 +785,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Draw stuff
         drawOuterRect();
+        drawGrayAlternation(y);
+        drawGradientBackground(marginLeft)
         //drawXAxisLegend(marginLeft, x);
         drawVerticalLines(marginLeft, x);
         drawHorizontalLines(y, marginLeft);

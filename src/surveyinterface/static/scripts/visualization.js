@@ -866,6 +866,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $(".map-container").hide();
         $(".heat-map-legend").hide();
+        $(".zoom-controls").hide();
         //$("#btnCategories")[0].disabled = true;
         $("#btnCategories").show();
         $(".btnAdd").hide();
@@ -881,6 +882,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         view = "percentage";
         $(".map-container").hide();
         $(".heat-map-legend").hide();
+        $(".zoom-controls").hide();
 
         $("#percentage-view").addClass("disabled");
         $("#map-view").removeClass("disabled");
@@ -917,6 +919,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $(".map-container").show();
         $(".heat-map-legend").show();
+        $(".zoom-controls").show();
 
         showOnly("heatmap");
 
@@ -926,9 +929,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawOuterRect();
         drawGradientBackground(0);
 
-
         updateHeatMap();
-
     }
 
     function loadHeatMap() {
@@ -1008,7 +1009,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("width", "30px")
             .attr("fill", "#FFF")
             .attr("y", "15px")
-            .attr("x", "15px");
+            .attr("x", "15px")
+            .attr("class", "zoom-controls");
 
         // White backgrounds
         zoomControls.append("rect")
@@ -1016,7 +1018,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("height", "30px")
             .attr("y", "15px")
             .attr("x", "15px")
-            .attr("class", "zoom-control");
 
         zoomControls.append("rect")
             .attr("width", "30px")
@@ -1024,7 +1025,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("id", "zoom_out")
             .attr("y", "50px")
             .attr("x", "15px")
-            .attr("class", "zoom-control");
 
         // + Sign
         zoomControls.append("text")
@@ -1058,7 +1058,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("y", "15px")
             .attr("x", "15px")
             .style("stroke", "#000")
-            .attr("class", "zoom-control")
             .style("opacity", "0.5")
             .on("click", zoomClick);
 
@@ -1070,7 +1069,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("x", "15px")
             .style("stroke", "#000")
             .style("opacity", "0.5")
-            .attr("class", "zoom-control")
             .on("click", zoomClick);
 
     }

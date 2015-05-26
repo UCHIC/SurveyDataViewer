@@ -323,7 +323,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function drawMeanViewTable() {
         clearCanvas();
 
-        drawYAxisLegend();
+
+        var y = d3.scale.linear()
+            .domain([0, options.length])
+            .range([0, h - margin.bottom - margin.top]);
+
+        drawYAxisLegend(y);
 
         var marginLeft = getYLabelSize() + yPanelWidth;
 
@@ -331,9 +336,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .domain([0, answers.length])
             .range([0, w - marginLeft]);
 
-        var y = d3.scale.linear()
-            .domain([0, options.length])
-            .range([0, h - margin.bottom - margin.top]);
 
         drawOuterRect();
 
@@ -748,6 +750,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         options = _.range(numberOfQuestions);
 
+
+        var y = d3.scale.linear()
+            .domain([0, options.length])
+            .range([0, h - margin.bottom - margin.top]);
+
         if (numberOfQuestions > 1) {
             // Draw y-axis legend
             for (var i = 0; i < numberOfQuestions; i++) {
@@ -770,7 +777,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
         else{
-            drawYAxisLegend();
+            drawYAxisLegend(y);
             $("#txtDescription").text(element.parent().parent().find(".active .clickable").text());
         }
         var marginLeft = getYLabelSize() + yPanelWidth;
@@ -779,9 +786,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .domain([0, answers.length])
             .range([0, w - marginLeft]);
 
-        var y = d3.scale.linear()
-            .domain([0, options.length])
-            .range([0, h - margin.bottom - margin.top]);
 
         // Draw stuff
         drawOuterRect();
@@ -1438,7 +1442,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                       .attr("text-anchor", "middle")
                       .attr("font-weight", "normal")
                       .attr("fill", legendColor)
-                      .attr("y", h - margin.bottom + 30)
                       .attr("id", "x-legend" + i)
                       .attr("transform", "translate(" + ( x(i) + marginLeft + delta/2) + "," + 0 + ")")
                       .attr("data-id", i)
@@ -1455,23 +1458,24 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                            return labelsArray[answers[i]];
                       })
                       .call(wrap, delta);
+
+                    var textHeight = $("#x-legend" + i)[0].getBBox().height;
+                    $("#x-legend" + i).attr("y", h - margin.bottom + 10 + (margin.bottom / 2) - textHeight/2)
                 }
             }
         }
     }
 
-    function drawYAxisLegend(){
+    function drawYAxisLegend(y){
         for (var i = 0; i < options.length; i++){
             svg.append("text")
               .attr("class", "y-legend graph-object")
-              .attr("data-id", i)
               .attr("id", "y-legend" + i)
               .attr("font-weight", "normal")
               .attr("fill", legendColor)
               .attr("dx", 0)
               .attr("dy", 0)
               .attr("text-anchor", "start")
-              .attr("y", ((h - margin.bottom) / (options.length)) * i + 30)
               .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
               .text(function(){
                    if (yAxisMode == 'All')
@@ -1489,6 +1493,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                    return options[i];
               })
               .call(wrap, 150);
+
+            //Center y axis legend to
+
+            var deltaY = y(1) - y(0);
+
+            var height = $("#y-legend" + i)[0].getBBox().height;
+            $("#y-legend" + i).attr("y", ((h - margin.bottom) / (options.length)) * i + deltaY / 2 - height/2)
         }
     }
 
@@ -1581,7 +1592,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Reposition label
         var textHeight = $(".yPanelLabel")[0].getBBox().height;
-        var textWidth = $(".yPanelLabel")[0].getBBox().width;
+        //var textWidth = $(".yPanelLabel")[0].getBBox().width;
 
         // Case for browsers that do not support the direct use of width()
         /*var browser = ui.getBrowserName;
@@ -1592,8 +1603,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }*/
 
         // Reposition y-panelLabel
-        $(".yPanelLabel").attr("x", -((h - textWidth - margin.bottom) / 2));
-        $(".yPanelLabel").attr("y", yPanelWidth - textHeight * 2)
+        $(".yPanelLabel").attr("x", -(h - margin.bottom) / 2);
+        $(".yPanelLabel").attr("y", (yPanelWidth/2) + textHeight/2);
     }
 
     function drawGradientBackground(marginLeft){
@@ -1638,7 +1649,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         refreshValues();
 
-        drawYAxisLegend();
+        var y = d3.scale.linear()
+            .domain([0, options.length])
+            .range([0, h - margin.bottom - margin.top]);
+
+        drawYAxisLegend(y);
 
         var marginLeft = getYLabelSize() + yPanelWidth;
 
@@ -1646,9 +1661,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .domain([0, answers.length])
             .range([0, w - marginLeft]);
 
-        var y = d3.scale.linear()
-            .domain([0, options.length])
-            .range([0, h - margin.bottom - margin.top]);
+
 
         // Draw stuff
 
@@ -1773,7 +1786,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             line.pop();
             tspan.text(line.join(" "));
             line = [word];
-            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", lineHeight +  "em").text(word); // ++lineNumber * lineHeight
           }
         }
       });

@@ -183,14 +183,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         mapContainer = svg.append("g")
             .attr("class", "map-container")
             .call(d3.behavior.zoom()
-                .scaleExtent([1, 8]).on("zoom", zoom))
+                .scaleExtent([1, 12]).on("zoom", zoom))
             .append("g");
 
         $("map-container").hide();
         $("#btnCategories")[0].disabled = true;
         loadHeatMap();
         setPercentageView();    // start the site in percentage view
-
 
          // Add demographic items to dropdown
         for (var j = 0; j < metadata.rows.length; j++) {
@@ -750,7 +749,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         options = _.range(numberOfQuestions);
 
-
         var y = d3.scale.linear()
             .domain([0, options.length])
             .range([0, h - margin.bottom - margin.top]);
@@ -760,7 +758,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             for (var i = 0; i < numberOfQuestions; i++) {
                 svg.append("text")
                     .attr("class", "y-legend graph-object")
-                    .attr("data-id", i)
                     .attr("id", "y-legend" + i)
                     .attr("font-weight", "normal")
                     .attr("fill", legendColor)
@@ -774,6 +771,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     });
                 //.call(wrap, 150);
                 $("#txtDescription").text("");
+
+                //Center y axis legend
+                var deltaY = y(1) - y(0);
+                var height = $("#y-legend" + i)[0].getBBox().height;
+                $("#y-legend" + i).attr("y", ((h - margin.bottom) / (options.length)) * i + deltaY / 2 - height/2);
             }
         }
         else{
@@ -1494,12 +1496,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
               })
               .call(wrap, 150);
 
-            //Center y axis legend to
-
+            //Center y axis legend
             var deltaY = y(1) - y(0);
-
             var height = $("#y-legend" + i)[0].getBBox().height;
-            $("#y-legend" + i).attr("y", ((h - margin.bottom) / (options.length)) * i + deltaY / 2 - height/2)
+            $("#y-legend" + i).attr("y", ((h - margin.bottom) / (options.length)) * i + deltaY / 2 - height/2);
         }
     }
 

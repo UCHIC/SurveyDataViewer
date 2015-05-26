@@ -528,7 +528,7 @@ path[data-zip] {
     opacity:0.5;
 }
 
-.noselect {
+*{
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;

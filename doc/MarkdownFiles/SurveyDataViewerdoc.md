@@ -1,8 +1,8 @@
 #Survey Data Viewer#
 
-The Survey Data Viewer provides visualization of the results of social science surveys. The code is generalizable for multiple surveys consisting of different questions. For each survey, the Survey Data Viewer requires: 
-1. A Data File, and 
-2. A Corresponding Codebook 
+The Survey Data Viewer provides visualization of the results of social science surveys. The code is generalizable for multiple surveys consisting of different questions. For each survey, the Survey Data Viewer requires:  
+1. A Data File, and  
+2. A Corresponding Codebook  
 Follow the framework described here to make results compatible with the Viewer.
 
 ##Survey Data File##

@@ -8,7 +8,7 @@ Follow the framework described here to make results compatible with the Viewer.
 The Data File is a .csv file with each field (column) corresponding to question numbers and each line (row) corresponding to a survey respondant. The header should be a single line. The response values should all be numeric. If free text responses are permitted in the survey, they should be edited and given a number that corresponds to 'Other'. 
 
 ##Survey Codebook##
-The codebook is a .csv file that provides the interpretation of the numeric codes in the data file. A template is provided to give guidance on the structure of this file (link), and is described below.
+The codebook is a .csv file that provides the interpretation of the numeric codes in the data file. A [template](SurveyDataViewerTemplate.csv) is provided to give guidance on the structure of this file, and is described below.
 
 ###'Variable' Column###
 The 'Variable' column contains the variables or questions of interest for inclusion in the Survey Data Viewer. The values in this column should correspond to the names of the fields in the Data File. Variables can have any title or label, but only those that begin with a 'Q' will be interpreted as questions for display in the Survey Data Viewer (e.g., Q1, Q7, Q10, etc.). Other variables may be incuded for their use to disaggregate data based on demographics or another type of identifier (e.g., City, Venue, Investigator) without using them as a question for display. The 'Features' column is used to specify demographic variables.

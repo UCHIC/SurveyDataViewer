@@ -654,12 +654,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("opacity", 0.75);
 
         // Append the gradient
+        var verticalSpacing = 18;
         $("linearGradient").remove();
         svg.append("linearGradient")
             .attr("id", "line-gradient")
             .attr("gradientUnits", "userSpaceOnUse")
             .attr("x1", 0).attr("y1", 10)
-            .attr("x2", 0).attr("y2", rHeight - 10)
+            .attr("x2", 0).attr("y2", rHeight - verticalSpacing)
             .selectAll("stop")
             .data(colorData)
             .enter().append("stop")
@@ -672,9 +673,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         heatMapLegendArea.append("svg:rect")
             .attr("width", 30)
-            .attr("height", rHeight - 20)
+            .attr("height", rHeight - verticalSpacing * 2)
             .attr("x", 10)
-            .attr("y", 10)
+            .attr("y", verticalSpacing)
             .style("stroke", "#777")
             .style("stroke-width", "1px")
             .style("fill", "url(#line-gradient)")
@@ -684,7 +685,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         for (var i = 0; i < numberOfAnswers; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
             if (label)
-                label = label.trim();
+                label = "- " + label.trim();
             if (label != "not sure") {
                 heatMapLegendArea.append("svg:text")
                     .attr("x", 50)

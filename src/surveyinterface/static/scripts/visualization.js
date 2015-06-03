@@ -31,6 +31,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var tableColor = "#666";
     var legendColor = "#000";
     var yPanelWidth = 80;
+    var gradientCount = 0;
     var map;
     var nodes = [];
     var markerQuestions = [];
@@ -43,10 +44,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var centerZip;
     var path;
     var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
+        .domain([0, 1/11, 2/11, 3/11, 4/11, 5/11, 6/11, 7/11, 8/11, 9/11, 10/11, 11/11])
+        .range(["#2A0BD9", "#264EFF", "#40A1FF", "#73DAFF", "#ABF8FF", "#E0FFFF", "#FFFFBF", "#FFE099", "#FFAD73", "#F76E5E", "#D92632", "#A60021"]); // Red to White to Green
+    var unidimensionalScale = d3.scale.linear()
         .domain([0, 0.5, 1])
-        .range(["#cc0000", "#ccff00", "#00cc00"]); // Red to White to Green
+        .range(["#cc0000", "#ccff00", "#00cc00"]);
+
     var defaultBubbleColor = "#C2DBF0";
-    var notSureColor = "#C2DBF0";
+    var notSureColor = "#777";
     var mapContainer;
     var projection;
     var independetColors = d3.scale.category10();
@@ -306,14 +311,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             updateHeatMap();
         }
         else if (view == "mean") {
-            $(".btnAdd").hide();
             updateMeanView();
         }
     }
 
     function drawMeanViewTable() {
         clearCanvas();
-
 
         var y = d3.scale.linear()
             .domain([0, options.length])
@@ -326,7 +329,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var x = d3.scale.linear()
             .domain([0, answers.length])
             .range([0, w - marginLeft]);
-
 
         drawOuterRect();
 
@@ -411,21 +413,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("stroke-linecap", "round")
                     .style("stroke", tableColor)
             }
-        }
-
-        // Draw table horizontal lines
-        for (var i = 1; i <= options.length; i++) {
-            svg.append("svg:line")
-                .attr("x1", yPanelWidth)
-                .attr("x2", yPanelWidth + getYLabelSize())
-                .attr("y1", y(i))
-                .attr("y2", y(i))
-                //.attr("id", "line" + i)
-                .attr("data-id", i)
-                .attr("class", "horizontal-line graph-object")
-                .attr("transform", "translate(" + 0 + "," + margin.top + ")")
-                .style("stroke", tableColor)
-                .style("stroke-width", "1.3px")
         }
 
         // Line at the top of x axis legend
@@ -693,18 +680,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function onBtnSubstractClick(e) {
         $(this).closest("li").removeClass("active");
         $(this).hide();
-
         $(this).parent().find(".btnAdd").show();
-
-        updateOnMultipleQuestions($(this));
+        onAddRow($(this));
     }
 
     function onBtnAddClick(e) {
         $(this).closest("li").addClass("active");
         $(this).hide();
-
         $(this).parent().find(".btnSubstract").show();
-        updateOnMultipleQuestions($(this));
+        onAddRow($(this));
     }
 
     function restoreYAxisMode() {
@@ -712,24 +696,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         yAxisMode = mode;
     }
 
-    function updateOnMultipleQuestions(element) {
+    // Custom draws for multiple question selection feature
+    function onAddRow(element) {
         yAxisMode = "";
         numberOfQuestions = element.parent().parent().find(".active").length;
-
-        if (numberOfQuestions > 1) {
-            // Show substract button for this item
-            element.parent().parent().find(".active .clickable").parent().find(".btnSubstract").show();
-            $("#btnCategories")[0].disabled = true;
-            $("#map-view")[0].disabled = true;
-            $("#mean-view")[0].disabled = true;
-        }
-        else {
-            $(".btnSubstract").hide();
-            restoreYAxisMode();
-            $("#btnCategories")[0].disabled = false;
-            $("#map-view")[0].disabled = false;
-            $("#mean-view")[0].disabled = false;
-        }
 
         // Load labels for y-axis
         var labels = element.parent().parent().find(".active .clickable");
@@ -737,9 +707,48 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             labels[i] = $(labels[i]).text();
         }
 
-        clearCanvas();
+        // Add a set of nodes for each selected question
+        removeTempNodes();
+        var nodesCopy = nodes.slice();
+        var tempQuestions = element.parent().parent().find(".active .clickable");
 
-        options = _.range(numberOfQuestions);
+        // Get list of selected questions
+        for (var i = 0; i < labels.length; i++) {
+            tempQuestions[i] = tempQuestions[i].getAttribute("data-value");
+        }
+
+        questionNodes = [];
+
+        for (var j = 0; j < tempQuestions.length; j++) { // -1 because the first set of nodes is already the original set
+            questionNodes[j] = [];
+            for (var i = 0; i < nodesCopy.length; i++) {
+                var tempNode = {
+                    value: data.rows[i + 1][tempQuestions[j]],
+                    info: nodesCopy[i].info,
+                    temp: true,
+                    tempPosY: j
+                }
+                questionNodes[j].push(tempNode);
+            }
+        }
+
+        if (numberOfQuestions > 1) {
+            // Show substract button for this item
+            element.parent().parent().find(".active .clickable").parent().find(".btnSubstract").show();
+            $("#btnCategories")[0].disabled = true;
+            $("#map-view")[0].disabled = true;
+        }
+        else {
+            $(".btnSubstract").hide();
+
+            restoreYAxisMode();
+            $("#btnCategories")[0].disabled = false;
+            $("#map-view")[0].disabled = false;
+            $("#mean-view")[0].disabled = false;
+        }
+
+        clearCanvas();
+        refreshValues();
 
         var y = d3.scale.linear()
             .domain([0, options.length])
@@ -774,57 +783,194 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             drawYAxisLegend(y);
             $("#txtDescription").text(element.parent().parent().find(".active .clickable").text());
         }
+
         var marginLeft = getYLabelSize() + yPanelWidth;
 
         var x = d3.scale.linear()
             .domain([0, answers.length])
             .range([0, w - marginLeft]);
 
-
         // Draw stuff
         drawOuterRect();
         drawGrayAlternation(y);
         drawGradientBackground(marginLeft)
-        //drawXAxisLegend(marginLeft, x);
-        drawVerticalLines(marginLeft, x);
-        drawHorizontalLines(y, marginLeft);
         drawLegendContainers(marginLeft);
         drawYAxisPanel();
         drawXAxisLegend(marginLeft, x);
 
-        // Add a set of nodes for each selected question
-        removeTempNodes();
-        var nodesCopy = nodes.slice();
-        var tempQuestions = element.parent().parent().find(".active .clickable");
-
-        // Get list of selected questions
-        for (var i = 0; i < labels.length; i++) {
-            tempQuestions[i] = tempQuestions[i].getAttribute("data-value");
+        if (view == "percentage"){
+            drawVerticalLines(marginLeft, x);
+            drawHorizontalLines(y, marginLeft);
+        }
+        else{
+            // Line at the top of x axis legend
+            svg.append("svg:line")
+                .attr("x1", 0)
+                .attr("x2", w)
+                .attr("y1", h - margin.bottom)
+                .attr("y2", h - margin.bottom)
+                .attr("class", "horizontal-line graph-object")
+                .style("stroke", tableColor)
+                .style("stroke-width", "1.3px")
         }
 
-        questionNodes = [];
-
-        for (var j = 0; j < tempQuestions.length; j++) { // -1 because the first set of nodes is already the original set
-            questionNodes[j] = [];
-            for (var i = 0; i < nodesCopy.length; i++) {
-                var tempNode = {
-                    value: data.rows[i + 1][tempQuestions[j]],
-                    info: nodesCopy[i].info,
-                    temp: true,
-                    tempPosY: j
-                }
-                questionNodes[j].push(tempNode);
-            }
-        }
-        // Move each set of nodes
-        if (view == "heatmap") {
-
-        }
-        else if (view == "percentage") {
+        if (view == "percentage"){
             updatePercentageView();
         }
-        else if (view == "mean") {
+        else if(view == "mean"){
+            var deltaX = x(1) - x(0);
+            var value = $(".active label").attr("data-value");
+            for (var i = 1; i < answers.length + 1; i++) {
+                // Get the list of labels
+                for (var j = 0; j < metadata.rows.length; j++) {
+                    var questionID = metadata.rows[j]["NewVar"];
+                    if (questionID == value) {
+                        // Get the labels for this question
+                        var labels;
+                        for (var prop in metadata.rows[j]) {
+                            if (prop.trim() == "ValueLabels")
+                                labels = String(metadata.rows[j][prop]);
+                        }
 
+                        labels = labels.split(";");
+                        var labelsArray = {};
+
+                        // Put the labels in an object for easy access
+                        for (var i = 0; i < labels.length; i++) {
+                            var pos = labels[i].indexOf("=");
+                            var index = parseInt(labels[i].substr(0, pos).trim());
+                            var value = labels[i].substr(pos + 1, labels[i].length).trim();
+
+                            labelsArray[index] = value;
+
+                            if (value == "not sure") {
+                                x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
+                                deltaX = (x(1) - x(0));
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (var i = 1; i < answers.length + 1; i++) {
+                // Draw vertical dotted lines
+                if ((answers[i - 1] && labelsArray[answers[i - 1]] != "not sure") || answers.length == 1) {
+                    svg.append("svg:line")
+                        .attr("x1", x(i) + marginLeft - deltaX / 2)
+                        .attr("x2", x(i) + marginLeft - deltaX / 2)
+                        .attr("y1", margin.top)
+                        .attr("y2", h - margin.bottom)
+                        .attr("class", "vertical-mean-line graph-object")
+                        .attr("stroke-dasharray", "1, 5")
+                        .attr("stroke-linecap", "round")
+                        .style("stroke", tableColor)
+                }
+            }
+
+             var left = yPanelWidth + deltaX / 2 + getYLabelSize();
+            var right = w - deltaX / 2;
+
+            var colorData = [];
+            var stops = $(".vertical-mean-line").length - 1;
+            for (var i = 0; i <= stops; i++) {
+                var offset = i * 100 / stops;
+                colorData.push({offset: offset + "%", color: bidirectionalScale(offset / 100)})
+            }
+
+            $("defs").remove();
+            $("linearGradient").remove();
+
+            x = d3.scale.linear()
+                .domain([1, answers.length])
+                .range([left, right]);
+
+            svg.append("linearGradient")
+                .attr("id", "line-gradient")
+                .attr("gradientUnits", "userSpaceOnUse")
+                .attr("x1", left).attr("y1", 0)
+                .attr("x2", right).attr("y2", 0)
+                .selectAll("stop")
+                .data(colorData)
+                .enter().append("stop")
+                .attr("offset", function (d) {
+                    return d.offset;
+                })
+                .attr("stop-color", function (d) {
+                    return d.color;
+                });
+
+            // Draw mean base lines
+            var deltaY = y(1) - y(0);
+            for (var i = 1; i <= options.length; i++) {
+                svg.append("svg:rect")
+                    .attr("width", x(answers.length) - x(1))
+                    .attr("height", "40")
+                    .attr("x", x(1))
+                    .attr("y", y(i) - deltaY / 2)
+                    .style("stroke", "#777")
+                    .style("stroke-width", "1px")
+                    .style("fill", "url(#line-gradient)")
+                    //.style("opacity", 0.75)
+                    .attr("transform", "translate(" + 0 + "," + (-20) + ")")
+                    .attr("class", "mean-base-line graph-object");
+            }
+
+            // ---------- Draw means ----------------------
+            var nodeRows = d3.range(options.length).map(function (i) {
+                return {
+                    total: 0,
+                    participants: 0,
+                    y: i
+                };
+            });
+
+            for (var i = 0; i < questionNodes.length; i++) {
+                for (var j = 0; j < questionNodes[i].length; j++) {
+                    var d = questionNodes[i][j];
+                    var posOption = ($.inArray(d.info[yAxisMode], options));
+                    if (yAxisMode == "") {
+                        posOption = d.tempPosY;
+                    }
+                    else if (yAxisMode == "All"){
+                        posOption = 0;
+                    }
+                    var val = d.value;
+                    if (labelsArray[d.value] != "not sure") {
+                        nodeRows.forEach(function (o) {
+                            if (o.y == posOption) {
+                                o.participants++;
+                                o.total += val;
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Draw actual mean
+            for (var i = 1; i <= options.length; i++) {
+                if ($("#gradient0").length == 0) {
+                    getGradient("#888", 0);
+                }
+                // Draw mean
+                var xCord = (nodeRows[i - 1].total) / nodeRows[i - 1].participants;
+
+                var top = y(i) - deltaY / 2 - 40;
+
+                var currLine = svg.append("svg:rect")
+                    .attr("width", "20")
+                    .attr("height", "80")
+                    .attr("x", (left + right) / 2 - 10)
+                    .attr("class", "vertical-mean-line graph-object")
+                    .style("stroke", d3.rgb("#888").darker(2))
+                    .style("fill", 'url(#gradient0)')
+                    .style("stroke-width", "1px")
+                    .attr("transform", "translate(" + 0 + "," + top + ")");
+
+                currLine.transition()
+                    .duration(400)
+                    .ease("linear")
+                    .attr("x", (x(xCord) - 10))
+            }
         }
     }
 
@@ -869,10 +1015,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".zoom-controls").hide();
         //$("#btnCategories")[0].disabled = true;
         $("#btnCategories").show();
-        $(".btnAdd").hide();
         showOnly("mean");
 
-        updateMeanView();
+        // If a question has been clicked, update
+        if ($("#listQuestions").find(".active").length > 1){
+            var element =  $("li.active .btnAdd").first();
+            onAddRow(element);
+        }
+        else if ($("#listQuestions").find(".active").length > 0){
+            updateMeanView();
+        }
     }
 
     function setPercentageView() {
@@ -897,9 +1049,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         showAllQuestions();
 
         // If a question has been clicked, update
-        if ($("#listQuestions").find(".active").length > 0)
+        if ($("#listQuestions").find(".active").length > 1){
+            var element =  $("li.active .btnAdd").first();
+            onAddRow(element);
+        }
+        else if ($("#listQuestions").find(".active").length > 0){
             updatePercentageView();
-
+        }
     }
 
     function clearCanvas() {
@@ -1138,6 +1294,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 valuesX.push(nodes[i].value);
                 valuesY.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
             }
+
             options = valuesY.getUnique().sort(function (a, b) {
                 return b - a
             });
@@ -1182,6 +1339,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("stop-color", d3.rgb(color).darker(2))
             .attr("stop-opacity", 1);
     }
+
 
     function updatePercentageView() {
         // Add fixed nodes
@@ -1257,7 +1415,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Define the gradient
         $("defs").remove();
         $("linearGradient").remove();                               // Remove previous ones
-        var gradientCount = 0;
+        gradientCount = 0;
         getGradient(defaultBubbleColor, gradientCount++);           // gradient0 - default gradient
         getGradient(notSureColor, gradientCount++);                 // gradient1 - not sure gradient
         for (var i = 0; i < answers.length; i++) {
@@ -1346,68 +1504,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("fill", "url(#gradient" + gradientCount + ")")
             .attr("class", "table-rect graph-object");
 
-        // Append total container box and labels
-        if (yAxisMode == "All") {
-            svg.append("svg:rect")
-                .attr("width", yPanelWidth - 2)
-                .attr("height", "20px")
-                .attr("transform", function (d) {
-                    var left, top;
-                    left = 1;
-                    top = h - margin.bottom - 21;
-                    return "translate(" + left + "," + top + ")";
-                })
-                .style("fill", "url(#gradient" + gradientCount + ")")
-                .attr("class", "table-rect graph-object");
-
-            svg.append("svg:text")
-                .attr("x", yPanelWidth / 2)
-                .attr("y", h - margin.bottom - 7)
-                .style("text-anchor", "middle")
-                .style("font-size", "12px")
-                .attr("class", "yPanelLabel graph-object")
-                .style("fill", "rgb(194, 219, 240)")
-                .text(function () {
-                    var total = 0;   // Percentage is calculated per row
-                    fixedNodes.forEach(function (o) {
-                        total += o.amount;
-                    });
-                    return "n = " + total;
-                });
-        }
-        else {
-            var mWidth = getYLabelSize();
-            for (var i = 0; i < options.length; i++) {
-                svg.append("svg:rect")
-                    .attr("width", mWidth)
-                    .attr("height", "20px")
-                    .attr("transform", function (d) {
-                        var left, top;
-                        left = yPanelWidth;
-                        top = (i + 1) * deltaY - 21;
-                        return "translate(" + left + "," + top + ")";
-                    })
-                    .style("fill", "url(#gradient" + gradientCount + ")")
-                    .attr("class", "table-rect graph-object");
-
-                svg.append("svg:text")
-                    .attr("x", yPanelWidth + getYLabelSize() / 2)
-                    .attr("y", (i + 1) * deltaY - 6)
-                    .style("text-anchor", "middle")
-                    .attr("class", "yPanelLabel graph-object")
-                    .style("font-size", "12px")
-                    .style("fill", "rgb(194, 219, 240)")
-                    .text(function () {
-                        var rowTotal = 0;   // Percentage is calculated per row
-                        fixedNodes.forEach(function (o) {
-                            if (o.pos.y == i) {
-                                rowTotal += o.amount;
-                            }
-                        });
-                        return "n = " + rowTotal;
-                    });
-            }
-        }
+        drawRowTotals(fixedNodes);
 
         gradientCount++;
 
@@ -1751,6 +1848,63 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         grid.moveToBack();
     }
 
+    function drawRowTotals(fixedNodes){
+        // ---------------- Append total container box and labels  ----------------
+        var deltaY = (h - margin.bottom) / (options.length);
+        var mWidth;
+        if (yAxisMode == "All"){
+            mWidth = yPanelWidth - 2;
+        }
+        else{
+            mWidth = getYLabelSize();
+        }
+
+        for (var i = 0; i < options.length; i++) {
+            svg.append("svg:rect")
+                .attr("width", mWidth)
+                .attr("height", "20px")
+                .attr("transform", function (d) {
+                    var left, top;
+                    if (yAxisMode == "All"){
+                        left = 1;
+                        top = h - margin.bottom - 21;
+                    }
+                    else{
+                        left = yPanelWidth;
+                        top = (i + 1) * deltaY - 21;
+                    }
+
+                    return "translate(" + left + "," + top + ")";
+                })
+                .style("fill", "url(#gradient" + gradientCount + ")")
+                .attr("class", "table-rect graph-object");
+
+            var left;
+            if (yAxisMode == "All"){
+                left = yPanelWidth / 2;
+            }
+            else{
+                left = yPanelWidth + getYLabelSize() / 2;
+            }
+            svg.append("svg:text")
+                .attr("x", left)
+                .attr("y", (i + 1) * deltaY - 6)
+                .style("text-anchor", "middle")
+                .attr("class", "yPanelLabel graph-object")
+                .style("font-size", "12px")
+                .style("fill", "rgb(194, 219, 240)")
+                .text(function () {
+                    var rowTotal = 0;   // Percentage is calculated per row
+                    fixedNodes.forEach(function (o) {
+                        if (o.pos.y == i) {
+                            rowTotal += o.amount;
+                        }
+                    });
+                    return "n = " + rowTotal;
+                });
+        }
+    }
+
     function drawTable() {
         clearCanvas();
 
@@ -1768,7 +1922,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .domain([0, answers.length])
             .range([0, w - marginLeft]);
 
-
         // Draw stuff
 
         drawOuterRect();
@@ -1776,12 +1929,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawGrayAlternation(y);
         drawGradientBackground(marginLeft);
         drawHorizontalLines(y, marginLeft);
-
         drawVerticalLines(marginLeft, x);
-
         drawLegendContainers(marginLeft);
         drawYAxisPanel();
-
     }
 
     function getYLabelSize() {
@@ -1793,7 +1943,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         return labelWidth == 0 ? 0 : Math.max(labelWidth + 20, 70);
     }
-
 
     function transform(d) {
         return "translate(" + d.x + "," + d.y + ")";
@@ -1867,9 +2016,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     return title;
                 }
                 return metadata.rows[i]["NewVarLabel"];
-
             }
-
         }
         return "";
     }
@@ -1900,4 +2047,3 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     return self;
 });
-

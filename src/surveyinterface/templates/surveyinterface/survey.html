@@ -2,10 +2,13 @@
 {% load staticfiles %}
 
 {% block body %}
+{#    <div id="tutorialContainer">#}
+{#        <p class="btn btn-primary btn-lg" id="btnNextTip" href="#" role="button">Next</p>#}
+{#    </div>#}
     <div id="mainContent">
         <div id="listQuestions" class="panel-group">
             <div class="thumbnail">
-                <img src="{% static 'images/docicon.jpg' %}" alt="...">
+                <img src="{% static 'images/survey-icon.png' %}" alt="...">
                 <div class="caption">
                     <h4>{{ object.name }}</h4>
                     <p>{{ object.dateconducted }}</p>

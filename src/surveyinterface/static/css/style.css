@@ -32,12 +32,12 @@ h6 {
 }
 
 .thumbnail {
-    width: 300px;
+    width: 282px;
     float: left;
     position: absolute;
     border: 1px solid #ddd;
     border-radius: 0;
-    z-index: 999;
+    background-color: #FFF;
 }
 
 #surveyContainer .thumbnail {
@@ -50,7 +50,6 @@ h6 {
     box-shadow: 3px 3px 6px #D0D0D0;
     border: 1px solid rgb(163, 163, 163);
 }
-
 
 #surveyContainer .thumbnail h4 {
     background: rgb(100, 100, 100);
@@ -84,6 +83,7 @@ h6 {
     display: inline;
     float: left;
     width: auto;
+    margin-bottom: 0;
 }
 
 .dropdown {
@@ -218,8 +218,8 @@ text.shadow {
 
 }
 
-.btn[disabled]{
-    cursor:not-allowed; /* Confirmed broken for current version of bootstrap https://github.com/twbs/bootstrap/issues/16088 */
+.btn[disabled] {
+    cursor: not-allowed; /* Confirmed broken for current version of bootstrap https://github.com/twbs/bootstrap/issues/16088 */
 }
 
 #viewContainer {
@@ -339,7 +339,6 @@ hr {
     border-left: 10px solid rgb(131, 131, 131);
     border-right: 1px solid #aaa;
 }
-
 
 .node text {
     -webkit-touch-callout: none;
@@ -466,7 +465,7 @@ li .checkbox {
 
 .intro-divider {
     width: 100%;
-    margin-top: 73px;
+    margin-top: 63px;
     border-top: 1px solid #f8f8f8;
     border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
@@ -486,16 +485,15 @@ path[data-zip] {
     stroke-width: 1px;
 }
 
-
 .vertical-mean-line {
     stroke-width: 2px;
 }
 
-.zip-path:hover{
-    opacity:0.5;
+.zip-path:hover {
+    opacity: 0.5;
 }
 
-*{
+* {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -504,7 +502,22 @@ path[data-zip] {
     user-select: none;
 }
 
-#zoom_in:hover, #zoom_out:hover{
+#zoom_in:hover, #zoom_out:hover {
     fill: #EEE;
-    cursor:pointer;
+    cursor: pointer;
+}
+
+#tutorialContainer {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 999;
+    text-align: center;
+}
+
+#btnNextTip {
+    bottom: 100px;
+    position: fixed;
+    right: 60px;
+    width: 200px;
 }

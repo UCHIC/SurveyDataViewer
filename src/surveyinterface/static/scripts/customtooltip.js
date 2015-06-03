@@ -49,4 +49,6 @@ function CustomTooltip(tooltipId, width){
 		hideTooltip: hideTooltip,
 		updatePosition: updatePosition
 	}
+
+
 }

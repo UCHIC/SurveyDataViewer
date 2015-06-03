@@ -1059,8 +1059,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
         else if ($("#listQuestions").find(".active").length > 0){
             var element =  $("li.active .btnAdd").first();
-            $(element[0].parentElement.parentElement).find(".btnAdd").show();
-            element.hide();
+             if (element.length){
+                $(element[0].parentElement.parentElement).find(".btnAdd").show();
+                element.hide();
+             }
             updateMeanView();
         }
     }
@@ -1095,8 +1097,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
         else if ($("#listQuestions").find(".active").length > 0){
             var element =  $("li.active .btnAdd").first();
-            $(element[0].parentElement.parentElement).find(".btnAdd").show();
-            element.hide();
+            if (element.length){
+                $(element[0].parentElement.parentElement).find(".btnAdd").show();
+                element.hide();
+            }
+
             updatePercentageView();
         }
     }

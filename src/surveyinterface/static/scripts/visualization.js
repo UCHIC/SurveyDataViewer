@@ -1063,7 +1063,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.selectAll(".graph-object").remove();
     }
 
-
     function setHeatMapView() {
         view = "heatmap";
 

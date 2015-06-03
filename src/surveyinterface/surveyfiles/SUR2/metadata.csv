@@ -11,35 +11,35 @@ V10,Finished,,code assigned by Qualtrics
 Lang,Language,,1 = English; 2 = Spanish
 IntroE,Intro text,,
 Q1,Are you 18 or over? ,,1 = yes; 2 = no
-Q2a,Agreement that Water Supply is Adequate - To Meet CURRENT Needs,heatmap;mean,1=Strongly Disagree; 3= Neither Agree nor Disagree; 5=Strongly Agree
-Q2b,Agreement that Water Supply is Adequate - To Meet FUTURE Needs,heatmap;mean,1=Strongly Disagree; 3= Neither Agree nor Disagree; 5=Strongly Agree
-Q3a,Water Quality Rating - Current Drinking Water Supply,heatmap;mean,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
-Q3b,Water Quality Rating - Groundwater Beneath Community,heatmap;mean,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
-Q3c,Water Quality Rating - Nearby Mountain Rivers and Lakes,heatmap;mean,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
-Q3d,Water Quality Rating - Downstream Streams and Rivers,heatmap;mean,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
-Q4a,Concern Rating - Water Shortages,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4b,Concern Rating - Flooding,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4c,Concern Rating - Poor Water Quality,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4d,Concern Rating - High Cost of Water,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4e,Concern Rating - Deteriorating Water Infrastructure,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4f,Concern Rating - Air Pollution,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4g,Concern Rating - Traffic Congestion,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4h,Concern Rating - Loss of Open Space,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4i,Concern Rating - Population Growth,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q4j,Concern Rating - Climate Change,heatmap;mean,1= Not at all concerned; 5= Very Concerned
-Q5,Familiarity with How Much I Spend on Water each Month,heatmap;mean,1= Not at all familiar; 5= Very familiar
+Q2a,Agreement that Water Supply is Adequate - To Meet CURRENT Needs,bidirectional,1=Strongly Disagree; 3= Neither Agree nor Disagree; 5=Strongly Agree
+Q2b,Agreement that Water Supply is Adequate - To Meet FUTURE Needs,bidirectional,1=Strongly Disagree; 3= Neither Agree nor Disagree; 5=Strongly Agree
+Q3a,Water Quality Rating - Current Drinking Water Supply,bidirectional,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
+Q3b,Water Quality Rating - Groundwater Beneath Community,bidirectional,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
+Q3c,Water Quality Rating - Nearby Mountain Rivers and Lakes,bidirectional,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
+Q3d,Water Quality Rating - Downstream Streams and Rivers,bidirectional,1 = very bad; 3 = neither good nor bad; 5 = very good; 6 = not sure
+Q4a,Concern Rating - Water Shortages,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4b,Concern Rating - Flooding,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4c,Concern Rating - Poor Water Quality,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4d,Concern Rating - High Cost of Water,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4e,Concern Rating - Deteriorating Water Infrastructure,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4f,Concern Rating - Air Pollution,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4g,Concern Rating - Traffic Congestion,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4h,Concern Rating - Loss of Open Space,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4i,Concern Rating - Population Growth,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q4j,Concern Rating - Climate Change,unidirectional,1= Not at all concerned; 5= Very Concerned
+Q5,Familiarity with How Much I Spend on Water each Month,unidirectional,1= Not at all familiar; 5= Very familiar
 Q6,Has Lawn Where They Live,,1= Yes; 2= No
 Q7,Person Responsible for Watering Lawn,,1= Me or someone else in my household; 2= Landlord; 3= Our homeowner or condominium association; 4= A hired private company; 5= Other
-Q8a,Participation in Water Activities - Boating,heatmap;mean,1= Never; 2= Rarely; 3= Sometimes; 4= Often
-Q8b,Participation in Water Activities - Fishing,heatmap;mean,1= Never; 2= Rarely; 3= Sometimes; 4= Often
-Q8c,Participation in Water Activities - Snow Sports,heatmap;mean,1= Never; 2= Rarely; 3= Sometimes; 4= Often
-Q8d,Participation in Water Activities - Hiking near Water,heatmap;mean,1= Never; 2= Rarely; 3= Sometimes; 4= Often
-Q8e,Participation in Water Activities - Gardening,heatmap;mean,1= Never; 2= Rarely; 3= Sometimes; 4= Often
+Q8a,Participation in Water Activities - Boating,unidirectional,1= Never; 2= Rarely; 3= Sometimes; 4= Often
+Q8b,Participation in Water Activities - Fishing,unidirectional,1= Never; 2= Rarely; 3= Sometimes; 4= Often
+Q8c,Participation in Water Activities - Snow Sports,unidirectional,1= Never; 2= Rarely; 3= Sometimes; 4= Often
+Q8d,Participation in Water Activities - Hiking near Water,unidirectional,1= Never; 2= Rarely; 3= Sometimes; 4= Often
+Q8e,Participation in Water Activities - Gardening,unidirectional,1= Never; 2= Rarely; 3= Sometimes; 4= Often
 Q9,Originally from Utah,isDemographic,1= Yes; 2= No
-Q10,Satisfaction with Overall Quality of Life,heatmap;mean,1= Very Dissatisfied; 5= Very satisfied
-Q11,Owns or Rents Home,heatmap; isDemographic,1= Own; 2 = Rent
+Q10,Satisfaction with Overall Quality of Life,unidirectional,1= Very Dissatisfied; 5= Very satisfied
+Q11,Owns or Rents Home,isDemographic,1= Own; 2 = Rent
 Q12,Has Ties to Farming,isDemographic,1= Yes; 2 = No
 Q13,Sex of Respondent,isDemographic,1= Female; 2 = Male
-Q14,Age of Respondent,heatmap;mean;isDemographic,1=18 to 29; 2=30 to 39; 3=40 to 49; 4=50 to 59; 5=60 and over
-Q15,Respondent Highest Level of Formal Schooling,isDemographic;mean,1= Some High School or High School Diploma/GED; 2= Some College and/or Vocational School; 3= 4 Year College Degree; 4= Graduate Degree
+Q14,Age of Respondent,unidirectional;isDemographic,1=18 to 29; 2=30 to 39; 3=40 to 49; 4=50 to 59; 5=60 and over
+Q15,Respondent Highest Level of Formal Schooling,unidirectional,1= Some High School or High School Diploma/GED; 2= Some College and/or Vocational School; 3= 4 Year College Degree; 4= Graduate Degree
 Q16,Zipcode,,

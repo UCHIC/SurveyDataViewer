@@ -43,12 +43,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var zipQuestion = "Q16";
     var centerZip;
     var path;
+
     var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
-        .domain([0, 1/11, 2/11, 3/11, 4/11, 5/11, 6/11, 7/11, 8/11, 9/11, 10/11, 11/11])
+        .domain([0, 1/11, 2/11, 3/11, 4/11, 5/11, 6/11, 7/11, 8/11, 9/11, 10/11, 1])
         .range(["#2A0BD9", "#264EFF", "#40A1FF", "#73DAFF", "#ABF8FF", "#E0FFFF", "#FFFFBF", "#FFE099", "#FFAD73", "#F76E5E", "#D92632", "#A60021"]); // Red to White to Green
-    var unidimensionalScale = d3.scale.linear()
-        .domain([0, 0.5, 1])
-        .range(["#cc0000", "#ccff00", "#00cc00"]);
+
+    var unidirectionalScale = d3.scale.linear()
+        .domain([0, 1])
+        //.range(["#FFB3B3", "#E67E7E", "#CC5252", "#B32D2D", "#990F0F"]);
+        .range(["#FFDFDF", "#B32D2D"]);
 
     var defaultBubbleColor = "#C2DBF0";
     var notSureColor = "#777";
@@ -288,17 +291,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             $(".descriptionContainer").show();
         }
 
-        if (hasPluggin(selectedQuestion, "heatmap")) {
+        if (hasPluggin(selectedQuestion, "unidirectional") || hasPluggin(selectedQuestion, "bidirectional")) {
             $("#map-view")[0].disabled = false;
-        }
-        else {
-            $("#map-view")[0].disabled = true;
-        }
-
-        if (hasPluggin(selectedQuestion, "mean")) {
             $("#mean-view")[0].disabled = false;
         }
         else {
+            $("#map-view")[0].disabled = true;
             $("#mean-view")[0].disabled = true;
         }
 
@@ -313,6 +311,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else if (view == "mean") {
             updateMeanView();
         }
+    }
+
+    function getQuestionColors(){
+        if (hasPluggin(selectedQuestion, "bidirectional")) {
+            return bidirectionalScale;
+        }
+        return unidirectionalScale;
     }
 
     function drawMeanViewTable() {
@@ -425,11 +430,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("stroke", tableColor)
             .style("stroke-width", "1.3px");
 
+        var colorScale = getQuestionColors();
+
         var colorData = [];
         var stops = $(".vertical-mean-line").length - 1;
         for (var i = 0; i <= stops; i++) {
             var offset = i * 100 / stops;
-            colorData.push({offset: offset + "%", color: bidirectionalScale(offset / 100)})
+            colorData.push({offset: offset + "%", color: colorScale(offset / 100)})
         }
 
         var left = yPanelWidth + deltaX / 2 + getYLabelSize();
@@ -585,13 +592,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 totals[responses[zip].zipcode] += responses[zip].value;   // Populate totals
         }
 
-        // Reset background nad hover functions for all paths
+        // Reset background and hover functions for all paths
         var paths = d3.selectAll('path[data-zip]');
         paths.on("mouseover", function (d) {
             var content = "<span class=\"name\">" + d.properties.NAME + "</span><span class=\"value\"></span><br/>" +
                 "<span class=\"name\">Zip code: </span><span class=\"value\">" + d.properties.ZIP5 + "</span><br/>";
             tooltip.showTooltip(content, d3.event);
-        })
+        });
+
+        var colorScale = getQuestionColors();
 
         for (var zip in totals) {
             var curPath = d3.select('path[data-zip="' + zip + '"]');
@@ -609,7 +618,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                 if (participants[zip] > cutoff) {        // Cut off at 5
                     curPath.transition().duration(500).delay(100).attr("fill", function (d) {
-                        return bidirectionalScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                        return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
                     });
                 }
 
@@ -619,13 +628,22 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
         // Update legend
+
+        var colorData = [];
+        for (var i = 0; i <= numberOfAnswers; i++) {
+            var offset = i * 100 / numberOfAnswers;
+            colorData.push({offset: offset + "%", color: colorScale(offset / 100)})
+        }
+
         var rHeight = numberOfAnswers * (20 + 12);
         var rWidth = 300;
+
         svg.select(".heat-map-legend").remove();
         var heatMapLegendArea = svg.append("g")
             .attr("transform", "translate(" + (w - rWidth) + "," + (h - rHeight - margin.top) + ")")
             .attr("class", "heat-map-legend graph-object");
 
+        // Append background for legend container
         heatMapLegendArea.append("svg:rect")
             .attr("width", rWidth)
             .attr("height", rHeight)
@@ -635,22 +653,39 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("stroke-width", "1px")
             .style("opacity", 0.75);
 
+        // Append the gradient
+        $("linearGradient").remove();
+        svg.append("linearGradient")
+            .attr("id", "line-gradient")
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("x1", 0).attr("y1", 10)
+            .attr("x2", 0).attr("y2", rHeight - 10)
+            .selectAll("stop")
+            .data(colorData)
+            .enter().append("stop")
+            .attr("offset", function (d) {
+                return d.offset;
+            })
+            .attr("stop-color", function (d) {
+                return d.color;
+            });
+
+        heatMapLegendArea.append("svg:rect")
+            .attr("width", 30)
+            .attr("height", rHeight - 20)
+            .attr("x", 10)
+            .attr("y", 10)
+            .style("stroke", "#777")
+            .style("stroke-width", "1px")
+            .style("fill", "url(#line-gradient)")
+            .attr("class", "graph-object");
+
         var counter = 0;
         for (var i = 0; i < numberOfAnswers; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
             if (label)
                 label = label.trim();
             if (label != "not sure") {
-                heatMapLegendArea.append("svg:rect")
-                    .attr("width", 30)
-                    .attr("height", 20)
-                    .style("fill", bidirectionalScale((answers[i] - 1) / (numberOfAnswers - 1)))
-                    //.style("fill", bidirectionalScale(answers[i] / numberOfAnswers))
-                    .attr("class", "color-block")
-                    .style("stroke", "#000")
-                    .style("stroke-width", "1px")
-                    .attr("transform", "translate(" + 10 + "," + (10 + counter * 30) + ")")
-
                 heatMapLegendArea.append("svg:text")
                     .attr("x", 50)
                     .attr("y", (counter * 30) + 20)
@@ -663,11 +698,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
     }
 
-    function showOnly(questionType) {
+    function showDimensionalQuestions() {
         var items = $(".clickable");
         for (var i = 0; i < items.length; i++) {
             var question = items[i].getAttribute("data-value");
-            if (!hasPluggin(question, questionType)) {
+            if (!hasPluggin(question, "unidirectional") && !hasPluggin(question, "bidirectional")) {
                 $(items[i]).addClass("disabled");
             }
         }
@@ -869,12 +904,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
              var left = yPanelWidth + deltaX / 2 + getYLabelSize();
             var right = w - deltaX / 2;
-
+            var colorScale = getQuestionColors();
             var colorData = [];
             var stops = $(".vertical-mean-line").length - 1;
             for (var i = 0; i <= stops; i++) {
                 var offset = i * 100 / stops;
-                colorData.push({offset: offset + "%", color: bidirectionalScale(offset / 100)})
+                colorData.push({offset: offset + "%", color: colorScale(offset / 100)})
             }
 
             $("defs").remove();
@@ -1015,7 +1050,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".zoom-controls").hide();
         //$("#btnCategories")[0].disabled = true;
         $("#btnCategories").show();
-        showOnly("mean");
+        showDimensionalQuestions();
 
         // If a question has been clicked, update
         if ($("#listQuestions").find(".active").length > 1){
@@ -1023,6 +1058,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             onAddRow(element);
         }
         else if ($("#listQuestions").find(".active").length > 0){
+            var element =  $("li.active .btnAdd").first();
+            $(element[0].parentElement.parentElement).find(".btnAdd").show();
+            element.hide();
             updateMeanView();
         }
     }
@@ -1049,11 +1087,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         showAllQuestions();
 
         // If a question has been clicked, update
+
         if ($("#listQuestions").find(".active").length > 1){
             var element =  $("li.active .btnAdd").first();
             onAddRow(element);
+
         }
         else if ($("#listQuestions").find(".active").length > 0){
+            var element =  $("li.active .btnAdd").first();
+            $(element[0].parentElement.parentElement).find(".btnAdd").show();
+            element.hide();
             updatePercentageView();
         }
     }
@@ -1076,7 +1119,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".heat-map-legend").show();
         $(".zoom-controls").show();
 
-        showOnly("heatmap");
+        showDimensionalQuestions();
 
         $(".btnAdd").hide();
         $("#btnCategories").hide();
@@ -1089,7 +1132,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function loadHeatMap() {
         queue()
-            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
+            .defer(d3.json, "/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
             .await(plotZipCodes);
 
         function plotZipCodes(error, us) {
@@ -1339,7 +1382,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("stop-opacity", 1);
     }
 
-
     function updatePercentageView() {
         // Add fixed nodes
         refreshValues();
@@ -1421,15 +1463,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             getGradient(independetColors(i), gradientCount++);      // From 2 to answers.length, color for each column
         }
 
+        var colorScale = getQuestionColors();
+
         fixedNodesContainers.append("svg:circle")
             .style("stroke", function (d) {
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
-                if (!hasPluggin(selectedQuestion, "heatmap")) {
+                if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
                     return d3.rgb(independetColors(d.pos.x)).darker(2);
                 }
-
                 if (!label || label.trim() != "not sure")
-                    return d3.rgb(bidirectionalScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
+                    return d3.rgb(colorScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
                 else {
                     return d3.rgb(notSureColor).darker(2);
                 }
@@ -1437,12 +1480,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("r", "1")
             .attr("fill", function (d) {
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
-                if (!hasPluggin(selectedQuestion, "heatmap")) {
+                if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
                     return 'url(#gradient' + (d.pos.x + 2) + ')';   // Independent gradients
                 }
 
                 if (!label || label.trim() != "not sure") {
-                    var color = bidirectionalScale(d.pos.x / (numberOfAnswers - 1));
+                    var color = colorScale(d.pos.x / (numberOfAnswers - 1));
                     getGradient(color, gradientCount);
                     var gradient = 'url(#gradient' + gradientCount + ')';
                     gradientCount++;

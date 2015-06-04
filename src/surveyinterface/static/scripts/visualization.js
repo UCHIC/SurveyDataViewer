@@ -639,12 +639,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 //console.log("Warning: path not found for zip code " + zip + " which contains " + participants[zip] + " participants.");
             }
         }
+
         // Update legend
+        if (!$("li.active").length) {
+            numberOfAnswers = 5;                // 2 labels: Min and max number of participants
+            colorScale = unidirectionalScale;
+        }
 
         var colorData = [];
         for (var i = 0; i <= numberOfAnswers; i++) {
             var offset = i * 100 / numberOfAnswers;
-            colorData.push({offset: offset + "%", color: colorScale(offset / 100)})
+            colorData.push({offset: offset + "%", color: colorScale(offset / 100)});
         }
 
         var rHeight = numberOfAnswers * (20 + 12);
@@ -693,21 +698,40 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("fill", "url(#line-gradient)")
             .attr("class", "graph-object");
 
-        var counter = 0;
-        for (var i = 0; i < numberOfAnswers; i++) {
-            var label = getLabel(selectedQuestion, answers[i]);
-            if (label)
-                label = "- " + label.trim();
-            if (label != "not sure") {
-                heatMapLegendArea.append("svg:text")
-                    .attr("x", 50)
-                    .attr("y", (counter * 30) + 20)
-                    .attr("dy", ".31em")
-                    .attr("class", "hm-legend")
-                    .style("fill", "#000")
-                    .text(label)
-                counter++;
+        if ($("li.active").length) {
+            var counter = 0;
+            for (var i = 0; i < numberOfAnswers; i++) {
+                var label = getLabel(selectedQuestion, answers[i]);
+                if (label)
+                    label = "- " + label.trim();
+                if (label != "not sure") {
+                    heatMapLegendArea.append("svg:text")
+                        .attr("x", 50)
+                        .attr("y", (counter * 30) + 20)
+                        .attr("dy", ".31em")
+                        .attr("class", "hm-legend")
+                        .style("fill", "#000")
+                        .text(label)
+                    counter++;
+                }
             }
+        }
+        else{
+           heatMapLegendArea.append("svg:text")
+                        .attr("x", 50)
+                        .attr("y", (0 * 30) + 20)
+                        .attr("dy", ".31em")
+                        .attr("class", "hm-legend")
+                        .style("fill", "#000")
+                        .text("- 5 participants")
+
+            heatMapLegendArea.append("svg:text")
+                        .attr("x", 50)
+                        .attr("y", (4 * 30) + 20)
+                        .attr("dy", ".31em")
+                        .attr("class", "hm-legend")
+                        .style("fill", "#000")
+                        .text("- " + maxParticipants + " participants")
         }
     }
 
@@ -1055,8 +1079,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#mean-view").addClass("disabled");
 
         view = "mean";
-
-        clearCanvas();
 
         $(".map-container").hide();
         $(".heat-map-legend").hide();

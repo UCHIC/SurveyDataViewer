@@ -49,8 +49,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         .range(["#2A0BD9", "#264EFF", "#40A1FF", "#73DAFF", "#ABF8FF", "#E0FFFF", "#FFFFBF", "#FFE099", "#FFAD73", "#F76E5E", "#D92632", "#A60021"]); // Red to White to Green
 
     var unidirectionalScale = d3.scale.linear()
-        .domain([0, 1/6, 2/6, 3/6, 4/6, 5/6, 1])
-        .range(["#FFFFCC", "#FFFF99", "#FFFF00", "#FFCC00", "#FF9900", "#FF6600", "#FF0000"]);
+        .domain([0, 1/9, 2/9, 3/9, 4/9, 5/9, 6/9, 7/9, 8/9, 1])
+        .range(["#E6FFFF", "#CCFBFF", "#B3F2FF", "#99E6FF", "#80D4FF", "#66BFFF", "#4DA6FF", "#3388FF", "#1A66FF", "#0040FF"]);
+        //.domain([0, 1/6, 2/6, 3/6, 4/6, 5/6, 1])
+        //.range(["#FFFFCC", "#FFFF99", "#FFFF00", "#FFCC00", "#FF9900", "#FF6600", "#FF0000"]);
         //.range(["#DDDDDD", "#B32D2D"]);
 
     var defaultBubbleColor = "#990F0F";
@@ -602,6 +604,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         var colorScale = getQuestionColors();
 
+        var maxParticipants = _.max(participants, function(o){return o;});
+
         for (var zip in totals) {
             var curPath = d3.select('path[data-zip="' + zip + '"]');
             if (curPath[0][0] != null) {
@@ -617,9 +621,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 curPath.transition().duration(100).attr("fill", "#3D4348");
 
                 if (participants[zip] > cutoff) {        // Cut off at 5
-                    curPath.transition().duration(500).delay(100).attr("fill", function (d) {
-                        return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
-                    });
+                    if ($("li.active").length) {
+                        curPath.transition().duration(500).delay(100).attr("fill", function (d) {
+                            return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                        });
+                    }
+                    else{
+                        // When no questions selected, display gradient based on number of participants
+                        curPath.transition().duration(500).delay(100).attr("fill", function (d) {
+                            return unidirectionalScale(participants[zip] / maxParticipants);
+                        });
+                    }
                 }
 
             }
@@ -1059,11 +1071,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             onAddRow(element);
         }
         else if ($("#listQuestions").find(".active").length > 0){
-            var element =  $("li.active .btnAdd").first();
-             if (element.length){
+            var element = $("li.active .btnAdd").first();
+            if (element.length) {
                 $(element[0].parentElement.parentElement).find(".btnAdd").show();
                 element.hide();
-             }
+            }
             updateMeanView();
         }
     }
@@ -1134,6 +1146,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawGradientBackground(0);
 
         updateHeatMap();
+
+
     }
 
     function loadHeatMap() {

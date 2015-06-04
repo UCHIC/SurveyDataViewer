@@ -1424,6 +1424,98 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("stop-opacity", 1);
     }
 
+    function isSignificant(fixedNodes){
+        // Observed frequencies
+        var observedFrequencies = [];
+        fixedNodes.forEach(function(element){
+            if (!observedFrequencies[element.pos.x]){
+                observedFrequencies[element.pos.x] = [];
+            }
+            observedFrequencies[element.pos.x][element.pos.y] = element.amount;
+        });
+
+        var totalCount = 0;
+        var rowTotals = [];
+        var columnTotals = [];
+
+        // Compute total count, column totals and row totals
+        for (var i = 0; i < observedFrequencies.length; i++){
+            for (var j = 0; j < observedFrequencies[i].length; j++){
+                if (!columnTotals[i]) columnTotals[i] = 0;
+                if (!rowTotals[j]) rowTotals[j] = 0;
+
+                rowTotals[j] += observedFrequencies[i][j];
+                columnTotals[i] += observedFrequencies[i][j];
+                totalCount += observedFrequencies[i][j];
+            }
+        }
+
+        var chiSquare = 0;
+        var expectedFrequencies = [];
+        fixedNodes.forEach(function(element){
+            if (!expectedFrequencies[element.pos.x]){
+                expectedFrequencies[element.pos.x] = [];
+            }
+
+            var x = element.pos.x;
+            var y = element.pos.y;
+
+            // Expected frequencies
+            expectedFrequencies[x][y] = columnTotals[x] * rowTotals[y] / totalCount;
+
+             // Chi-square
+            var observed = observedFrequencies[x][y];
+            var expected = expectedFrequencies[x][y]
+            chiSquare += (expected - observed) * (expected - observed) / expected;
+        });
+
+        var df = (observedFrequencies.length - 1) * (observedFrequencies[0].length - 1);    // degrees of freedom
+
+        // Chi-Square distribution for 0.050 level of confidence
+        var distribution = [ -1, // value for 0 degrees of freedom
+            3.841,
+            5.991,
+            7.815,
+            9.488,
+            11.070,
+            12.592,
+            14.067,
+            15.507,
+            16.919,
+            18.307,
+            19.675,
+            21.026,
+            22.362,
+            23.685,
+            24.996,
+            26.296,
+            27.587,
+            28.869,
+            30.144,
+            31.410,
+            32.671,
+            33.924,
+            35.172,
+            36.415,
+            37.652,
+            38.885,
+            40.113,
+            41.337,
+            42.557,
+            43.773,
+            55.758,
+            67.505,
+            79.082,
+            90.531,
+            101.879,
+            113.145,
+            124.342
+        ];
+
+        //console.log("table: " + (distribution[df] + " got: " + (chiSquare)));
+        return chiSquare > distribution[df];
+    }
+
     function updatePercentageView() {
         // Add fixed nodes
         refreshValues();
@@ -1474,6 +1566,23 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
             }
         }
+
+        if (options.length > 1 && answers.length > 1){
+            if (isSignificant(fixedNodes)) {
+                $("#significance-flag-container")[0].style.background = "green";
+                $("#significance-flag-container")[0].title = "This result is significant.";
+            }
+            else{
+                $("#significance-flag-container")[0].style.background = "red";
+                $("#significance-flag-container")[0].title = "This result is NOT significant.";
+            }
+        }
+        else{
+            $("#significance-flag-container")[0].style.background = "white";
+            $("#significance-flag-container")[0].title = "";
+        }
+
+
 
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode graph-object")

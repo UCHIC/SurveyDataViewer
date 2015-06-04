@@ -49,11 +49,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         .range(["#2A0BD9", "#264EFF", "#40A1FF", "#73DAFF", "#ABF8FF", "#E0FFFF", "#FFFFBF", "#FFE099", "#FFAD73", "#F76E5E", "#D92632", "#A60021"]); // Red to White to Green
 
     var unidirectionalScale = d3.scale.linear()
-        .domain([0, 1])
-        //.range(["#FFB3B3", "#E67E7E", "#CC5252", "#B32D2D", "#990F0F"]);
-        .range(["#FFDFDF", "#B32D2D"]);
+        .domain([0, 1/6, 2/6, 3/6, 4/6, 5/6, 1])
+        .range(["#FFFFCC", "#FFFF99", "#FFFF00", "#FFCC00", "#FF9900", "#FF6600", "#FF0000"]);
+        //.range(["#DDDDDD", "#B32D2D"]);
 
-    var defaultBubbleColor = "#C2DBF0";
+    var defaultBubbleColor = "#990F0F";
     var notSureColor = "#777";
     var mapContainer;
     var projection;
@@ -1138,7 +1138,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function loadHeatMap() {
         queue()
-            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing '/surveydata/surveydata' to push to production
+            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
             .await(plotZipCodes);
 
         function plotZipCodes(error, us) {

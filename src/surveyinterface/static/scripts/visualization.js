@@ -1077,6 +1077,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#percentage-view").removeClass("disabled");
         $("#map-view").removeClass("disabled");
         $("#mean-view").addClass("disabled");
+        $("#significance-flag-container").hide();
 
         view = "mean";
 
@@ -1152,6 +1153,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#map-view").addClass("disabled");
         $("#percentage-view").removeClass("disabled");
         $("#mean-view").removeClass("disabled");
+        $("#significance-flag-container").hide();
 
         clearCanvas();
 
@@ -1168,8 +1170,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawGradientBackground(0);
 
         updateHeatMap();
-
-
     }
 
     function loadHeatMap() {
@@ -1568,6 +1568,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         if (options.length > 1 && answers.length > 1){
+            $("#significance-flag-container").show();
             if (isSignificant(fixedNodes)) {
                 $("#significance-flag-container")[0].style.background = "green";
                 $("#significance-flag-container")[0].title = "This result is significant.";
@@ -1578,8 +1579,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
         else{
-            $("#significance-flag-container")[0].style.background = "white";
-            $("#significance-flag-container")[0].title = "";
+            $("#significance-flag-container").hide();
         }
 
 

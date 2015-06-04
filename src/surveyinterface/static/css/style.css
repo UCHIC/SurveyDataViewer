@@ -532,4 +532,5 @@ path[data-zip] {
     color: #FFF;
     width: 30px;
     padding-top: 5px;
+    display:none;
 }

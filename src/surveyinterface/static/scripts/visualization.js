@@ -222,6 +222,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#btnCategories")[0].disabled = false;
         $("#map-view")[0].disabled = false;
         $("#mean-view")[0].disabled = false;
+        $("#percentage-view")[0].disabled = false;
 
         // Refresh y-axis mode
         numberOfQuestions = 1;
@@ -616,6 +617,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (!$("li.active").length || hasPluggin(selectedQuestion, "spatial")) {
             numberOfAnswers = 5;                // 2 labels: Min and max number of participants
             colorScale = unidirectionalScale;
+            $("#percentage-view")[0].disabled = true;
         }
 
         var colorData = [];

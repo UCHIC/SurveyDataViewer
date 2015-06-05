@@ -521,3 +521,12 @@ path[data-zip] {
     right: 60px;
     width: 200px;
 }
+
+.flag-text:hover{
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+#btnHelp {
+    display:none;
+}

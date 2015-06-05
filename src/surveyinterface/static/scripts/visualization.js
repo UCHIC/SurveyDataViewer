@@ -1393,13 +1393,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var valuesX = [];
 
         if (questionNodes.length < 2) {
-            for (var i = 0; i < data.rows.length - 1; i++) {
-                nodes[i].value = data.rows[i + 1][selectedQuestion];
+            for (var i = 0; i < data.rows.length; i++) {
+                nodes[i].value = data.rows[i][selectedQuestion];
                 if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0) {
                     continue;
                 }
                 valuesX.push(nodes[i].value);
-                valuesY.push(data.rows[i + 1][infoQuestions[yAxisMode]]);
+                valuesY.push(data.rows[i][infoQuestions[yAxisMode]]);
             }
 
             options = valuesY.getUnique().sort(function (a, b) {
@@ -1409,7 +1409,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else {
             // Add data when multiple questions are selected
             for (var j = 0; j < questionNodes.length; j++) {
-                for (var i = 0; i < data.rows.length - 1; i++) {
+                for (var i = 0; i < data.rows.length; i++) {
                     if (questionNodes[j][i].value == 0 || questionNodes[j][i].info[yAxisMode] == "No response" || questionNodes[j][i].info[yAxisMode] == 0) {
                         continue;
                     }
@@ -1573,6 +1573,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 else
                     return "This result is NOT significant."
             })
+            .on("click", function(){$("#btnHelp").click()})
+            //.on("mouseover", function(){$("#btnHelp").click()})
             .call(wrap, xDistance - 30);
         //
         var textHeight = $(".flag-text")[0].getBBox().height;

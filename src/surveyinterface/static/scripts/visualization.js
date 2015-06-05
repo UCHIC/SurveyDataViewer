@@ -1252,19 +1252,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("x", "15px")
             .attr("class", "zoom-controls");
 
-        // White backgrounds
+        // White background button area
         zoomControls.append("rect")
             .attr("width", "30px")
             .attr("height", "30px")
             .attr("y", "15px")
-            .attr("x", "15px")
+            .attr("x", "15px");
 
         zoomControls.append("rect")
             .attr("width", "30px")
             .attr("height", "30px")
-            .attr("id", "zoom_out")
             .attr("y", "50px")
-            .attr("x", "15px")
+            .attr("x", "15px");
 
         // + Sign
         zoomControls.append("text")
@@ -1516,6 +1515,74 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         return chiSquare > distribution[df];
     }
 
+    function showFlag(flag){
+        var xDistance = getYLabelSize() + yPanelWidth;
+
+        var flagContainer = svg.append("g")
+            .attr("dx", "10")
+            .attr("id", "flag")
+            .attr("class", "graph-object");
+
+        var color;
+        if (flag == true){
+            color = "rgb(0, 205, 0)";
+            getGradient(color, "Flag");
+        }
+
+        else{
+            color = "red";
+            getGradient(color, "Flag");
+        }
+
+        gradientCount++;
+
+        svg.append("text")
+            .attr("dx", 0)
+            .attr("class", "graph-object flag-text")
+            .attr("dy", 0)
+            .attr("font-weight", "normal")
+            .attr("fill", legendColor)
+            .attr("transform", "translate(" + 30 + "," + (h - margin.bottom + 25) + ")")
+            .text(function () {
+                if (flag == true)
+                    return "This result is significant.";
+                else
+                    return "This result is NOT significant."
+            })
+            .call(wrap, xDistance - 30);
+        //
+        var textHeight = $(".flag-text")[0].getBBox().height;
+        var flagRadius = 10;
+
+        flagContainer.append("svg:circle")
+            .attr("r", flagRadius)
+            .attr("class", "graph-object")
+            .attr("stroke", d3.rgb(color).darker(2))
+            .attr("stroke-width", "1px")
+            .attr("fill", 'url(#gradientFlag)')
+            .attr("transform", "translate(" + 15 + "," + (h - margin.bottom + textHeight/2 + 10) + ")");
+
+        // Check mark
+        svg.append("text")
+            .attr("dx", 0)
+            .attr("class", "graph-object")
+            .attr("dy", 0)
+            .attr("text-anchor", "middle")
+            .attr("font-weight", "normal")
+            .attr("fill", "#FFF")
+            .attr("transform", "translate(" + 15 + "," + (h - margin.bottom + textHeight/2 + 15) + ")")
+            .text(function () {
+                if (flag == true)
+                    return "✔";
+                else
+                    return "✖"
+            })
+    }
+
+    function hideFlag(){
+
+    }
+
     function updatePercentageView() {
         refreshValues();
         var marginLeft = getYLabelSize() + yPanelWidth;
@@ -1565,20 +1632,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
-        if (options.length > 1 && answers.length > 1){
-            $("#significance-flag-container").show();
-            if (isSignificant(fixedNodes)) {
-                $("#significance-flag-container")[0].style.background = "green";
-                $("#significance-flag-container")[0].title = "This result is significant.";
-            }
-            else{
-                $("#significance-flag-container")[0].style.background = "red";
-                $("#significance-flag-container")[0].title = "This result is NOT significant.";
-            }
-        }
-        else{
-            $("#significance-flag-container").hide();
-        }
+
 
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode graph-object")
@@ -1625,6 +1679,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
             })
             .attr("r", "1")
+            .attr("class", "fixedNodeCircle")
             .attr("fill", function (d) {
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
                 if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
@@ -1669,8 +1724,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .range([2, maxArea]);
 
                 var curArea = customScale(d.amount);
-                var curRadius = Math.pow(curArea / Math.PI, 0.5);
-                return curRadius;
+
+                return Math.pow(curArea / Math.PI, 0.5);    // Return the radius
             });
 
         var deltaX = (w - marginLeft) / (answers.length);
@@ -1771,7 +1826,21 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 };
             });
 
-        svg.selectAll("circle").attr("transform", transform);
+        // Calculate and draw significance flag
+        if (options.length > 1 && answers.length > 1) {
+            $("#significance-flag-container").show();
+            if (isSignificant(fixedNodes)) {
+                showFlag(true);
+            }
+            else {
+                showFlag(false);
+            }
+        }
+        else {
+
+        }
+
+        svg.selectAll(".fixedNodeCircle").attr("transform", transform);
     }
 
     function drawOuterRect() {

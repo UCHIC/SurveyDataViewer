@@ -521,16 +521,3 @@ path[data-zip] {
     right: 60px;
     width: 200px;
 }
-
-#significance-flag-container{
-    position: fixed;
-    bottom: 22px;
-    font-size: 18px;
-    margin-left: 33px;
-    border-radius: 50%;
-    height: 30px;
-    color: #FFF;
-    width: 30px;
-    padding-top: 5px;
-    display:none;
-}

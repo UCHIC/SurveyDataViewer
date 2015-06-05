@@ -163,7 +163,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // Populate demographic data on the nodes
-        nodes = d3.range(data.rows.length - 1).map(function (d, i) {
+        nodes = d3.range(data.rows.length).map(function (d, i) {
             var info = {};
             for (var j = 0; j < metadata.rows.length; j++) {
                 var questionID = metadata.rows[j]["Variable"].trim();
@@ -171,7 +171,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 var pluggins = getCellContent(questionID, "Features").split(";");
                 for (var p = 0; p < pluggins.length; p++) {
                     if (pluggins[p].trim() == "isDemographic") {
-                        info[questionLabel] = data.rows[i + 1][questionID];
+                        info[questionLabel] = data.rows[i][questionID];
                     }
                 }
             }
@@ -535,9 +535,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function updateHeatMap() {
         refreshValues();
         var responses = _.map(nodes, function (a, b) {
-            for (var prop in data.rows[b + 1]) {
+            for (var prop in data.rows[b]) {
                 if (prop.trim() == zipQuestion)
-                    return {zipcode: data.rows[b + 1][prop], value: data.rows[b + 1][selectedQuestion]};
+                    return {zipcode: data.rows[b][prop], value: data.rows[b][selectedQuestion]};
             }
         });
 
@@ -549,7 +549,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             if (label && label.trim() == "not sure") {
                 responses = _.filter(responses, function (resp) {
                     return resp.value != i + 1;
-                })
+                });
                 numberOfAnswers--;
             }
         }
@@ -810,11 +810,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         questionNodes = [];
 
-        for (var j = 0; j < tempQuestions.length; j++) { // -1 because the first set of nodes is already the original set
+        for (var j = 0; j < tempQuestions.length; j++) {
             questionNodes[j] = [];
             for (var i = 0; i < nodesCopy.length; i++) {
                 var tempNode = {
-                    value: data.rows[i + 1][tempQuestions[j]],
+                    value: data.rows[i][tempQuestions[j]],
                     info: nodesCopy[i].info,
                     temp: true,
                     tempPosY: j

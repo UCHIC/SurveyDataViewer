@@ -122,7 +122,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function getLabel(question, value) {
         for (var j = 0; j < metadata.rows.length; j++) {
             var reGetQuestionID = /Q[0-9]+[a-z]*/;
-            var questionID = reGetQuestionID.exec(metadata.rows[j]["NewVar"]);
+            var questionID = reGetQuestionID.exec(metadata.rows[j]["Variable"]);
             if (questionID && questionID[0] == question) {
                 // Get the labels for this question
                 var labels;
@@ -151,12 +151,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Get the list of demographic questions
         for (var j = 0; j < metadata.rows.length; j++) {
-            var questionID = metadata.rows[j]["NewVar"];
-            var questionLabel = metadata.rows[j]["NewVarLabel"];
-            var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
+            var questionID = metadata.rows[j]["Variable"].trim();
+            var questionLabel = metadata.rows[j]["VariableLabel"].trim();
+            var pluggins = getCellContent(questionID, "Features").split(";");
             for (var i = 0; i < pluggins.length; i++) {
-                if (pluggins[i] == "isDemographic") {
+                if (pluggins[i].trim() == "isDemographic") {
                     infoQuestions[questionLabel] = questionID;
+                    $("#lstYAxisMode").append('<li><a data-axis="' + questionLabel + '" href="#">' + questionLabel + '</a></li>');  // Add demographic items to dropdown
                 }
             }
         }
@@ -165,11 +166,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         nodes = d3.range(data.rows.length - 1).map(function (d, i) {
             var info = {};
             for (var j = 0; j < metadata.rows.length; j++) {
-                var questionID = metadata.rows[j]["NewVar"];
-                var questionLabel = metadata.rows[j]["NewVarLabel"];
-                var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
+                var questionID = metadata.rows[j]["Variable"].trim();
+                var questionLabel = metadata.rows[j]["VariableLabel"].trim();
+                var pluggins = getCellContent(questionID, "Features").split(";");
                 for (var p = 0; p < pluggins.length; p++) {
-                    if (pluggins[p] == "isDemographic") {
+                    if (pluggins[p].trim() == "isDemographic") {
                         info[questionLabel] = data.rows[i + 1][questionID];
                     }
                 }
@@ -191,18 +192,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#btnCategories")[0].disabled = true;
         loadHeatMap();
         setPercentageView();    // start the site in percentage view
-
-        // Add demographic items to dropdown
-        for (var j = 0; j < metadata.rows.length; j++) {
-            //var questionID = metadata.rows[j]["NewVar"];
-            var questionLabel = metadata.rows[j]["NewVarLabel"];
-            var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
-            for (var i = 0; i < pluggins.length; i++) {
-                if (pluggins[i] == "isDemographic") {
-                    $("#lstYAxisMode").append('<li><a data-axis="' + questionLabel + '" href="#">' + questionLabel + '</a></li>')
-                }
-            }
-        }
 
         // Bind click events
         $("#percentage-view").click(setPercentageView);
@@ -242,26 +231,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         that.closest("li").addClass("active");
         selectedQuestion = that.attr("data-value");
 
-        var pos;
-        if (data.rows[0][selectedQuestion]) {
-            pos = data.rows[0][selectedQuestion].lastIndexOf('-')
-        }
+        var title = getCellContent(selectedQuestion, "VariableLabel");
 
-        var title = "";
-        if (pos && pos != -1) {
-            title = data.rows[0][selectedQuestion].substr(0, pos);
-        }
-        else {
-            title = data.rows[0][selectedQuestion];
-        }
-
-        var content;
-        if (pos && pos != -1) {
-            content = data.rows[0][selectedQuestion].substr(pos + 1, data.rows[0][selectedQuestion].length);
-        }
-        else {
-            content = data.rows[0][selectedQuestion];
-        }
+        var content = getCellContent(selectedQuestion, "SubVariableLabel")
 
         // Toggle add button visibility
         $(".btnAdd").hide();
@@ -348,7 +320,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var deltaY = y(1) - y(0);
 
         for (var j = 0; j < metadata.rows.length; j++) {
-            var questionID = metadata.rows[j]["NewVar"];
+            var questionID = metadata.rows[j]["Variable"];
             if (questionID == value) {
                 // Get the labels for this question
                 var labels;
@@ -621,7 +593,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 curPath.transition().duration(100).attr("fill", "#3D4348");
 
                 if (participants[zip] > cutoff) {        // Cut off at 5
-                    if ($("li.active").length) {
+                    if ($("li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
                         curPath.transition().duration(500).delay(100).attr("fill", function (d) {
                             return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
                         });
@@ -641,7 +613,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // Update legend
-        if (!$("li.active").length) {
+        if (!$("li.active").length || hasPluggin(selectedQuestion, "spatial")) {
             numberOfAnswers = 5;                // 2 labels: Min and max number of participants
             colorScale = unidirectionalScale;
         }
@@ -688,6 +660,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 return d.color;
             });
 
+        // Gradient legend
         heatMapLegendArea.append("svg:rect")
             .attr("width", 30)
             .attr("height", rHeight - verticalSpacing * 2)
@@ -698,53 +671,99 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("fill", "url(#line-gradient)")
             .attr("class", "graph-object");
 
-        if ($("li.active").length) {
+        if ($("li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
             var counter = 0;
             for (var i = 0; i < numberOfAnswers; i++) {
                 var label = getLabel(selectedQuestion, answers[i]);
                 if (label)
-                    label = "- " + label.trim();
+                    label = label.trim();
                 if (label != "not sure") {
-                    heatMapLegendArea.append("svg:text")
-                        .attr("x", 50)
-                        .attr("y", (counter * 30) + 20)
-                        .attr("dy", ".31em")
-                        .attr("class", "hm-legend")
-                        .style("fill", "#000")
-                        .text(label)
+                    if (label != null){
+                        var legendText = heatMapLegendArea.append("svg:text")
+                            .attr("y", (counter * 30) + 20)
+                            .attr("dy", ".31em")
+                            .attr("class", "hm-legend")
+                            .style("fill", "#000")
+                            .text(label)
+                            .call(wrap, rWidth - 60);
+                        heatMapLegendArea.append("svg:text")
+                            .attr("x", 40)
+                            .attr("y", (counter * 30) + 20)
+                            .attr("dy", ".31em")
+                            .attr("class", "hm-legend")
+                            .style("fill", "#AAA")
+                            .text("—");
+                    }
+
+                    legendText.attr("transform", "translate(" + 60 + "," + 0 + ")")
                     counter++;
                 }
             }
         }
         else{
-           heatMapLegendArea.append("svg:text")
-                        .attr("x", 50)
-                        .attr("y", (0 * 30) + 20)
-                        .attr("dy", ".31em")
-                        .attr("class", "hm-legend")
-                        .style("fill", "#000")
-                        .text("- 5 participants")
+            heatMapLegendArea.append("svg:text")
+                .attr("x", 60)
+                .attr("y", 20)
+                .attr("dy", ".31em")
+                .attr("class", "hm-legend")
+                .style("fill", "#000")
+                .text("5 participants");
 
             heatMapLegendArea.append("svg:text")
-                        .attr("x", 50)
-                        .attr("y", (4 * 30) + 20)
-                        .attr("dy", ".31em")
-                        .attr("class", "hm-legend")
-                        .style("fill", "#000")
-                        .text("- " + maxParticipants + " participants")
+                .attr("x", 40)
+                .attr("y", 20)
+                .attr("dy", ".31em")
+                .attr("class", "hm-legend")
+                .style("fill", "#AAA")
+                .text("—");
+
+            heatMapLegendArea.append("svg:text")
+                .attr("x", 60)
+                .attr("y", (4 * 30) + 20)
+                .attr("dy", ".31em")
+                .attr("class", "hm-legend")
+                .style("fill", "#000")
+                .text(maxParticipants + " participants")
+
+            heatMapLegendArea.append("svg:text")
+                .attr("x", 40)
+                .attr("y", (4 * 30) + 20)
+                .attr("dy", ".31em")
+                .attr("class", "hm-legend")
+                .style("fill", "#AAA")
+                .text("—");
         }
     }
 
-    function showDimensionalQuestions() {
+    function enableDimensionalQuestions() {
         var items = $(".clickable");
         for (var i = 0; i < items.length; i++) {
-            var question = items[i].getAttribute("data-value");
-            if (!hasPluggin(question, "unidirectional") && !hasPluggin(question, "bidirectional")) {
+            var question = items[i].getAttribute("data-value").trim();
+            if (!hasPluggin(question, "unidirectional") && !hasPluggin(question, "bidirectional") && !hasPluggin(question, "spatial")) {
                 $(items[i]).addClass("disabled");
             }
         }
     }
 
+    function enableSpatialQuestions(){
+        var items = $(".clickable");
+        for (var i = 0; i < items.length; i++) {
+            var question = items[i].getAttribute("data-value").trim();
+            if (hasPluggin(question, "spatial")) {
+                $(items[i]).removeClass("disabled");
+            }
+        }
+    }
+
+    function disableSpatialQuestions(){
+        var items = $(".clickable");
+        for (var i = 0; i < items.length; i++) {
+            var question = items[i].getAttribute("data-value").trim();
+            if (hasPluggin(question, "spatial")) {
+                $(items[i]).addClass("disabled");
+            }
+        }
+    }
     function showAllQuestions() {
         $(".clickable").removeClass("disabled");
     }
@@ -895,7 +914,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             for (var i = 1; i < answers.length + 1; i++) {
                 // Get the list of labels
                 for (var j = 0; j < metadata.rows.length; j++) {
-                    var questionID = metadata.rows[j]["NewVar"];
+                    var questionID = metadata.rows[j]["Variable"];
                     if (questionID == value) {
                         // Get the labels for this question
                         var labels;
@@ -1086,7 +1105,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".zoom-controls").hide();
         //$("#btnCategories")[0].disabled = true;
         $("#btnCategories").show();
-        showDimensionalQuestions();
+        enableDimensionalQuestions();
+        disableSpatialQuestions();
 
         // If a question has been clicked, update
         if ($("#listQuestions").find(".active").length > 1){
@@ -1123,6 +1143,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawTable();
 
         showAllQuestions();
+        disableSpatialQuestions();
 
         // If a question has been clicked, update
 
@@ -1161,7 +1182,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".heat-map-legend").show();
         $(".zoom-controls").show();
 
-        showDimensionalQuestions();
+        enableDimensionalQuestions();
+        enableSpatialQuestions();
 
         $(".btnAdd").hide();
         $("#btnCategories").hide();
@@ -1579,10 +1601,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             })
     }
 
-    function hideFlag(){
-
-    }
-
     function updatePercentageView() {
         refreshValues();
         var marginLeft = getYLabelSize() + yPanelWidth;
@@ -1857,12 +1875,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function hasPluggin(question, pluggin) {
+        if (!question){
+            return false;
+        }
+        question = question.trim();
+        pluggin = pluggin.trim();
         for (var j = 0; j < metadata.rows.length; j++) {
-            var questionID = metadata.rows[j]["NewVar"];
+            var questionID = metadata.rows[j]["Variable"];
             if (questionID == question) {
-                var pluggins = String(metadata.rows[j]["pluggins"]).split(";");
+                var pluggins = getCellContent(questionID, "Features").split(";");
                 for (var i = 0; i < pluggins.length; i++) {
-                    if (pluggins[i] == pluggin) {
+                    if (pluggins[i].trim() == pluggin) {
                         return true;
                     }
                 }
@@ -1877,7 +1900,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         for (var j = 0; j < metadata.rows.length; j++) {
             //var reGetQuestionID = /Q[0-9]+[a-z]*/;
-            var questionID = metadata.rows[j]["NewVar"];
+            var questionID = metadata.rows[j]["Variable"];
             if (questionID == value) {
                 // Get the labels for this question
                 var labels;
@@ -1953,7 +1976,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         return "";
 
                     for (var j = 0; j < metadata.rows.length; j++) {
-                        var questionID = metadata.rows[j]["NewVar"];
+                        var questionID = metadata.rows[j]["Variable"];
                         if (questionID == infoQuestions[yAxisMode]) {
                             if (getLabel(questionID, options[i]) == null) {
                                 return options[i];
@@ -2219,13 +2242,39 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else return "even"
     }
 
+    function getCellContent(questionID, columnID){
+        for (var j = 0; j < metadata.rows.length; j++) {
+            var iterator = metadata.rows[j]['Variable'];
+            if (iterator.trim() == questionID.trim()) {
+                for (var prop in metadata.rows[j]) {
+                    if (prop.trim() == columnID.trim()) {
+                        if (metadata.rows[j][prop] != 0) {
+                            return metadata.rows[j][prop];
+                        }
+                        else {
+                            return "";
+                        }
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
     function loadQuestions() {
         var title = "";
         var evenOddCounter = "even";
 
         for (var prop in data.rows[0]) {
             var question = prop;
-            var questionContent = data.rows[0][prop];
+            var questionContent;
+
+            if(isMultipleSelectOne(question)){
+                questionContent = getCellContent(question, "SubVariableLabel");
+            }
+            else{
+                questionContent = getCellContent(question, 'VariableLabel');
+            }
 
             if (getLabel(question, "data-type") == "map") {
                 markerQuestions.push(question);
@@ -2235,7 +2284,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 var answer = questionContent.substr(questionContent.lastIndexOf('-') + 1, questionContent.length);
                 var id = regExp['multipleQuestionSelectOne'].exec(question)[1];
                 if ($("#Q" + id).length == 0) {
-                    title = getQuestionTitle(question);
+                    title = getCellContent(question, 'VariableLabel');
 
                     $("#listQuestions").append('<li class="' + evenOddCounter + '"><a data-toggle="collapse" class="accordion-toggle" data-parent="#listQuestions" href="' + "#Q" + id + '">' +
                     title +

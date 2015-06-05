@@ -374,7 +374,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     }
                 }
 
-                // Draw legend for each answer
+                // Draw x-axis legend
                 for (var i = 0; i < answers.length; i++) {
                     if (labelsArray[answers[i]] != "not sure") {
                         svg.append("text")
@@ -1517,11 +1517,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function updatePercentageView() {
-        // Add fixed nodes
         refreshValues();
-
         var marginLeft = getYLabelSize() + yPanelWidth;
-
+        // Add fixed nodes
         var fixedNodes = d3.range(answers.length * options.length).map(function (i) {
             return {
                 radius: 0,
@@ -1581,8 +1579,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else{
             $("#significance-flag-container").hide();
         }
-
-
 
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode graph-object")
@@ -1830,39 +1826,46 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     var index = parseInt(labels[i].substr(0, pos).trim());
                     var value = labels[i].substr(pos + 1, labels[i].length).trim();
                     labelsArray[index] = value;
+                    if (value == "not sure" && view == "mean") {
+                        x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses in mean view
+                        deltaX = (x(1) - x(0));
+                    }
                 }
 
                 // Draw legend for each answer
                 for (var i = 0; i < answers.length; i++) {
-                    svg.append("text")
-                        .attr("dx", 0)
-                        .attr("dy", 0)
-                        .attr("class", "x-legend graph-object")
-                        .attr("text-anchor", "middle")
-                        .attr("font-weight", "normal")
-                        .attr("fill", legendColor)
-                        .attr("id", "x-legend" + i)
-                        .attr("transform", "translate(" + ( x(i) + marginLeft + delta / 2) + "," + 0 + ")")
-                        .attr("data-id", i)
-                        .text(function () {
-                            if (!selectedQuestion) {
-                                return "";
-                            }
+                    if (!(labelsArray[answers[i]] == "not sure" && view == "mean")) {   // Ignore no response answers in mean view
+                        svg.append("text")
+                            .attr("dx", 0)
+                            .attr("dy", 0)
+                            .attr("class", "x-legend graph-object")
+                            .attr("text-anchor", "middle")
+                            .attr("font-weight", "normal")
+                            .attr("fill", legendColor)
+                            .attr("id", "x-legend" + i)
+                            .attr("transform", "translate(" + ( x(i) + marginLeft + delta / 2) + "," + 0 + ")")
+                            .attr("data-id", i)
+                            .text(function () {
+                                if (!selectedQuestion) {
+                                    return "";
+                                }
 
-                            // Just return the actual value for text input questions
-                            if (selectedQuestion.indexOf("- Text") != -1) {
-                                return answers[i];
-                            }
+                                // Just return the actual value for text input questions
+                                if (selectedQuestion.indexOf("- Text") != -1) {
+                                    return answers[i];
+                                }
 
-                            return labelsArray[answers[i]];
-                        })
-                        .call(wrap, delta);
+                                return labelsArray[answers[i]];
+                            })
+                            .call(wrap, delta);
 
-                    var textHeight = $("#x-legend" + i)[0].getBBox().height;
-                    $("#x-legend" + i).attr("y", h - margin.bottom + 10 + (margin.bottom / 2) - textHeight / 2)
+                        var textHeight = $("#x-legend" + i)[0].getBBox().height;
+                        $("#x-legend" + i).attr("y", h - margin.bottom + 10 + (margin.bottom / 2) - textHeight / 2);
+                    }
                 }
             }
         }
+
     }
 
     function drawYAxisLegend(y) {

@@ -6,19 +6,27 @@ https://docs.djangoproject.com/en/1.6/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
+
+To setup the settings json file:
+    1. rename settings_template.json to settings.json
+    2. write all the necessary data in it
+
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import json
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+try:
+    with open(os.path.join(BASE_DIR, 'settings', 'settings.json')) as data_file:
+        data = json.load(data_file)
+except IOError:
+    print("You need to setup the settings data file (see instructions in base.py file.)")
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%q-d!3hzsz&t_6mn)6&$)cqje-izeqg9l#6_h4y6h57wj3ge*&'
-#SECRET_KEY = os.environ['SURVEY_SECRET_KEY']
+SECRET_KEY = data["secret_key"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -56,14 +64,16 @@ WSGI_APPLICATION = 'SurveyDataViewer.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'SurveysDatabase.sql',
+DATABASES = {}
+for database in data['databases']:
+    DATABASES[database['name']] = {
+        'ENGINE': database['engine'],
+        'NAME': database['schema'],
+        'USER': database['user'],
+        'PASSWORD': database['password'],
+        'HOST': database['host'],
+        'PORT': database['port']
     }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/

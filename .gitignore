@@ -54,3 +54,6 @@ docs/_build/
 
 # PyCharm Project Data
 .idea
+
+#Project Specific
+src/SurveyDataViewer/settings/settings.json

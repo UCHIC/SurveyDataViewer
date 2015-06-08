@@ -440,7 +440,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
 
         //Draw mean base lines
-
         for (var i = 1; i <= options.length; i++) {
             svg.append("svg:rect")
                 .attr("width", x(answers.length) - x(1))
@@ -1198,7 +1197,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function loadHeatMap() {
         queue()
-            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
+            .defer(d3.json, "/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
             .await(plotZipCodes);
 
         function plotZipCodes(error, us) {
@@ -1336,9 +1335,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     }
 
-
     function interpolateZoom(translate, scale) {
-        var self = this;
         return d3.transition().duration(350).tween("zoom", function () {
             var iTranslate = d3.interpolate(mapZoom.translate(), translate),
                 iScale = d3.interpolate(mapZoom.scale(), scale);

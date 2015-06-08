@@ -52,9 +52,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var unidirectionalScale = d3.scale.linear()
         .domain([0, 1/9, 2/9, 3/9, 4/9, 5/9, 6/9, 7/9, 8/9, 1])
         .range(["#E6FFFF", "#CCFBFF", "#B3F2FF", "#99E6FF", "#80D4FF", "#66BFFF", "#4DA6FF", "#3388FF", "#1A66FF", "#0040FF"]);
-        //.domain([0, 1/6, 2/6, 3/6, 4/6, 5/6, 1])
-        //.range(["#FFFFCC", "#FFFF99", "#FFFF00", "#FFCC00", "#FF9900", "#FF6600", "#FF0000"]);
-        //.range(["#DDDDDD", "#B32D2D"]);
 
     var defaultBubbleColor = "#990F0F";
     var notSureColor = "#777";

@@ -4,9 +4,6 @@ from SurveyDataViewer.settings.base import *
 #For error logging (helicon zoo error trace logging doesn't work)
 #sys.stderr = open('err.log', 'w')
 
-DATABASE_PATH = os.path.join(BASE_DIR, os.pardir, 'SurveysDatabase_sandbox.sql')
-DATABASES['default']['NAME'] = DATABASE_PATH
-
 DEBUG = True
 DEPLOYED = True
 

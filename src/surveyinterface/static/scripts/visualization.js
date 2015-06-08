@@ -24,8 +24,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var yAxisMode = "All";
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top: 0, bottom: 60, left: 0, right: 5};
-    var w = $("#visualizationContent").width() - 20, h = $("#visualizationContent").height() - $("#top-bar").height() - 20 /*- $("#top-bar").height()*/;
+    var w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
     var view = "";
+    var svg;
     var answers = [];
     var options = [];
     var tableColor = "#666";
@@ -60,6 +61,34 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var mapContainer;
     var projection;
     var independetColors = d3.scale.category10();
+
+    $(window).resize(_.debounce(function () {
+        w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
+        clearCanvas();
+        svg.attr("width", w)
+            .attr("height", h);
+
+        if ($("#listQuestions").find(".active").length > 1) {
+            var element = $("li.active .btnAdd").first();
+            onAddRow(element);
+            return;
+        }
+
+        if (view == "percentage") {
+            drawTable();
+            updatePercentageView();
+        }
+        else if (view == "mean") {
+            updateMeanView();
+        }
+        else {
+            drawOuterRect();
+            drawGradientBackground(0);
+            updateHeatMap();
+        }
+
+
+    }, 500));
 
     d3.selection.prototype.moveToBack = function () {
         return this.each(function () {
@@ -1288,15 +1317,35 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("y", "50px")
             .attr("x", "15px");
 
+        // Buttons
+        zoomControls.append("rect")
+            .attr("width", "30px")
+            .attr("height", "30px")
+            .attr("class", "zoom_in")
+            .attr("y", "15px")
+            .attr("x", "15px")
+            .style("stroke", "#000")
+            .on("click", zoomClick);
+
+        zoomControls.append("rect")
+            .attr("width", "30px")
+            .attr("height", "30px")
+            .attr("class", "zoom_out")
+            .attr("y", "50px")
+            .attr("x", "15px")
+            .style("stroke", "#000")
+            .on("click", zoomClick);
+
         // + Sign
         zoomControls.append("text")
             .attr("dx", "30px")
             .attr("dy", "38px")
             //.attr("class", "noselect")
             .style("font-size", "26px")
+            .attr("class", "zoom_in")
             .attr("text-anchor", "middle")
             .attr("font-weight", "normal")
-            .style("fill", "#777")
+            .style("fill", tableColor)
             .text("+")
             .on("click", zoomClick);
 
@@ -1304,35 +1353,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         zoomControls.append("text")
             .attr("dx", "30px")
             .attr("dy", "73px")
-            //.attr("class", "noselect")
             .style("font-size", "26px")
+            .attr("class", "zoom_out")
             .attr("text-anchor", "middle")
             .attr("font-weight", "normal")
-            .style("fill", "#777")
+            .style("fill", tableColor)
             .text("-")
             .on("click", zoomClick);
-
-        // Buttons
-        zoomControls.append("rect")
-            .attr("width", "30px")
-            .attr("height", "30px")
-            .attr("id", "zoom_in")
-            .attr("y", "15px")
-            .attr("x", "15px")
-            .style("stroke", "#000")
-            .style("opacity", "0.5")
-            .on("click", zoomClick);
-
-        zoomControls.append("rect")
-            .attr("width", "30px")
-            .attr("height", "30px")
-            .attr("id", "zoom_out")
-            .attr("y", "50px")
-            .attr("x", "15px")
-            .style("stroke", "#000")
-            .style("opacity", "0.5")
-            .on("click", zoomClick);
-
     }
 
     function interpolateZoom(translate, scale) {
@@ -1361,7 +1388,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             view = {x: translate[0], y: translate[1], k: mapZoom.scale()};
 
         d3.event.preventDefault();
-        direction = (this.id === 'zoom_in') ? 1 : -1;
+        direction = (this.classList[0] == "zoom_in") ? 1 : -1;
         target_zoom = mapZoom.scale() * (1 + factor * direction);
 
         target_zoom = Math.min(target_zoom, extent[1]);

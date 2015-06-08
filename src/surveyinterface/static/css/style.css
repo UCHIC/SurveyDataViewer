@@ -2,7 +2,7 @@
     width: 100%;
     height: 100%;
     overflow-y: hidden;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
     margin: 0;
     padding: 0;
     min-width: 1000px;
@@ -24,11 +24,12 @@ h6 {
     width: calc(100% - 300px);
     float: right;
     overflow: hidden;
+      padding: 4px;
 }
 
 #visualizationContent .dropdown {
     margin-top: 5px;
-    margin-left: 17px
+    margin-left: 6px
 }
 
 .thumbnail {
@@ -61,6 +62,7 @@ h6 {
 
 #txtDescription {
     height: 50px;
+    font-size: 16px;
 }
 
 #surveyContainer .caption {
@@ -88,7 +90,7 @@ h6 {
 
 .dropdown {
     text-align: left;
-    position: fixed;
+    position: absolute;
 }
 
 .dropdown-menu {
@@ -112,6 +114,7 @@ h6 {
 
 svg {
     cursor: default;
+
 }
 
 #mainContent {
@@ -180,8 +183,7 @@ text.shadow {
 
 #top-bar {
     width: 100%;
-    padding: 4px;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     height: 90px;
 }
 
@@ -199,23 +201,20 @@ text.shadow {
 }
 
 #captionContainer {
-    width: calc(100% - 163px);
+      width: calc(100% - 153px);
     float: left;
     margin-bottom: 0;
-    margin-left: 6px;
     border-radius: 0px;
     border-color: #8A7878;
     /* border-top-left-radius: 4px; */
     /* border-top-right-radius: 4px; */
 }
 
-
 #viewContainer {
     width: 150px;
     height: 90px;
     float: right;
     margin-bottom: 0;
-    margin-right: 6px;
     -webkit-border-radius: 0px;
     -webkit-border-top-left-radius: 4px;
     -webkit-border-top-right-radius: 4px;
@@ -228,16 +227,17 @@ text.shadow {
 
 #captionContainer .panel-heading, #viewContainer .panel-heading {
     height: 38px;
-    background-color: #3D4348;
-    border-color: #6D6E72;
     border-top-right-radius: 0px;
     border-top-left-radius: 0px;
+    text-shadow: 0 1px 0 #0A0A0A;
+    background-color: #3D4247;
+    border-color: #000;
 }
 
 #viewContainer button {
     background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
     border: 1px solid rgb(108, 96, 96);
-    opacity:1;
+    opacity: 1;
     text-shadow: 0 1px 0 #fff;
 }
 
@@ -247,17 +247,16 @@ text.shadow {
     background-color: #5F5F5F !important;
     -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, .2);
-    background-image:none;
+    background-image: none;
     text-shadow: 0 1px 0 #000;
-    opacity:1;
+    opacity: 1;
 }
 
-#viewContainer .btn[disabled], #btnCategories[disabled]{
+#viewContainer .btn[disabled], #btnCategories[disabled] {
     cursor: not-allowed; /* Confirmed broken for current version of bootstrap https://github.com/twbs/bootstrap/issues/16088 */
-    color:#AAA;
+    color: #AAA;
     text-shadow: 0 1px 0 #fff;
 }
-
 
 .caption p {
     clear: left;
@@ -271,10 +270,6 @@ text.shadow {
     background: #FFF;
     background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
     border: 1px solid rgb(108, 96, 96);
-}
-
-#btnCategories:hover {
-    border: 1px solid #999;
 }
 
 #btnCategories span {
@@ -516,7 +511,7 @@ path[data-zip] {
     user-select: none;
 }
 
-#zoom_in:hover, #zoom_out:hover {
+.zoom_in:hover, .zoom_out:hover {
     fill: #EEE;
     cursor: pointer;
 }
@@ -536,32 +531,34 @@ path[data-zip] {
     width: 200px;
 }
 
-.flag-text:hover{
-    text-decoration:underline;
-    cursor:pointer;
+.flag-text:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 #btnHelp {
-    display:none;
+    display: none;
 }
 
 .modal-content {
     border-radius: 0;
-    padding: 4px;
+    border: 3px solid #7EB6E7;
 }
 
 .modal-header {
-  padding: 10px;
-  border-bottom: 0;
-  min-height: 16.42857143px;
-  background: #054176;
-  margin: -3px;
-  color: #FFF;
+    padding: 10px;
+    border-bottom: 0;
+    min-height: 16.42857143px;
+    background: #7EB6E7;
+    margin: -3px;
+    color: #FFF;
+    text-shadow: 0 1px 0 #0A0A0A;
 }
 
 .modal-footer {
     margin-top: 15px;
     padding: 0px 20px 20px;
     text-align: right;
-    border-top:0;
+    border-top: 0;
+
 }

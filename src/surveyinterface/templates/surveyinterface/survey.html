@@ -33,16 +33,19 @@
     </div>
 
     <div id="mainContent">
-        <div id="listQuestions" class="panel-group">
-            <div class="thumbnail">
-                <img src="{% static 'images/survey-icon.png' %}" alt="...">
-                <div class="caption">
-                    <h4>{{ object.name }}</h4>
-                    <p>{{ object.dateconducted }}</p>
-                </div>
-             </div>
-            <hr class="intro-divider">
+    <div class="panel-left">
+        <div id="surveyInfo">
+            <img src="{% static 'images/survey-icon.png' %}" alt="...">
+            <div class="caption">
+                <h4>{{ object.name }}</h4>
+
+                <p>{{ object.dateconducted }}</p>
+            </div>
         </div>
+        <div id="listQuestions" class="panel-group">
+        </div>
+    </div>
+
         <div id="visualizationContent">
             <div id="top-bar">
                 <div id="captionContainer" class="panel panel-primary">

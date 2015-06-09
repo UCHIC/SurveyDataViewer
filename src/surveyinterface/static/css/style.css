@@ -210,6 +210,9 @@ text.shadow {
 
 #viewContainer button {
     background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);
     border: 1px solid rgb(108, 96, 96);
     opacity: 1;
     text-shadow: 0 1px 0 #fff;
@@ -241,8 +244,11 @@ text.shadow {
     height: 24px;
     border-radius: 1px;
     color: #000;
-    background: #FFF;
     background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);
+    text-shadow: 0 1px 0 #fff;
     border: 1px solid rgb(108, 96, 96);
     text-align: left;
     position: absolute;
@@ -257,12 +263,12 @@ text.shadow {
 
 span.btnAdd, span.btnSubstract {
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
     color: #AAA;
     margin-top: 7px;
     display: none;
     float: right;
-    right: 15px;
+    right: 18px;
     width: 0;
     height: 0;
 }
@@ -512,8 +518,62 @@ path[data-zip] {
 #btnNextTip {
     bottom: 100px;
     position: fixed;
+    right: 280px;
+    width: 200px;
+    outline: none;
+    border: 2px solid rgb(28, 157, 195);
+}
+
+#chkHideTip {
+    bottom: 150px;
+    position: fixed;
+    right: 100px;
+    cursor:pointer;
+    outline: none;
+}
+
+#btnPreviousTip {
+    bottom: 100px;
+    position: fixed;
+    right: 500px;
+    width: 200px;
+    outline: none;
+    border: 2px solid rgb(28, 157, 195);
+}
+
+#btnPreviousTip, #btnNextTip {
+    background-image: -webkit-linear-gradient(top, #78CEE7, #1C9DC3);
+    background-image: -moz-linear-gradient(top, #78CEE7, #1C9DC3);
+    background-image: -o-linear-gradient(top, #78CEE7, #1C9DC3);
+    background-image: -ms-linear-gradient(top, #78CEE7, #1C9DC3);
+}
+
+#btnPreviousTip:hover, #btnNextTip:hover {
+    background-image: -webkit-linear-gradient(top, #BBE7F4, #1C9DC3);
+    background-image: -moz-linear-gradient(top, #BBE7F4, #1C9DC3);
+    background-image: -o-linear-gradient(top, #BBE7F4, #1C9DC3);
+    background-image: -ms-linear-gradient(top, #BBE7F4, #1C9DC3);
+
+}
+
+#btnSkipTips {
+    bottom: 100px;
+    position: fixed;
     right: 60px;
     width: 200px;
+    outline: none;
+    border: 2px solid rgb(134, 134, 134);
+    background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);
+    background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);
+}
+
+#btnSkipTips:hover {
+    background-image: -webkit-linear-gradient(top, #FFF, #dfdddd);
+    background-image: -moz-linear-gradient(top, #FFF, #dfdddd);
+    background-image: -o-linear-gradient(top, #FFF, #dfdddd);
+    background-image: -ms-linear-gradient(top, #FFF, #dfdddd);
 }
 
 .flag-text:hover {
@@ -521,7 +581,7 @@ path[data-zip] {
     cursor: pointer;
 }
 
-#btnHelp {
+#btnHelp, #btnGuide {
     display: none;
 }
 
@@ -545,4 +605,155 @@ path[data-zip] {
     padding: 0 20px 20px;
     text-align: right;
     border-top: 0;
+}
+
+.modal {
+    overflow: hidden;
+}
+
+.modal-backdrop {
+    opacity:0.1 !important;
+}
+/* -----  Arrow box ---------- */
+.arrow_box {
+	position: relative;
+	background: #FFFFFF;
+    border: 5px solid #444;
+}
+.arrow_box:after, .arrow_box:before {
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+
+.arrow_box:after {
+	border-color: rgba(136, 183, 213, 0);
+	border-width: 15px;
+}
+.arrow_box:before {
+	border-color: rgba(194, 225, 245, 0);
+	border-width: 22px;
+}
+
+div.arrow_box {
+    min-height:120px;
+    width:300px;
+    border-radius:5px;
+    padding: 10px;
+    -webkit-box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
+-moz-box-shadow:    2px 5px 10px rgba(50, 50, 50, 0.6);
+box-shadow:         2px 5px 10px rgba(50, 50, 50, 0.6);
+}
+
+/*Arrow on top*/
+.arrow_top:after, .arrow_top:before {
+    bottom: 100%;
+	left: 50%;
+}
+
+.arrow_top:after {
+    border-bottom-color: #444;
+    margin-left: -15px;
+}
+
+.arrow_top:before {
+    border-bottom-color: #444;
+    margin-left: -22px;
+}
+
+/*Arrow on bottom*/
+.arrow_bottom:after, .arrow_bottom:before {
+    top: 100%;
+	left: 50%;
+}
+
+.arrow_bottom:after {
+	border-top-color: #444;
+	margin-left: -15px;
+}
+
+.arrow_bottom:before {
+	border-top-color: #444;
+	margin-left: -22px;
+}
+
+/*Arrow on left*/
+.arrow_left:after, .arrow_left:before {
+    right: 100%;
+	top: 50%;
+}
+
+.arrow_left:after {
+	border-right-color: #444;
+	margin-top: -15px;
+}
+
+.arrow_left:before {
+	border-right-color: #444;
+	margin-top: -22px;
+}
+
+/*Arrow on right*/
+.arrow_right:after, .arrow_right:before {
+    left: 100%;
+	top: 50%;
+}
+
+.arrow_right:after {
+	border-left-color: #444;
+	margin-top: -15px;
+}
+
+.arrow_right:before {
+	border-left-color: #444;
+	margin-top: -22px;
+}
+
+/*Arrow on top right*/
+.arrow_top_right:after, .arrow_top_right:before {
+    bottom: 100%;
+    left: 90%;
+}
+
+.arrow_top_right:after {
+    border-bottom-color: #444;
+    margin-left: -15px;
+}
+
+.arrow_top_right:before {
+    border-bottom-color: #444;
+    margin-left: -22px;
+}
+
+.no-click-layer {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+}
+
+#tip, #tip-title {
+    color: #000;
+    font-size: 16px;
+    line-height: 24px;
+    text-shadow: 0 1px 2px rgba(1, 1, 1, 0.2);
+}
+
+#loadingScreen {
+    background:#000;
+    position:absolute;
+    top:70px;
+    width:100%;
+    height:calc(100% - 70px);
+    text-align: center;
+    z-index: 1051;
+    border-top:1px solid #444;
+}
+
+#loadingScreen h3 {
+    color:white;
+    margin-top:300px;
 }

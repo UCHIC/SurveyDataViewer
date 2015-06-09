@@ -6,11 +6,16 @@
 {#        <p class="btn btn-primary btn-lg" id="btnNextTip" href="#" role="button">Next</p>#}
 {#    </div>#}
 
-        <!-- Button trigger modal -->
-    <button id="btnHelp" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal"></button>
+    <div id="loadingScreen">
+        <h3>Loading...</h3>
+    </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <!-- Button trigger modal -->
+    <button id="btnHelp" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#significanceFlagModal"></button>
+    <button id="btnGuide" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#guideModal"></button>
+
+    <!-- Significance flag modal -->
+    <div class="modal fade" id="significanceFlagModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -25,10 +30,30 @@
                         If the total difference is greater than the chi-square statistic for the 95% confidence level,
                         than the results are considered statistically significant.</p>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+        <!-- Modal -->
+    <div class="modal fade" id="guideModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div id="arrowWindow" class="arrow_box arrow_right">
+            <center><b><span id="tip-title">Welcome</span></b></center>
+            <center><span id="tip">This is some helpful text indeed</span></center>
+        </div>
+        <div class="no-click-layer"></div>
+        <div>
+            <button data-count="1" id="btnNextTip" type="button" class="btn-tip btn btn-info btn-lg">Next</button>
+            <button data-count="0" id="btnPreviousTip" type="button" class="btn-tip btn btn-info btn-lg" disabled>
+                Back
+            </button>
+            <button id="btnSkipTips" type="button" class="btn btn-default btn-lg">
+                Skip
+            </button>
+            <label id="chkHideTip"><input type="checkbox" aria-label="Do not show again.">Do not show again</label>
         </div>
     </div>
 

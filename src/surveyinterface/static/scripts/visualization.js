@@ -44,6 +44,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var zipQuestion = "Q16";
     var centerZip;
     var path;
+    var tips;
 
     var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 1/11, 2/11, 3/11, 4/11, 5/11, 6/11, 7/11, 8/11, 9/11, 10/11, 1])
@@ -73,18 +74,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         if (view == "percentage") {
             drawTable();
-            updatePercentageView();
+            if ($("#listQuestions").find(".active").length > 1) {
+                //updatePercentageView();
+            }
         }
         else if (view == "mean") {
             updateMeanView();
         }
-        else {
+        else if (view=="heatmap"){
             drawOuterRect();
             drawGradientBackground(0);
             updateHeatMap();
         }
-
-
     }, 500));
 
     d3.selection.prototype.moveToBack = function () {
@@ -129,6 +130,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     self.drawPivotView = function () {
         loadQuestions();
         initializeGraph();
+        if (!localStorage.getItem("hideTips")){
+            loadTips();
+        }
     };
 
     // Returns the cell value given a question ID and the name of the column
@@ -230,7 +234,109 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
         $(".btnAdd").click(onBtnAddClick);
         $(".btnSubstract").click(onBtnSubstractClick);
+        $(".btn-tip").click(onNextTip);
+        $("#btnSkipTips").click(finishGuide);
+        $("#chkHideTip").click(function(e){
+            localStorage.setItem("hideTips", e.target.checked);
+        });
 
+    }
+
+    function loadTips (){
+        var pageWidth = $("body").width();
+        var pageHeight = $("body").height();
+        tips = [
+            {
+                title:"Welcome!",
+                message:"Please take a moment to read these useful tips.",
+                top:pageHeight/2 - 100,
+                left:pageWidth/2 - 150,
+                arrow:""
+            },
+            {
+                title:"1/3",
+                message:"Plot data by clicking items from the list of questions. Use '+' signs to aggregate multiple questions.",
+                top:310,
+                left:310,
+                arrow:"arrow_left"
+            },
+            {
+                title:"2/3",
+                message:"Use these buttons to chose between different views to display your data.",
+                top:175,
+                left:pageWidth - 342,
+                arrow:"arrow_top_right"
+            },
+            {
+                title:"3/3",
+                message:"Chose between predefined demographic categories to see how your data compares among groups of respondents.",
+                top:215,
+                left:195,
+                arrow:"arrow_top"
+            }];
+
+        $("#btnPreviousTip")[0].disabled = true;
+        $("#tip").text(tips[0].message);
+
+        var window = $("#arrowWindow");
+        window.removeClass("arrow_right");
+        window.removeClass("arrow_top");
+        window.removeClass("arrow_left");
+        window.removeClass("arrow_bottom");
+        window.removeClass("arrow_top_right");
+
+        window.addClass(tips[0].arrow);
+        window[0].style.left = tips[0].left + "px";
+        window[0].style.top = tips[0].top + "px";
+        $("#btnGuide").click();
+    }
+
+    function finishGuide(){
+        $("#btnNextTip")[0].setAttribute("data-count", "1");
+        $("#btnPreviousTip")[0].setAttribute("data-count", "0");
+        $(".modal-backdrop")[0].style.opacity = "0.5";
+        $('#guideModal').modal('hide');
+        return;
+    }
+
+    function onNextTip(e){
+        var show = parseInt(e.target.getAttribute("data-count"));
+
+        if ($(e.target).text() == "Finish"){
+            finishGuide();
+            return;
+        }
+
+        var window = $("#arrowWindow");
+        window.removeClass("arrow_right");
+        window.removeClass("arrow_top");
+        window.removeClass("arrow_left");
+        window.removeClass("arrow_bottom");
+        window.removeClass("arrow_top_right");
+
+        window.addClass(tips[show].arrow);
+        $("#tip").text(tips[show].message);
+        $("#tip-title").text(tips[show].title);
+        window[0].style.left = tips[show].left + "px";
+        window[0].style.top = tips[show].top + "px";
+
+        if (show > 0){
+            $("#btnPreviousTip")[0].disabled = false;
+
+        }
+        else{
+            $("#btnPreviousTip")[0].disabled = true;
+        }
+
+        $("#btnPreviousTip")[0].setAttribute("data-count", String(show - 1));
+        $("#btnNextTip")[0].setAttribute("data-count", String(show + 1));
+
+        if (show > tips.length - 2) {
+            $("#btnNextTip").text("Finish");
+        }
+        else {
+            $("#btnNextTip").text("Next");
+        }
     }
 
     function onListQuestionClick(e) {
@@ -337,6 +443,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .range([0, w - marginLeft]);
 
         drawOuterRect();
+        drawYAxisPanel();
 
         //drawHorizontalLines(y);
         drawGrayAlternation(y);
@@ -550,7 +657,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         drawLegendContainers(marginLeft);
-        drawYAxisPanel();
+
     }
 
     function updateMeanView() {
@@ -642,6 +749,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (!$("li.active").length || hasPluggin(selectedQuestion, "spatial")) {
             numberOfAnswers = 5;                // 2 labels: Min and max number of participants
             colorScale = unidirectionalScale;
+        }
+
+        if (hasPluggin(selectedQuestion, "spatial")){
             $("#percentage-view")[0].disabled = true;
         }
 
@@ -1291,6 +1401,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("class", "zip-path")
                 .attr("fill", "#3D4348")
                 .attr("d", path);
+
+            $("#loadingScreen").fadeOut();
         }
 
         // Zoom controls

@@ -277,6 +277,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $("#btnPreviousTip")[0].disabled = true;
         $("#tip").text(tips[0].message);
+        $("#tip-title").text(tips[0].title);
 
         var window = $("#arrowWindow");
         window.removeClass("arrow_right");

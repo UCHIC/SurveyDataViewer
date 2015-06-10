@@ -41,7 +41,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var cutoff = 5;
     var mapZoom = d3.behavior.zoom()
         .scaleExtent([1, 12]).on("zoom", zoom);
-    var spatialQuestion = "Q16";        // TODO: SEARCH FOR THIS QUESTION ID IN THE METADATA FILE
+    var spatialQuestion;        // TODO: SEARCH FOR THIS QUESTION ID IN THE METADATA FILE
     var centerZip;
     var path;
     var tips;
@@ -221,6 +221,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("map-container").hide();
         $("#btnCategories")[0].disabled = true;
         loadHeatMap();
+
         setPercentageView();    // start the site in percentage view
 
         // Bind click events
@@ -247,37 +248,51 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var pageHeight = $("body").height();
         tips = [
             {
-                title:"Welcome!",
-                message:"Please take a moment to read these useful tips.",
-                top:pageHeight/2 - 100,
-                left:pageWidth/2 - 150,
-                arrow:""
+                content: "<center><b><span id='tip-title'>Welcome!</span></b></center>" +
+                "<center><span>Please take a moment to read these useful tips.</span></center>",
+                top: pageHeight / 2 - 300,
+                left: pageWidth / 2 - 150,
+                arrow: ""
             },
             {
-                title:"1/3",
-                message:"Plot data by clicking items from the list of questions. Use '+' signs to aggregate multiple questions.",
-                top:310,
-                left:310,
-                arrow:"arrow_left"
+                content: "<center><b><span id='tip-title'>1/4</span></b></center>" +
+                "<span>Plot data by clicking items from the list of questions. Use '+' signs to aggregate multiple questions.</span>",
+                top: 310,
+                left: 310,
+                arrow: "arrow_left"
             },
             {
-                title:"2/3",
-                message:"Use these buttons to chose between different views to display your data.",
-                top:175,
-                left:pageWidth - 342,
-                arrow:"arrow_top_right"
+                content: "<center><b><span id='tip-title'>2/4</span></b></center>" +
+                "<span>Use these buttons to chose between different views to display your data.</span>",
+                top: 175,
+                left: pageWidth - 342,
+                arrow: "arrow_top_right"
             },
             {
-                title:"3/3",
-                message:"Chose between predefined demographic categories to see how your data compares among groups of respondents.",
-                top:215,
-                left:195,
-                arrow:"arrow_top"
+                content: "<center><b><span id='tip-title'>3/4</span></b></center>"+
+                "<span>Chose between predefined demographic categories to see how your data compares among groups of respondents.</span>" +
+                "<table class='tips-table'>" +
+                    "<tr><td><span class='glyphicon glyphicon-th-large'></span></td> " +
+                        "<td><b>Percentage View</b>: Shows the number and percentage of respondents. Can be disaggregated into demographic groups.</td></tr>" +
+                    "<tr><td><span class='glyphicon glyphicon-stats'></span></td> " +
+                        "<td><b>Mean View</b>: Shows the mean response for all respondents.</td></tr>" +
+                    "<tr><td><span class='glyphicon glyphicon-map-marker'></span></td> " +
+                        "<td><b>Heat Map View</b>: Shows the mean response organized by the zip code of respondents.</td></tr>" +
+                "</table>",
+                top: 215,
+                left: 195,
+                arrow: "arrow_top"
+            },
+            {
+                content: "<center><b><span id='tip-title'>4/4</span></b></center>" +
+                "<span>For selected questions that show a matrix of responses, a flag is displayed to indicate the statistical significance of the results.</span>",
+                top: pageHeight - 220,
+                left: 195,
+                arrow: "arrow_bottom"
             }];
 
         $("#btnPreviousTip")[0].disabled = true;
-        $("#tip").text(tips[0].message);
-        $("#tip-title").text(tips[0].title);
+        $("#arrowWindow").html(tips[0].content);
 
         var window = $("#arrowWindow");
         window.removeClass("arrow_right");
@@ -316,8 +331,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         window.removeClass("arrow_top_right");
 
         window.addClass(tips[show].arrow);
-        $("#tip").text(tips[show].message);
-        $("#tip-title").text(tips[show].title);
+        $("#arrowWindow").html(tips[show].content);
         window[0].style.left = tips[show].left + "px";
         window[0].style.top = tips[show].top + "px";
 
@@ -2439,7 +2453,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 questionContent + '</label></li>');
                 evenOddCounter = evenOddTick(evenOddCounter);
             }
+            // Find the spatial question ID
+            if (hasPluggin(question, "spatial")){
+                spatialQuestion = question.trim();
+            }
+
         }
+
     }
 
     function isMultipleSelectOne(questionID) {

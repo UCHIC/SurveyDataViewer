@@ -4,7 +4,7 @@
     margin: 0;
     padding: 0;
     min-width: 1000px;
-    min-height: 900px;
+    min-height: 600px;
 }
 
 body,
@@ -618,7 +618,7 @@ path[data-zip] {
 .arrow_box {
 	position: relative;
 	background: #FFFFFF;
-    border: 5px solid #444;
+    border: 3px solid #444;
 }
 .arrow_box:after, .arrow_box:before {
 	border: solid transparent;
@@ -644,8 +644,8 @@ div.arrow_box {
     border-radius:5px;
     padding: 10px;
     -webkit-box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
--moz-box-shadow:    2px 5px 10px rgba(50, 50, 50, 0.6);
-box-shadow:         2px 5px 10px rgba(50, 50, 50, 0.6);
+    -moz-box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
+    box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
 }
 
 /*Arrow on top*/
@@ -772,4 +772,8 @@ box-shadow:         2px 5px 10px rgba(50, 50, 50, 0.6);
     transform: translateZ(0);
     -webkit-animation: load6 1.7s infinite ease;
     animation: load6 1.7s infinite ease;
+}
+
+.tips-table td{
+    padding: 10px;
 }

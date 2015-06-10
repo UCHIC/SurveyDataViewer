@@ -1446,7 +1446,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("fill", "#3D4348")
                 .attr("d", path);
 
-            $("#loadingScreen").fadeOut().remove();
+            $("#loadingScreen").fadeOut(500);
         }
 
         // Zoom controls

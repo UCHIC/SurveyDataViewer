@@ -2,28 +2,37 @@
 {% load staticfiles %}
 
 {% block body %}
-<div id="surveyContainer">
+    <div id="surveyContainer">
         <!-- Page Heading -->
         <div class="row">
-            <div class="col-lg-12">
+            <div class="col-xs-12">
                 <h2 class="page-header">Surveys</h2>
             </div>
-        </div>
+            {% for survey in object_list %}
+                <div class="col-xs-4">
+                    <div class="survey col-xs-12">
 
-    {% for survey in object_list %}
-        <div class="thumbnail">
-            <img src="{% static 'images/survey-icon.png' %}" alt="...">
-            <div class="caption">
-                <h4>{{ survey.name }}</h4>
-                <p>{{ survey.description }}</p>
-                <p><a href="{% url 'survey-view' survey.code %}" class="btn btn-primary" role="button">View Data</a></p>
-                <p><a href="{% static survey.pdf.url %}" class="btn btn-primary" role="button">Open PDF</a></p>
-                <p><a href="{% url 'survey-info' survey.code %}" class="btn btn-primary" role="button">About Survey</a></p>
-            </div>
-        </div>
-    {% empty %}
-        <span>There are no surveys.</span>
-    {% endfor %}
+                        <div class="col-xs-12"><h4><img src="{% static 'images/survey-icon.png' %}" alt="..."> {{ survey.name }}</h4></div>
+                        <div class="col-xs-12">{{ survey.description }}</div>
 
-</div>
+                        <div class="col-xs-12 buttons-container">
+                            <a href="{% url 'survey-view' survey.code %}" class="btn btn-primary col-xs-12"
+                               role="button">View
+                                Data</a>
+
+                            <a href="{% static survey.pdf.url %}"
+                               class="btn btn-default col-xs-12"
+                               role="button" target="_blank">Open PDF</a>
+
+                            <a href="{% url 'survey-info' survey.code %}" class="btn btn-default col-xs-12"
+                               role="button">About
+                                Survey</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <span>There are no surveys.</span>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

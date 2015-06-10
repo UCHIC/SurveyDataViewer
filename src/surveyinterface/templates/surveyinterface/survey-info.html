@@ -1,13 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title>{{ object.name }}</title>
-</head>
-<body>
-    {#  Build the html here.  #}
-    <h1>{{ object.name }}</h1>
-    <h4>{{ object.description }}</h4>
-    <p>{{ object.information }}</p>
-</body>
-</html>
+{% extends "surveyinterface/base.html" %}
+{% load staticfiles %}
+
+{% block body %}
+    {#    <div id="tutorialContainer">#}
+    {#        <p class="btn btn-primary btn-lg" id="btnNextTip" href="#" role="button">Next</p>#}
+    {#    </div>#}
+
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h1>{{ object.name }}</h1>
+                <h4>{{ object.description }}</h4>
+
+                <p>{{ object.information }}</p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

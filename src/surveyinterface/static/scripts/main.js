@@ -51,6 +51,7 @@ requirejs(['visualization'], function(visualization) {
     $(document).ready(function() {
         visualization.dataFile = $('#dataFile').val();
         visualization.metadataFile = $('#metadataFile').val();
+        visualization.zipcodesFile = $('#zipcodesFile').val();
         visualization.loadData();
     });
 });

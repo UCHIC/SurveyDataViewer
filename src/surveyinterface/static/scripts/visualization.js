@@ -1334,7 +1334,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function loadHeatMap() {
         queue()
-            .defer(d3.json, "/surveydata/static/files/zipcodes.json")    // put trailing '/surveydata' to push to production
+            .defer(d3.json, self.zipcodesFile)
             .await(plotZipCodes);
 
         function plotZipCodes(error, us) {

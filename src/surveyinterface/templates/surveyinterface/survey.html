@@ -110,5 +110,6 @@
     </div>
     <input id="dataFile" type="hidden" value="{{ object.datafile.url }}" readonly>
     <input id="metadataFile" type="hidden" value="{{ object.metadatafile.url }}" readonly>
+    <input id="zipcodesFile" type="hidden" value="{% static 'files/zipcodes.json' %}" readonly>
     <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js" data-main="{% static 'scripts/main.js' %}"></script>
 {% endblock %}

@@ -15,8 +15,10 @@
             <img src="{% static 'images/survey-icon.png' %}" alt="...">
             <div class="caption">
                 <h4>{{ survey.name }}</h4>
-                <p>{{ survey.dateconducted }}</p>
-                <p><a href="{% url 'survey-view' survey.code %}" class="btn btn-primary" role="button">View</a></p>
+                <p>{{ survey.description }}</p>
+                <p><a href="{% url 'survey-view' survey.code %}" class="btn btn-primary" role="button">View Data</a></p>
+                <p><a href="{% static survey.pdf.url %}" class="btn btn-primary" role="button">Open PDF</a></p>
+{#                <p><a href="{% url 'survey-info' survey.code %}" class="btn btn-primary" role="button">About Survey</a></p>#}
             </div>
         </div>
     {% empty %}

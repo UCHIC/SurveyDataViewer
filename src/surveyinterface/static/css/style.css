@@ -528,7 +528,7 @@ path[data-zip] {
     bottom: 150px;
     position: fixed;
     right: 100px;
-    cursor:pointer;
+    cursor: pointer;
     outline: none;
 }
 
@@ -612,46 +612,89 @@ path[data-zip] {
 }
 
 .modal-backdrop {
-    opacity:0.1 !important;
+    opacity: 0.1 !important;
 }
+
 /* -----  Arrow box ---------- */
 .arrow_box {
-	position: relative;
-	background: #FFFFFF;
+    position: relative;
+    background: #FFFFFF;
     border: 3px solid #444;
 }
+
 .arrow_box:after, .arrow_box:before {
-	border: solid transparent;
-	content: " ";
-	height: 0;
-	width: 0;
-	position: absolute;
-	pointer-events: none;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
 }
 
 .arrow_box:after {
-	border-color: rgba(136, 183, 213, 0);
-	border-width: 15px;
+    border-color: rgba(136, 183, 213, 0);
+    border-width: 15px;
 }
+
 .arrow_box:before {
-	border-color: rgba(194, 225, 245, 0);
-	border-width: 22px;
+    border-color: rgba(194, 225, 245, 0);
+    border-width: 22px;
 }
 
 div.arrow_box {
-    min-height:120px;
-    width:300px;
-    border-radius:5px;
+    min-height: 120px;
+    width: 300px;
+    border-radius: 5px;
     padding: 10px;
+    z-index: 2000;
     -webkit-box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
     -moz-box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
     box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
 }
 
+div.arrow_box img {
+      border: 1px solid #A5A5A5;
+  padding: 3px;
+  width: 100%;
+  border-radius: 5px;
+  margin-top: 10px;
+  background: #ddd;
+}
+
+div.arrow_box .carousel-indicators {
+    bottom: 0;
+    background: #000;
+    width: 100%;
+    left: 0;
+    margin: 0;
+    background: rgba(74, 74, 74, 0.5);
+    border-top: 1px solid #646464;
+}
+
+div.arrow_box .carousel-indicators .active {
+    background-color: #000 !important;
+}
+
+div.arrow_box .carousel-inner .active {
+    background: none !important;
+}
+
+div.arrow_box .carousel {
+    height: 160px;
+    border: 1px solid #646464;
+    background: #737373;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+div.arrow_box .carousel img {
+    border: 0;
+}
+
 /*Arrow on top*/
 .arrow_top:after, .arrow_top:before {
     bottom: 100%;
-	left: 50%;
+    left: 50%;
 }
 
 .arrow_top:after {
@@ -667,49 +710,49 @@ div.arrow_box {
 /*Arrow on bottom*/
 .arrow_bottom:after, .arrow_bottom:before {
     top: 100%;
-	left: 50%;
+    left: 50%;
 }
 
 .arrow_bottom:after {
-	border-top-color: #444;
-	margin-left: -15px;
+    border-top-color: #444;
+    margin-left: -15px;
 }
 
 .arrow_bottom:before {
-	border-top-color: #444;
-	margin-left: -22px;
+    border-top-color: #444;
+    margin-left: -22px;
 }
 
 /*Arrow on left*/
 .arrow_left:after, .arrow_left:before {
     right: 100%;
-	top: 50%;
+    top: 50%;
 }
 
 .arrow_left:after {
-	border-right-color: #444;
-	margin-top: -15px;
+    border-right-color: #444;
+    margin-top: -15px;
 }
 
 .arrow_left:before {
-	border-right-color: #444;
-	margin-top: -22px;
+    border-right-color: #444;
+    margin-top: -22px;
 }
 
 /*Arrow on right*/
 .arrow_right:after, .arrow_right:before {
     left: 100%;
-	top: 50%;
+    top: 50%;
 }
 
 .arrow_right:after {
-	border-left-color: #444;
-	margin-top: -15px;
+    border-left-color: #444;
+    margin-top: -15px;
 }
 
 .arrow_right:before {
-	border-left-color: #444;
-	margin-top: -22px;
+    border-left-color: #444;
+    margin-top: -22px;
 }
 
 /*Arrow on top right*/
@@ -743,19 +786,19 @@ div.arrow_box {
 }
 
 #loadingScreen {
-    background:#000;
-    position:absolute;
-    top:70px;
-    width:100%;
-    height:calc(100% - 70px);
+    background: #000;
+    position: absolute;
+    top: 70px;
+    width: 100%;
+    height: calc(100% - 70px);
     text-align: center;
     z-index: 1051;
-    border-top:1px solid #444;
+    border-top: 1px solid #444;
 }
 
 #loadingScreen h3 {
-    color:white;
-    margin-top:300px;
+    color: white;
+    margin-top: 300px;
 }
 
 .loader {
@@ -774,6 +817,6 @@ div.arrow_box {
     animation: load6 1.7s infinite ease;
 }
 
-.tips-table td{
+.tips-table td {
     padding: 10px;
 }

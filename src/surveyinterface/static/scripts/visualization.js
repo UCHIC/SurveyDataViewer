@@ -257,7 +257,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             {
                 content: "<center><b><span id='tip-title'>1/4</span></b></center>" +
                 "<span>Plot data by clicking items from the list of questions. Use '+' signs to aggregate multiple questions.</span>" +
-                "<img src='/static/images/tips-plus-signs.gif' alt='Image of signs to aggregate questions'>",
+                "<img src='/surveydata/static/images/tips-plus-signs.gif' alt='Image of signs to aggregate questions'>",
                 top: 310,
                 left: 310,
                 arrow: "arrow_left"
@@ -273,13 +273,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                   '</ol>'+
                   '<div class="carousel-inner" role="listbox">'+
                     '<div class="item">'+
-                      '<img src="/static/images/tips-preview-heatmap.gif" alt="Image of heat map view">'+
+                      '<img src="/surveydata/static/images/tips-preview-heatmap.gif" alt="Image of heat map view">'+
                     '</div>'+
                     '<div class="item">'+
-                      '<img src="/static/images/tips-preview-mean.gif" alt="Image of mean view">'+
+                      '<img src="/surveydata/static/images/tips-preview-mean.gif" alt="Image of mean view">'+
                     '</div>'+
                     '<div class="item active">'+
-                      '<img src="/static/images/tips-preview-percentage.gif" alt="Image of percentage view">'+
+                      '<img src="/surveydata/static/images/tips-preview-percentage.gif" alt="Image of percentage view">'+
                     '</div>'+
                   '</div>'+
                       '<a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">'+
@@ -306,7 +306,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             {
                 content: "<center><b><span id='tip-title'>3/4</span></b></center>"+
                 "<span>Chose between predefined demographic categories to see how your data compares among groups of respondents.</span>"+
-                '<img src="/static/images/tips-demographics.gif" alt="Image of demographics dropdown">',
+                '<img src="/surveydata/static/images/tips-demographics.gif" alt="Image of demographics dropdown">',
                 top: 215,
                 left: 195,
                 arrow: "arrow_top"
@@ -314,7 +314,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             {
                 content: "<center><b><span id='tip-title'>4/4</span></b></center>" +
                 "<span>For selected questions that show a matrix of responses, a flag is displayed to indicate the statistical significance of the results.</span>"+
-                '<img src="/static/images/tips-flag.gif" alt="Image of demographics dropdown">',
+                '<img src="/surveydata/static/images/tips-flag.gif" alt="Image of demographics dropdown">',
                 top: pageHeight - 350,
                 left: 195,
                 arrow: "arrow_bottom"

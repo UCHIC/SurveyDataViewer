@@ -257,7 +257,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             {
                 content: "<center><b><span id='tip-title'>1/4</span></b></center>" +
                 "<span>Plot data by clicking items from the list of questions. Use '+' signs to aggregate multiple questions.</span>" +
-                "<img src='/static/images/tips-plus-signs.gif' alt='Image of sings to aggregate questions'>",
+                "<img src='/static/images/tips-plus-signs.gif' alt='Image of signs to aggregate questions'>",
                 top: 310,
                 left: 310,
                 arrow: "arrow_left"

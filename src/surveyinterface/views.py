@@ -13,3 +13,7 @@ class HomeView(ListView):
 class SurveyView(DetailView):
     model = Survey
     template_name = "surveyinterface/survey.html"
+
+
+class SurveyInfoView(SurveyView):
+    template_name = "surveyinterface/survey-info.html"

@@ -41,7 +41,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var cutoff = 5;
     var mapZoom = d3.behavior.zoom()
         .scaleExtent([1, 12]).on("zoom", zoom);
-    var zipQuestion = "Q16";
+    var spatialQuestion = "Q16";        // TODO: SEARCH FOR THIS QUESTION ID IN THE METADATA FILE
     var centerZip;
     var path;
     var tips;
@@ -74,8 +74,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         if (view == "percentage") {
             drawTable();
-            if ($("#listQuestions").find(".active").length > 1) {
-                //updatePercentageView();
+            if ($("#listQuestions").find(".active").length > 0) {
+                updatePercentageView();
             }
         }
         else if (view == "mean") {
@@ -670,7 +670,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         refreshValues();
         var responses = _.map(nodes, function (a, b) {
             for (var prop in data.rows[b]) {
-                if (prop.trim() == zipQuestion)
+                if (prop.trim() == spatialQuestion)
                     return {zipcode: data.rows[b][prop], value: data.rows[b][selectedQuestion]};
             }
         });
@@ -1338,7 +1338,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .await(plotZipCodes);
 
         function plotZipCodes(error, us) {
-            //var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][zipQuestion]}});
+            //var zipCodes = _.map(nodes, function(a, b){return {zipcode:data.rows[b + 1][spatialQuestion]}});
             //zipCodes = _(zipCodes).countBy("zipcode");
 
             // create a first guess for the projection
@@ -1403,7 +1403,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("fill", "#3D4348")
                 .attr("d", path);
 
-            $("#loadingScreen").fadeOut();
+            $("#loadingScreen").fadeOut().remove();
         }
 
         // Zoom controls

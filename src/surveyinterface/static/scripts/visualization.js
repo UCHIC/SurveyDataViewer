@@ -12,12 +12,6 @@ if (typeof Array.prototype.getUnique != 'function') {
     }
 }
 
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str) {
-        return this.indexOf(str) == 0;
-    };
-}
-
 define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore'], function () {
     var self = {};
     var data, metadata, selectedQuestion, svg, radius_scale;
@@ -41,7 +35,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var cutoff = 5;
     var mapZoom = d3.behavior.zoom()
         .scaleExtent([1, 12]).on("zoom", zoom);
-    var spatialQuestion;        // TODO: SEARCH FOR THIS QUESTION ID IN THE METADATA FILE
+    var spatialQuestion;
     var centerZip;
     var path;
     var tips;
@@ -256,7 +250,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             },
             {
                 content: "<center><b><span id='tip-title'>1/4</span></b></center>" +
-                "<span>Plot data by clicking items from the list of questions. Use '+' signs to aggregate multiple questions.</span>" +
+                "<span>Select a question to visualize survey results. Use the '+' sign to view multiple questions simultaneously.</span>" +
                 "<img src='/surveydata/static/images/tips-plus-signs.gif' alt='Image of signs to aggregate questions'>",
                 top: 310,
                 left: 310,
@@ -264,7 +258,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             },
             {
                 content: "<center><b><span id='tip-title'>2/4</span></b></center>" +
-                "<span>Use these buttons to chose between different views to display your data.</span>" +
+                "<span>Use these buttons to toggle between different views for the selected question(s).</span>" +
                 '<div id="myCarousel" class="carousel slide" data-ride="carousel">'+
                   '<ol class="carousel-indicators">'+
                     '<li data-target="#myCarousel" data-slide-to="0"></li>'+
@@ -305,7 +299,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             },
             {
                 content: "<center><b><span id='tip-title'>3/4</span></b></center>"+
-                "<span>Chose between predefined demographic categories to see how your data compares among groups of respondents.</span>"+
+                "<span>Choose between predefined demographic categories to disaggregate data among groups of respondents.</span>"+
                 '<img src="/surveydata/static/images/tips-demographics.gif" alt="Image of demographics dropdown">',
                 top: 215,
                 left: 195,
@@ -1743,12 +1737,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("dy", 0)
             .attr("font-weight", "normal")
             .attr("fill", legendColor)
-            .attr("transform", "translate(" + 30 + "," + (h - margin.bottom + 25) + ")")
+            .attr("transform", "translate(" + 30 + "," + (h - margin.bottom + 20) + ")")
             .text(function () {
                 if (flag == true)
-                    return "This result is significant.";
+                    return "This result is statistically significant.";
                 else
-                    return "This result is NOT significant."
+                    return "This result is NOT statistically significant."
             })
             .on("click", function(){$("#btnHelp").click()})
             //.on("mouseover", function(){$("#btnHelp").click()})
@@ -2503,23 +2497,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return true;
         }
         return false;
-    }
-
-    function getQuestionTitle(questionID) {
-        for (var i = 0; i < metadata.rows.length; i++) {
-            if (metadata.rows[i]["NewVar"] == questionID) {
-                if (regExp['multipleQuestionSelectOne'].exec(questionID)) {
-                    var title = metadata.rows[i]["NewVarLabel"];
-                    var titleEnd = title.indexOf('-');
-                    if (titleEnd > -1) {
-                        title = title.substr(0, titleEnd);
-                    }
-                    return title;
-                }
-                return metadata.rows[i]["NewVarLabel"];
-            }
-        }
-        return "";
     }
 
     function wrap(text, width) {

@@ -731,7 +731,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         for (var zip in responses) {
             if (responses[zip].zipcode != null)
-                totals[responses[zip].zipcode] += responses[zip].value;   // Populate totals
+                totals[responses[zip].zipcode] += (responses[zip].value - 1);   // Populate totals. The labels start at 1, but the scale starts at 0. That's why we substract 1
         }
 
         // Reset background and hover functions for all paths

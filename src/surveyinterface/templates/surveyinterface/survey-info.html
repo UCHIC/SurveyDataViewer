@@ -2,13 +2,23 @@
 {% load staticfiles %}
 
 {% block body %}
-    {#    <div id="tutorialContainer">#}
-    {#        <p class="btn btn-primary btn-lg" id="btnNextTip" href="#" role="button">Next</p>#}
-    {#    </div>#}
-
-
     <div class="container">
         <div class="row">
+            <div class="col-sm-12">
+                <a id="btn-back" href="../">
+                    <span class="glyphicon glyphicon-eur"></span><span>Back to browsing</span>
+                </a>
+
+                <a href="{% url 'survey-view' survey.code %}" id="view-data" href="../" type="button"
+                   class="btn btn-lg blue-button">
+                    View Data
+                </a>
+
+                <a target="_blank" href="{% static survey.pdf.url %}" id="view-instrument" href="../" type="button"
+                   class="btn btn-lg gray-button">
+                    View Instrument
+                </a>
+            </div>
             <div class="col-xs-12">
                 <h1>{{ object.name }}</h1>
                 <h4>{{ object.description }}</h4>
@@ -17,5 +27,4 @@
             </div>
         </div>
     </div>
-
 {% endblock %}

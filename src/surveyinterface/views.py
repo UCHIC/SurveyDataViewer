@@ -1,4 +1,4 @@
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 
 from surveyinterface.models import Survey
 
@@ -17,3 +17,11 @@ class SurveyView(DetailView):
 
 class SurveyInfoView(SurveyView):
     template_name = "surveyinterface/survey-info.html"
+
+
+class AboutView(TemplateView):
+    template_name = "surveyinterface/about.html"
+
+
+class ContactView(TemplateView):
+    template_name = "surveyinterface/contact.html"

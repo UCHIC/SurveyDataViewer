@@ -299,7 +299,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     "<tr><td><span class='glyphicon glyphicon-map-marker'></span></td> " +
                         "<td><b>Heat Map View</b>: Shows the mean or average response organized by the zip code of respondents.</td></tr>" +
                 "</table>",
-                top: 175,
+                top: 110,
                 left: pageWidth - 342,
                 arrow: "arrow_top_right"
             },
@@ -307,7 +307,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 content: "<center><b><span id='tip-title'>3/4</span></b></center>"+
                 "<span>Choose between predefined demographic categories to disaggregate data among groups of respondents.</span>"+
                 '<img src="/surveydata/static/images/tips-demographics.gif" alt="Image of demographics dropdown">',
-                top: 215,
+                top: 150,
                 left: 195,
                 arrow: "arrow_top"
             },
@@ -315,7 +315,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 content: "<center><b><span id='tip-title'>4/4</span></b></center>" +
                 "<span>For selected questions that show the percentage of respondents across categories, a flag is displayed here that indicates if differences across groups are statistically significant.</span>"+
                 '<img src="/surveydata/static/images/tips-flag.gif" alt="Image of demographics dropdown">',
-                top: pageHeight - 320,
+                top: pageHeight - 400,
                 left: 195,
                 arrow: "arrow_bottom"
             }];

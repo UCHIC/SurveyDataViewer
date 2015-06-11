@@ -716,7 +716,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             var label = getLabel(selectedQuestion, answers[i]);
             if (label && label.trim() == "not sure") {
                 responses = _.filter(responses, function (resp) {
-                    return resp.value != i + 1;
+                    return resp.value != answers[i];
                 });
                 numberOfAnswers--;
             }

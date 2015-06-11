@@ -426,21 +426,21 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // Toggle Title visibility
-        $("#txtDescription").text("");
-        $("#txtTitle").text(title);
-        if ($("#txtTitle").text() == "") {
-            $(".titleContainer").hide();
-        }
-        else {
-            $(".titleContainer").show();
-        }
         $("#txtDescription").text(content);
-        if ($("#txtDescription").text() == "") {
-            $(".descriptionContainer").hide();
-        }
-        else {
-            $(".descriptionContainer").show();
-        }
+        $("#txtTitle").text(title);
+        //if ($("#txtTitle").text() == "") {
+        //    $(".titleContainer").hide();
+        //}
+        //else {
+        //    $(".titleContainer").show();
+        //}
+        ////$("#txtDescription").text(content);
+        ////if ($("#txtDescription").text() == "") {
+        ////    $(".descriptionContainer").hide();
+        ////}
+        //else {
+        //    $(".descriptionContainer").show();
+        //}
 
         if (hasPluggin(selectedQuestion, "unidirectional") || hasPluggin(selectedQuestion, "bidirectional")) {
             $("#map-view")[0].disabled = false;

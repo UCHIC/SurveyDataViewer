@@ -198,6 +198,7 @@ text.shadow {
     margin-bottom: 0;
     border-radius: 0;
     border-color: #000;
+      height: 100%;
 }
 
 #viewContainer {

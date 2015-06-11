@@ -42,7 +42,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 1/11, 2/11, 3/11, 4/11, 5/11, 6/11, 7/11, 8/11, 9/11, 10/11, 1])
-        .range(["#2A0BD9", "#264EFF", "#40A1FF", "#73DAFF", "#ABF8FF", "#E0FFFF", "#FFFFBF", "#FFE099", "#FFAD73", "#F76E5E", "#D92632", "#A60021"]); // Red to White to Green
+        .range(["#A60021", "#D92632", "#F76E5E", "#FFAD73", "#FFE099", "#FFFFBF", "#E0FFFF", "#ABF8FF", "#73DAFF", "#40A1FF", "#264EFF", "#2A0BD9"]); // Red to Blue
 
     var unidirectionalScale = d3.scale.linear()
         .domain([0, 1/9, 2/9, 3/9, 4/9, 5/9, 6/9, 7/9, 8/9, 1])
@@ -177,6 +177,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         for (var j = 0; j < metadata.rows.length; j++) {
             var questionID = metadata.rows[j]["Variable"].trim();
             var questionLabel = metadata.rows[j]["VariableLabel"].trim();
+            if (isMultipleSelectOne(questionID)){
+                questionLabel += " - " + metadata.rows[j]["SubVariableLabel"].trim()
+            }
             var pluggins = getCellContent(questionID, "Features").split(";");
             for (var i = 0; i < pluggins.length; i++) {
                 if (pluggins[i].trim() == "isDemographic") {
@@ -192,6 +195,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             for (var j = 0; j < metadata.rows.length; j++) {
                 var questionID = metadata.rows[j]["Variable"].trim();
                 var questionLabel = metadata.rows[j]["VariableLabel"].trim();
+                if (isMultipleSelectOne(questionID)){
+                    questionLabel += " - " + metadata.rows[j]["SubVariableLabel"].trim()
+                }
                 var pluggins = getCellContent(questionID, "Features").split(";");
                 for (var p = 0; p < pluggins.length; p++) {
                     if (pluggins[p].trim() == "isDemographic") {
@@ -200,7 +206,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
             }
 
-            return {value: 0, info: info, temp: false, tempPosY: 0};
+            return {value: -1, info: info, temp: false, tempPosY: 0};
         });
 
         svg = d3.select("#visualizationContent").append("svg:svg")
@@ -250,7 +256,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             },
             {
                 content: "<center><b><span id='tip-title'>1/4</span></b></center>" +
-                "<span>Select a question to visualize survey results. Use the '+' sign to view multiple questions simultaneously.</span>" +
+                "<span>Select a question to visualize survey results. Use ‘+’ signs to compare answers to multiple questions.</span>" +
                 "<img src='/surveydata/static/images/tips-plus-signs.gif' alt='Image of signs to aggregate questions'>",
                 top: 310,
                 left: 310,
@@ -287,11 +293,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 '</div>'+
                     "<table class='tips-table'>" +
                     "<tr><td><span class='glyphicon glyphicon-th-large'></span></td> " +
-                        "<td><b>Percentage View</b>: Shows the number and percentage of respondents. Can be disaggregated into demographic groups.</td></tr>" +
+                        "<td><b>Percentage View</b>: Shows the number and percentage of respondents. Can be disaggregated by characteristics of respondents.</td></tr>" +
                     "<tr><td><span class='glyphicon glyphicon-stats'></span></td> " +
-                        "<td><b>Mean View</b>: Shows the mean response for all respondents.</td></tr>" +
+                        "<td><b>Mean View</b>: Shows the mean or average response for all respondents. Can be disaggregated by characteristics of respondents.</td></tr>" +
                     "<tr><td><span class='glyphicon glyphicon-map-marker'></span></td> " +
-                        "<td><b>Heat Map View</b>: Shows the mean response organized by the zip code of respondents.</td></tr>" +
+                        "<td><b>Heat Map View</b>: Shows the mean or average response organized by the zip code of respondents.</td></tr>" +
                 "</table>",
                 top: 175,
                 left: pageWidth - 342,
@@ -307,7 +313,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             },
             {
                 content: "<center><b><span id='tip-title'>4/4</span></b></center>" +
-                "<span>For selected questions that show a matrix of responses, a flag is displayed to indicate the statistical significance of the results.</span>"+
+                "<span>For selected questions that show the percentage of respondents across categories, a flag is displayed here that indicates if differences across groups are statistically significant.</span>"+
                 '<img src="/surveydata/static/images/tips-flag.gif" alt="Image of demographics dropdown">',
                 top: pageHeight - 320,
                 left: 195,
@@ -591,8 +597,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("defs").remove();
         $("linearGradient").remove();
 
+        var numberOfAnswers = answers.length;
+        for (var i = 0; i < answers.length; i++){
+            if (getLabel(selectedQuestion, answers[i]) == "not sure"){
+                numberOfAnswers--;
+            }
+        }
+
         x = d3.scale.linear()
-            .domain([1, answers.length])
+            .domain([1, numberOfAnswers])
             .range([left, right]);
 
         svg.append("linearGradient")
@@ -613,7 +626,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         //Draw mean base lines
         for (var i = 1; i <= options.length; i++) {
             svg.append("svg:rect")
-                .attr("width", x(answers.length) - x(1))
+                .attr("width", x(numberOfAnswers) - x(1))
                 .attr("height", "40")
                 .attr("x", x(1))
                 .attr("y", y(i) - deltaY / 2)
@@ -623,21 +636,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 //.style("opacity", 0.75)
                 .attr("transform", "translate(" + 0 + "," + (-20) + ")")
                 .attr("class", "mean-base-line graph-object");
-
-            // Draw pivot points
-            //svg.append("svg:line")
-            //        .attr("x1", left)
-            //        .attr("x2", left)
-            //        .attr("y1", y(i) - deltaY/2 - 10)
-            //        .attr("y2", y(i) - deltaY/2 + 10)
-            //        .attr("class", "mean-base-line");
-            //
-            //svg.append("svg:line")
-            //        .attr("x1", right)
-            //        .attr("x2", right)
-            //        .attr("y1", y(i) - deltaY/2 - 10)
-            //        .attr("y2", y(i) - deltaY/2 + 10)
-            //        .attr("class", "mean-base-line");
         }
 
         if (selectedQuestion) {
@@ -651,7 +649,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
 
             nodes.forEach(function (d) {
-                if (getLabel(selectedQuestion, d.value) == "not sure") {
+                if (getLabel(selectedQuestion, d.value) == "not sure" || d.value == 0) {
                     return;
                 }
                 var posOption = ($.inArray(d.info[yAxisMode], options));
@@ -680,7 +678,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 var currLine = svg.append("svg:rect")
                     .attr("width", "20")
                     .attr("height", "80")
-                    .attr("x", (left + right) / 2)
+                    .attr("x", (left + right) / 2 - 10)
                     .attr("class", "vertical-mean-line graph-object")
                     .style("stroke", d3.rgb("#888").darker(2))
                     .style("fill", 'url(#gradient0)')
@@ -695,7 +693,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         drawLegendContainers(marginLeft);
-
     }
 
     function updateMeanView() {

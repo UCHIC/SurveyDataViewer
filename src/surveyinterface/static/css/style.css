@@ -516,7 +516,7 @@ path[data-zip] {
 }
 
 #chkHideTip {
-    bottom: 150px;
+    bottom: 130px;
     position: fixed;
     right: 100px;
     cursor: pointer;
@@ -528,8 +528,7 @@ path[data-zip] {
     position: fixed;
     right: 280px;
     width: 200px;
-    outline: none;
-    border: 1px solid rgb(95, 95, 95);
+    outline:none;
 }
 
 #btnPreviousTip {
@@ -537,22 +536,28 @@ path[data-zip] {
     position: fixed;
     right: 500px;
     width: 200px;
-    outline: none;
-    border: 1px solid rgb(95, 95, 95);
+    outline:none;
 }
 
 #btnPreviousTip, #btnNextTip {
-    background-image: -webkit-linear-gradient(top, #C5C5C5, #939393);
-    background-image: -moz-linear-gradient(top, #C5C5C5, #939393);
-    background-image: -o-linear-gradient(top, #C5C5C5, #939393);
-    background-image: -ms-linear-gradient(top, #C5C5C5, #939393);
+    background: -webkit-linear-gradient(top, #e0ffc2 0%, #b1e37f 100%);
+    background: linear-gradient(to bottom, #e0ffc2 0%, #b1e37f 100%);
+    border: 1px solid #a7c28c;
+    color: #42661e;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 0 1px rgba(255, 255, 255, 0.6);
+    padding: 5px 8px 5px 8px;
+    border-radius: 4px;
+    margin: 0 0 0 5px;
+    display: inline-block;
+    min-width: 50px;
+    text-align: center;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5), 0 1px 0 0 white;
 }
 
 #btnPreviousTip:hover, #btnNextTip:hover {
-    background-image: -webkit-linear-gradient(top, #D3D3D3, #939393);
-    background-image: -moz-linear-gradient(top, #D3D3D3, #939393);
-    background-image: -o-linear-gradient(top, #D3D3D3, #939393);
-    background-image: -ms-linear-gradient(top, #D3D3D3, #939393);
+    background: #b1e37f;
 }
 
 #btnSkipTips {
@@ -560,12 +565,20 @@ path[data-zip] {
     position: fixed;
     right: 60px;
     width: 200px;
-    outline: none;
-    border: 1px solid rgb(134, 134, 134);
-    background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
-    background-image: -moz-linear-gradient(top, #f4f5f5, #dfdddd);
-    background-image: -o-linear-gradient(top, #f4f5f5, #dfdddd);
-    background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);
+    background: -webkit-linear-gradient(top, #f5f5f5 0%, #dedede 100%);
+    background: linear-gradient(to bottom, #f5f5f5 0%, #dedede 100%);
+    border: 1px solid #bbb;
+    color: #444;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 0 1px rgba(255, 255, 255, 0.6);
+    padding: 5px 8px 5px 8px;
+    border-radius: 4px;
+    margin: 0 0 0 5px;
+    display: inline-block;
+    min-width: 50px;
+    text-align: center;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5), 0 1px 0 0 white;
 }
 
 #btnSkipTips:hover {

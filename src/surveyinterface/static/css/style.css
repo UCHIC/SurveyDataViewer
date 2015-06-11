@@ -641,6 +641,8 @@ path[data-zip] {
 
 .modal-backdrop {
     opacity: 0.1 !important;
+    height: calc(100% - 70px);
+    margin-top: 70px;
 }
 
 /* -----  Arrow box ---------- */
@@ -795,10 +797,16 @@ div.arrow_box .carousel img {
 }
 
 .no-click-layer {
-    height: 100%;
     width: 100%;
     position: absolute;
     top: 0;
+    height: calc(100% - 70px);
+    margin-top: 70px;
+}
+
+#guideModal {
+    height: calc(100% - 70px);
+    margin-top: 70px;
 }
 
 #tip, #tip-title {

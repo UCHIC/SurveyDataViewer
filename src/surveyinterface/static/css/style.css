@@ -540,24 +540,25 @@ path[data-zip] {
 }
 
 #btnPreviousTip, #btnNextTip {
-    background: -webkit-linear-gradient(top, #e0ffc2 0%, #b1e37f 100%);
-    background: linear-gradient(to bottom, #e0ffc2 0%, #b1e37f 100%);
-    border: 1px solid #a7c28c;
-    color: #42661e;
-    font-size: 14px;
-    font-weight: bold;
-    text-shadow: 0 1px rgba(255, 255, 255, 0.6);
-    padding: 5px 8px 5px 8px;
-    border-radius: 4px;
-    margin: 0 0 0 5px;
-    display: inline-block;
-    min-width: 50px;
-    text-align: center;
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5), 0 1px 0 0 white;
+  background: -webkit-linear-gradient(top, #C2FAFF 0%, #7FD8E3 100%);
+  background: linear-gradient(to bottom, #C2FAFF 0%, #7FD8E3 100%);
+  border: 1px solid #3DC3D3;
+  color: #00566F;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 1px rgba(255, 255, 255, 0.6);
+  padding: 5px 8px 5px 8px;
+  border-radius: 4px;
+  margin: 0 0 0 5px;
+  display: inline-block;
+  min-width: 50px;
+  text-align: center;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5), 0 1px 0 0 white;
 }
 
 #btnPreviousTip:hover, #btnNextTip:hover {
-    background: #b1e37f;
+     background: -webkit-linear-gradient(top, #E7FDFF 0%, #92E3ED  100%);
+  background: linear-gradient(to bottom, #E7FDFF 0%, #92E3ED 100%);
 }
 
 #btnSkipTips {
@@ -628,11 +629,6 @@ path[data-zip] {
 }
 
 /* -----  Arrow box ---------- */
-.arrow_box {
-    position: relative;
-    background: #FFFFFF;
-    border: 3px solid #444;
-}
 
 .arrow_box:after, .arrow_box:before {
     border: solid transparent;
@@ -654,6 +650,9 @@ path[data-zip] {
 }
 
 div.arrow_box {
+    position: relative;
+    background: #F8FFF1;
+    border: 3px solid #389AA6;
     min-height: 120px;
     width: 300px;
     border-radius: 5px;
@@ -662,6 +661,7 @@ div.arrow_box {
     -webkit-box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
     -moz-box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
     box-shadow: 2px 5px 10px rgba(50, 50, 50, 0.6);
+    color: rgb(0, 86, 111);
 }
 
 div.arrow_box img {
@@ -675,11 +675,10 @@ div.arrow_box img {
 
 div.arrow_box .carousel-indicators {
     bottom: 0;
-    background: #000;
     width: 100%;
     left: 0;
     margin: 0;
-    background: rgba(74, 74, 74, 0.5);
+    background: rgba(183, 245, 251, 0.3);
     border-top: 1px solid #646464;
 }
 
@@ -694,7 +693,7 @@ div.arrow_box .carousel-inner .active {
 div.arrow_box .carousel {
     height: 160px;
     border: 1px solid #646464;
-    background: #737373;
+    background: #EFFEFF;
     border-radius: 5px;
     margin-top: 15px;
 }
@@ -710,12 +709,12 @@ div.arrow_box .carousel img {
 }
 
 .arrow_top:after {
-    border-bottom-color: #444;
+    border-bottom-color: #389AA6;
     margin-left: -15px;
 }
 
 .arrow_top:before {
-    border-bottom-color: #444;
+    border-bottom-color: #389AA6;
     margin-left: -22px;
 }
 
@@ -726,12 +725,12 @@ div.arrow_box .carousel img {
 }
 
 .arrow_bottom:after {
-    border-top-color: #444;
+    border-top-color: #389AA6;
     margin-left: -15px;
 }
 
 .arrow_bottom:before {
-    border-top-color: #444;
+    border-top-color: #389AA6;
     margin-left: -22px;
 }
 
@@ -742,12 +741,12 @@ div.arrow_box .carousel img {
 }
 
 .arrow_left:after {
-    border-right-color: #444;
+    border-right-color: #389AA6;
     margin-top: -15px;
 }
 
 .arrow_left:before {
-    border-right-color: #444;
+    border-right-color: #389AA6;
     margin-top: -22px;
 }
 
@@ -758,12 +757,12 @@ div.arrow_box .carousel img {
 }
 
 .arrow_right:after {
-    border-left-color: #444;
+    border-left-color: #389AA6;
     margin-top: -15px;
 }
 
 .arrow_right:before {
-    border-left-color: #444;
+    border-left-color: #389AA6;
     margin-top: -22px;
 }
 
@@ -774,12 +773,12 @@ div.arrow_box .carousel img {
 }
 
 .arrow_top_right:after {
-    border-bottom-color: #444;
+    border-bottom-color: #389AA6;
     margin-left: -15px;
 }
 
 .arrow_top_right:before {
-    border-bottom-color: #444;
+    border-bottom-color: #389AA6;
     margin-left: -22px;
 }
 

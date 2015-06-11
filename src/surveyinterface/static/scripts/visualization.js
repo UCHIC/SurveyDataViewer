@@ -309,7 +309,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 content: "<center><b><span id='tip-title'>4/4</span></b></center>" +
                 "<span>For selected questions that show a matrix of responses, a flag is displayed to indicate the statistical significance of the results.</span>"+
                 '<img src="/surveydata/static/images/tips-flag.gif" alt="Image of demographics dropdown">',
-                top: pageHeight - 350,
+                top: pageHeight - 320,
                 left: 195,
                 arrow: "arrow_bottom"
             }];

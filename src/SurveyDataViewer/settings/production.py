@@ -1,4 +1,6 @@
 import sys
+import django
+
 from SurveyDataViewer.settings.base import *
 
 #For error logging (helicon zoo error trace logging doesn't work)
@@ -18,3 +20,5 @@ STATIC_URL = SITE_URL + 'static/'
 
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'surveyfiles')
 MEDIA_URL = SITE_URL + 'surveyfiles/'
+
+django.setup()

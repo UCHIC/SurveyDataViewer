@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'surveyinterface',
+    'django_cleanup'
 )
 
 MIDDLEWARE_CLASSES = (

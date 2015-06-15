@@ -2,21 +2,24 @@
 {% load staticfiles %}
 
 {% block body %}
-{#    <div id="tutorialContainer">#}
-{#        <p class="btn btn-primary btn-lg" id="btnNextTip" href="#" role="button">Next</p>#}
-{#    </div>#}
+    {#    <div id="tutorialContainer">#}
+    {#        <p class="btn btn-primary btn-lg" id="btnNextTip" href="#" role="button">Next</p>#}
+    {#    </div>#}
 
     <div id="loadingScreen">
         <h3>Loading...</h3>
-{#        <img src="{% static 'images/preloader.gif' %}" alt="Loading Icon">#}
+        {#        <img src="{% static 'images/preloader.gif' %}" alt="Loading Icon">#}
     </div>
 
     <!-- Button trigger modal -->
-    <button id="btnHelp" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#significanceFlagModal"></button>
-    <button id="btnGuide" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#guideModal"></button>
+    <button id="btnHelp" type="button" class="btn btn-primary btn-lg" data-toggle="modal"
+            data-target="#significanceFlagModal"></button>
+    <button id="btnGuide" type="button" class="btn btn-primary btn-lg" data-toggle="modal"
+            data-target="#guideModal"></button>
 
     <!-- Significance flag modal -->
-    <div class="modal fade" id="significanceFlagModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="significanceFlagModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -39,69 +42,162 @@
         </div>
     </div>
 
-        <!-- Modal -->
-    <div class="modal fade" id="guideModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div id="arrowWindow" class="arrow_box arrow_right">
+    <!-- Modal -->
+    <div class="modal fade" id="guideModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+
+        <div data-id="0" id="tip-welcome" class="arrow_box arrow_right tip">
+            <center><b><span id='tip-title'>Welcome!</span></b></center>
+            <center><span>Please take a moment to read these useful tips.</span></center>
         </div>
+
+        <div data-id="1" class="arrow_box tip">
+            <center><b><span id='tip-title'>1/4</span></b></center>
+            <span>Select a question to visualize survey results. Use ‘+’ signs to compare answers to multiple questions.</span>
+            <img src="{% static 'images/tips-plus-signs.gif' %}" alt='Image of signs to aggregate questions'>
+        </div>
+
+        <div data-id="2" class="arrow_box tip">
+            <center><b><span id='tip-title'>2/4</span></b></center>
+            <span>Use these buttons to toggle between different views for the selected question(s).</span>
+
+            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#myCarousel" data-slide-to="0"></li>
+                    <li data-target="#myCarousel" data-slide-to="1"></li>
+                    <li data-target="#myCarousel" data-slide-to="2" class="active"></li>
+                </ol>
+
+                <div class="carousel-inner" role="listbox">
+                    <div class="item">
+                        <img src="{% static 'images/tips-preview-heatmap.gif' %}" alt="Image of heat map view">
+                    </div>
+
+                    <div class="item">
+                        <img src="{% static 'images/tips-preview-mean.gif' %}" alt="Image of mean view">
+                    </div>
+
+                    <div class="item active">
+                        <img src="{% static 'images/tips-preview-percentage.gif' %}" alt="Image of percentage view">
+                    </div>
+                </div>
+
+                <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+
+                <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+            <table class='tips-table'>
+                <tr>
+                    <td><span class='glyphicon glyphicon-th-large'></span></td>
+                    <td><b>Percentage View</b>: Shows the number and percentage of respondents. Can be disaggregated by
+                        characteristics of respondents.
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><span class='glyphicon glyphicon-stats'></span></td>
+                    <td><b>Mean View</b>: Shows the mean or average response for all respondents. Can be disaggregated
+                        by characteristics of respondents.
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><span class='glyphicon glyphicon-map-marker'></span></td>
+                    <td><b>Heat Map View</b>: Shows the mean or average response organized by the zip code of
+                        respondents.
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div data-id="3" class="arrow_box tip">
+            <center><b><span id='tip-title'>3/4</span></b></center>
+            <span>Choose between predefined demographic categories to disaggregate data among groups of respondents.</span>
+            <img src="{% static 'images/tips-demographics.gif' %}" alt="Image of demographics dropdown">
+        </div>
+
+        <div data-id="4" class="arrow_box tip">
+            <center><b><span id='tip-title'>4/4</span></b></center>
+            <span>For selected questions that show the percentage of respondents across categories, a flag is displayed here that indicates if differences across groups are statistically significant.</span>
+            <img src="{% static 'images/tips-flag.gif' %}" alt="Image of significance flag">
+        </div>
+
         <div class="no-click-layer"></div>
         <div>
             <button data-count="1" id="btnNextTip" type="button" class="btn-tip btn btn-lg blue-button">Next</button>
+
             <button data-count="0" id="btnPreviousTip" type="button" class="btn-tip btn btn-lg blue-button" disabled>
                 Previous
             </button>
+
             <button id="btnSkipTips" type="button" class="btn btn-lg gray-button">
                 Skip
             </button>
+
             <label id="chkHideTip"><input type="checkbox" aria-label=" Do not show again."> Do not show again</label>
         </div>
     </div>
 
     <div id="mainContent">
-    <div class="panel-left">
-        <div id="surveyInfo">
-            <img src="{% static 'images/survey-icon.png' %}" alt="...">
-            <div class="caption">
-                <h4>{{ object.name }}</h4>
+        <div class="panel-left">
+            <div id="surveyInfo">
+                <img src="{% static 'images/survey-icon.png' %}" alt="...">
 
-                <p>{{ object.dateconducted }}</p>
+                <div class="caption">
+                    <h4>{{ object.name }}</h4>
+
+                    <p>{{ object.dateconducted }}</p>
+                </div>
+            </div>
+            <div id="listQuestions" class="panel-group">
             </div>
         </div>
-        <div id="listQuestions" class="panel-group">
-        </div>
-    </div>
 
         <div id="visualizationContent">
             <div id="top-bar">
                 <div id="captionContainer" class="panel panel-primary">
-                  <div class="panel-heading">
-                    <span id="txtTitle" class="panel-title">Welcome!</span>
-                  </div>
-                  <div class="panel-body">
-                    <span id="txtDescription">Select a question to get started</span>
-                  </div>
+                    <div class="panel-heading">
+                        <span id="txtTitle" class="panel-title">Welcome!</span>
+                    </div>
+                    <div class="panel-body">
+                        <span id="txtDescription">Select a question to get started</span>
+                    </div>
                 </div>
                 <div id="viewContainer" class="panel panel-primary">
-                  <div class="panel-heading">
-                    <h3 class="panel-title">View</h3>
-                  </div>
-                  <div class="panel">
-                    <div class="btn-group">
-                        <button id="map-view" title="Heat Map View" type="button" class="btn btn-default" aria-label="Center Align"><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span></button>
-                        <button id="mean-view" title="Mean Result View" type="button" class="btn btn-default" aria-label="Center Align"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span></button>
-                        <button id="percentage-view" title="Percentage View" type="button" class="btn btn-default" aria-label="Center Align"><span class="glyphicon glyphicon-th-large" aria-hidden="true"></span></button>
+                    <div class="panel-heading">
+                        <h3 class="panel-title">View</h3>
                     </div>
-                  </div>
+                    <div class="panel">
+                        <div class="btn-group">
+                            <button id="map-view" title="Heat Map View" type="button" class="btn btn-default"
+                                    aria-label="Center Align"><span class="glyphicon glyphicon-map-marker"
+                                                                    aria-hidden="true"></span></button>
+                            <button id="mean-view" title="Mean Result View" type="button" class="btn btn-default"
+                                    aria-label="Center Align"><span class="glyphicon glyphicon-stats"
+                                                                    aria-hidden="true"></span></button>
+                            <button id="percentage-view" title="Percentage View" type="button" class="btn btn-default"
+                                    aria-label="Center Align"><span class="glyphicon glyphicon-th-large"
+                                                                    aria-hidden="true"></span></button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="dropdown">
-              <button title="Demogaphic variables" id="btnCategories" class="btn dropdown-toggle" type="button" data-toggle="dropdown">
-                  <span class="glyphicon glyphicon-list" aria-hidden="true"> ▼</span>
-              </button>
-              <ul id="lstYAxisMode" class="dropdown-menu">
-                <li ><a data-axis="All" href="#">All</a></li>
-                <li role="presentation" class="divider"></li>
-                <!--<li><a data-axis="Site" href="#">Survey Site</a></li>-->
-              </ul>
+                <button title="Demogaphic variables" id="btnCategories" class="btn dropdown-toggle" type="button"
+                        data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-list" aria-hidden="true"> ▼</span>
+                </button>
+                <ul id="lstYAxisMode" class="dropdown-menu">
+                    <li><a data-axis="All" href="#">All</a></li>
+                    <li role="presentation" class="divider"></li>
+                    <!--<li><a data-axis="Site" href="#">Survey Site</a></li>-->
+                </ul>
             </div>
             <div id="map-canvas"></div>
         </div>
@@ -109,5 +205,6 @@
     <input id="dataFile" type="hidden" value="{{ object.datafile.url }}" readonly>
     <input id="metadataFile" type="hidden" value="{{ object.metadatafile.url }}" readonly>
     <input id="zipcodesFile" type="hidden" value="{% static 'files/zipcodes.json' %}" readonly>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js" data-main="{% static 'scripts/main.js' %}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"
+            data-main="{% static 'scripts/main.js' %}"></script>
 {% endblock %}

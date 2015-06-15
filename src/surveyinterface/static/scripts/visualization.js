@@ -248,82 +248,36 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var pageHeight = $("body").height();
         tips = [
             {
-                content: "<center><b><span id='tip-title'>Welcome!</span></b></center>" +
-                "<center><span>Please take a moment to read these useful tips.</span></center>",
                 top: pageHeight / 2 - 300,
                 left: pageWidth / 2 - 150,
                 arrow: ""
             },
             {
-                content: "<center><b><span id='tip-title'>1/4</span></b></center>" +
-                "<span>Select a question to visualize survey results. Use ‘+’ signs to compare answers to multiple questions.</span>" +
-                "<img src='/surveydata/static/images/tips-plus-signs.gif' alt='Image of signs to aggregate questions'>",
-                top: 310,
+                top: 210,
                 left: 310,
                 arrow: "arrow_left"
             },
             {
-                content: "<center><b><span id='tip-title'>2/4</span></b></center>" +
-                "<span>Use these buttons to toggle between different views for the selected question(s).</span>" +
-                '<div id="myCarousel" class="carousel slide" data-ride="carousel">'+
-                  '<ol class="carousel-indicators">'+
-                    '<li data-target="#myCarousel" data-slide-to="0"></li>'+
-                    '<li data-target="#myCarousel" data-slide-to="1"></li>'+
-                    '<li data-target="#myCarousel" data-slide-to="2" class="active"></li>'+
-                  '</ol>'+
-                  '<div class="carousel-inner" role="listbox">'+
-                    '<div class="item">'+
-                      '<img src="/surveydata/static/images/tips-preview-heatmap.gif" alt="Image of heat map view">'+
-                    '</div>'+
-                    '<div class="item">'+
-                      '<img src="/surveydata/static/images/tips-preview-mean.gif" alt="Image of mean view">'+
-                    '</div>'+
-                    '<div class="item active">'+
-                      '<img src="/surveydata/static/images/tips-preview-percentage.gif" alt="Image of percentage view">'+
-                    '</div>'+
-                  '</div>'+
-                      '<a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">'+
-                        '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>'+
-                        '<span class="sr-only">Previous</span>'+
-                      '</a>'+
-                      '<a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">'+
-                        '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>'+
-                        '<span class="sr-only">Next</span>'+
-                      '</a>'+
-                '</div>'+
-                    "<table class='tips-table'>" +
-                    "<tr><td><span class='glyphicon glyphicon-th-large'></span></td> " +
-                        "<td><b>Percentage View</b>: Shows the number and percentage of respondents. Can be disaggregated by characteristics of respondents.</td></tr>" +
-                    "<tr><td><span class='glyphicon glyphicon-stats'></span></td> " +
-                        "<td><b>Mean View</b>: Shows the mean or average response for all respondents. Can be disaggregated by characteristics of respondents.</td></tr>" +
-                    "<tr><td><span class='glyphicon glyphicon-map-marker'></span></td> " +
-                        "<td><b>Heat Map View</b>: Shows the mean or average response organized by the zip code of respondents.</td></tr>" +
-                "</table>",
                 top: 110,
                 left: pageWidth - 342,
                 arrow: "arrow_top_right"
             },
             {
-                content: "<center><b><span id='tip-title'>3/4</span></b></center>"+
-                "<span>Choose between predefined demographic categories to disaggregate data among groups of respondents.</span>"+
-                '<img src="/surveydata/static/images/tips-demographics.gif" alt="Image of demographics dropdown">',
                 top: 150,
                 left: 195,
                 arrow: "arrow_top"
             },
             {
-                content: "<center><b><span id='tip-title'>4/4</span></b></center>" +
-                "<span>For selected questions that show the percentage of respondents across categories, a flag is displayed here that indicates if differences across groups are statistically significant.</span>"+
-                '<img src="/surveydata/static/images/tips-flag.gif" alt="Image of demographics dropdown">',
-                top: pageHeight - 400,
+                top: pageHeight - 425,
                 left: 195,
                 arrow: "arrow_bottom"
             }];
 
         $("#btnPreviousTip")[0].disabled = true;
-        $("#arrowWindow").html(tips[0].content);
+        $(".tip").hide();
+        $(".tip[data-id=0]").show();
 
-        var window = $("#arrowWindow");
+        var window = $(".tip[data-id=0]");
         window.removeClass("arrow_right");
         window.removeClass("arrow_top");
         window.removeClass("arrow_left");
@@ -331,8 +285,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         window.removeClass("arrow_top_right");
 
         window.addClass(tips[0].arrow);
-        window[0].style.left = tips[0].left + "px";
-        window[0].style.top = tips[0].top + "px";
+        window[0].style.left = (pageWidth/2 - 150) + "px";
+        window[0].style.top = (pageHeight/2 - 300) + "px";
         $("#btnGuide").click();
     }
 
@@ -352,7 +306,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return;
         }
 
-        var window = $("#arrowWindow");
+        $(".tip").hide();
+        $(".tip[data-id=" + show + "]").show();
+
+        var window = $(".tip[data-id=" + show +"]");
         window.removeClass("arrow_right");
         window.removeClass("arrow_top");
         window.removeClass("arrow_left");
@@ -360,13 +317,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         window.removeClass("arrow_top_right");
 
         window.addClass(tips[show].arrow);
-        $("#arrowWindow").html(tips[show].content);
         window[0].style.left = tips[show].left + "px";
         window[0].style.top = tips[show].top + "px";
 
         if (show > 0){
             $("#btnPreviousTip")[0].disabled = false;
-
         }
         else{
             $("#btnPreviousTip")[0].disabled = true;
@@ -1032,8 +987,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
                     .text(function () {
                         return labels[i];
-                    });
-                //.call(wrap, 150);
+                    })
+                //.call(wrap, 200);
                 $("#txtDescription").text("");
 
                 //Center y axis legend
@@ -2142,7 +2097,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("dx", 0)
                 .attr("dy", 0)
                 .attr("text-anchor", "start")
-                .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
+                .attr("transform", "translate(" + (yPanelWidth + 10) + "," + 0 + ")")
                 .text(function () {
                     if (yAxisMode == 'All')
                         return "";
@@ -2158,7 +2113,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     }
                     return options[i];
                 })
-                .call(wrap, 150);
+                //.call(wrap, 150);
 
             //Center y axis legend
             var deltaY = y(1) - y(0);
@@ -2497,28 +2452,39 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function wrap(text, width) {
-        text.each(function () {
-            var text = d3.select(this),
-                words = text.text().split(/\s+/).reverse(),
-                word,
-                line = [],
-                lineNumber = 0,
-                lineHeight = 1.1, // ems
-                y = text.attr("y"),
-                dy = parseFloat(text.attr("dy")),
-                tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-            while (word = words.pop()) {
-                line.push(word);
-                tspan.text(line.join(" "));
-                if (tspan.node().getComputedTextLength() > width) {
-                    line.pop();
-                    tspan.text(line.join(" "));
-                    line = [word];
-                    tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", lineHeight + "em").text(word); // ++lineNumber * lineHeight
-                }
-            }
-        });
+  text.each(function() {
+    var text = d3.select(this),
+        words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 1.1, // ems
+        y = text.attr("y"),
+        dy = parseFloat(text.attr("dy")),
+        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+      }
     }
+  });
+}
+
+    //function wrap(text, width) {
+    //    var padding = 10;
+    //    var textLength = width,
+    //        val = text.text();
+    //    while (textLength > (width - 2 * padding) && val.length > 0) {
+    //        val = val.slice(0, -1);
+    //        text.text(val + '...');
+    //        textLength = text.node().getComputedTextLength();
+    //    }
+    //}
 
     return self;
 });

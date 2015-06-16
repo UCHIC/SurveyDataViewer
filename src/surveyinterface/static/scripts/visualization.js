@@ -1085,7 +1085,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
             }
 
-             var left = yPanelWidth + deltaX / 2 + getYLabelSize();
+            var left = yPanelWidth + deltaX / 2 + getYLabelSize();
             var right = w - deltaX / 2;
             var colorScale = getQuestionColors();
             var colorData = [];

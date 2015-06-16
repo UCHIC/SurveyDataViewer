@@ -91,7 +91,7 @@ h6 {
 
 #btn-back {
     margin-top: 30px;
-    float:left;
+    float: left;
 }
 
 #view-instrument, #view-data {
@@ -198,7 +198,7 @@ text.shadow {
     margin-bottom: 0;
     border-radius: 0;
     border-color: #000;
-      height: 100%;
+    height: 100%;
 }
 
 #viewContainer {
@@ -610,6 +610,17 @@ path[data-zip] {
     cursor: pointer;
 }
 
+#flagContainer {
+    width: 500px;
+    left: calc(50% - 250px);
+    top: 200px;
+    padding-bottom: 50px;
+}
+
+#flagContainer .gray-button {
+    float: right;
+}
+
 #btnHelp, #btnGuide {
     display: none;
 }
@@ -714,7 +725,7 @@ div.arrow_box .carousel {
 }
 
 div.arrow_box .carousel img {
-      border: 1px solid rgb(16, 112, 124);
+    border: 1px solid rgb(16, 112, 124);
 }
 
 /*Arrow on top*/
@@ -810,7 +821,7 @@ div.arrow_box .carousel img {
     margin-top: 70px;
 }
 
-#tip, #tip-title {
+.tip-title {
     font-size: 16px;
     line-height: 24px;
     text-shadow: 0 1px 2px rgba(1, 1, 1, 0.2);

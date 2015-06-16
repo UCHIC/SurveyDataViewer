@@ -20,26 +20,22 @@
     <!-- Significance flag modal -->
     <div class="modal fade" id="significanceFlagModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
          aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+    <div class="modal-dialog">
+    <div id="flagContainer" class="arrow_box">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                             aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">About significance flag</h4>
-                </div>
-                <div class="modal-body">
-                    <p>This flag indicates whether the differences in the results in this matrix are statistically
-                        significant according to a chi-square test. The distribution of observed frequencies is compared
-                        to expected frequencies from a distribution where there is no relationship between the two axes.
-                        If the total difference is greater than the chi-square statistic for the 95% confidence level,
-                        than the results are considered statistically significant.</p>
-                </div>
+        <center><b><span class='tip-title'>About significance flag</span></b></center>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
+        <p>This flag indicates whether the differences in the results in this matrix are statistically
+            significant according to a chi-square test. The distribution of observed frequencies is compared
+            to expected frequencies from a distribution where there is no relationship between the two axes.
+            If the total difference is greater than the chi-square statistic for the 95% confidence level,
+            than the results are considered statistically significant.</p>
+
+        <button type="button" class="gray-button" data-dismiss="modal">Close</button>
         </div>
+
+</div>
     </div>
 
     <!-- Modal -->
@@ -47,18 +43,18 @@
          aria-hidden="true">
 
         <div data-id="0" id="tip-welcome" class="arrow_box arrow_right tip">
-            <center><b><span id='tip-title'>Welcome!</span></b></center>
+            <center><b><span class='tip-title'>Welcome!</span></b></center>
             <center><span>Please take a moment to read these useful tips.</span></center>
         </div>
 
         <div data-id="1" class="arrow_box tip">
-            <center><b><span id='tip-title'>1/4</span></b></center>
+            <center><b><span class='tip-title'>1/4</span></b></center>
             <span>Select a question to visualize survey results. Use ‘+’ signs to compare answers to multiple questions.</span>
             <img src="{% static 'images/tips-plus-signs.gif' %}" alt='Image of signs to aggregate questions'>
         </div>
 
         <div data-id="2" class="arrow_box tip">
-            <center><b><span id='tip-title'>2/4</span></b></center>
+            <center><b><span class='tip-title'>2/4</span></b></center>
             <span>Use these buttons to toggle between different views for the selected question(s).</span>
 
             <div id="myCarousel" class="carousel slide" data-ride="carousel">
@@ -117,13 +113,13 @@
         </div>
 
         <div data-id="3" class="arrow_box tip">
-            <center><b><span id='tip-title'>3/4</span></b></center>
+            <center><b><span class='tip-title'>3/4</span></b></center>
             <span>Choose between predefined demographic categories to disaggregate data among groups of respondents.</span>
             <img src="{% static 'images/tips-demographics.gif' %}" alt="Image of demographics dropdown">
         </div>
 
         <div data-id="4" class="arrow_box tip">
-            <center><b><span id='tip-title'>4/4</span></b></center>
+            <center><b><span class='tip-title'>4/4</span></b></center>
             <span>For selected questions that show the percentage of respondents across categories, a flag is displayed here that indicates if differences across groups are statistically significant.</span>
             <img src="{% static 'images/tips-flag.gif' %}" alt="Image of significance flag">
         </div>

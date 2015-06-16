@@ -1684,20 +1684,23 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         gradientCount++;
 
         svg.append("text")
-            .attr("dx", 0)
             .attr("class", "graph-object flag-text")
-            .attr("dy", 0)
             .attr("font-weight", "normal")
             .attr("fill", legendColor)
             .attr("transform", "translate(" + 30 + "," + (h - margin.bottom + 20) + ")")
+            .attr("x", "0")
+            .attr("y", "0")
+            .attr("dx", "0")
+            .attr("dy", "0")
             .text(function () {
                 if (flag == true)
                     return "This result is statistically significant.";
-                else
-                    return "This result is NOT statistically significant."
+
+                return "This result is NOT statistically significant."
             })
-            .on("click", function(){$("#btnHelp").click()})
-            //.on("mouseover", function(){$("#btnHelp").click()})
+            .on("click", function () {
+                $("#btnHelp").click()
+            })
             .call(wrap, xDistance - 30);
         //
         var textHeight = $(".flag-text")[0].getBBox().height;
@@ -1709,7 +1712,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("stroke", d3.rgb(color).darker(2))
             .attr("stroke-width", "1px")
             .attr("fill", 'url(#gradientFlag)')
-            .attr("transform", "translate(" + 15 + "," + (h - margin.bottom + textHeight/2 + 10) + ")");
+            .attr("transform", "translate(" + 15 + "," + (h - margin.bottom + textHeight / 2 + 10) + ")");
 
         // Check mark
         svg.append("text")
@@ -2088,16 +2091,22 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function drawYAxisLegend(y) {
+        if (options[0] == null){
+            return;
+        }
+
+        var deltaY = y(1) - y(0);
         for (var i = 0; i < options.length; i++) {
             svg.append("text")
                 .attr("class", "y-legend graph-object")
                 .attr("id", "y-legend" + i)
                 .attr("font-weight", "normal")
                 .attr("fill", legendColor)
-                .attr("dx", 0)
-                .attr("dy", 0)
-                .attr("text-anchor", "start")
-                .attr("transform", "translate(" + (yPanelWidth + 10) + "," + 0 + ")")
+                .attr("y", (i * deltaY + 10) + "px")
+                .attr("x", "0")
+                .attr("dx", "0")
+                .attr("dy", "0")
+                //.attr("transform", "translate(" + (yPanelWidth + 10) + "," + 0 + ")")
                 .text(function () {
                     if (yAxisMode == 'All')
                         return "";
@@ -2113,12 +2122,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     }
                     return options[i];
                 })
-                //.call(wrap, 150);
+                .call(wrap, 150);
 
             //Center y axis legend
-            var deltaY = y(1) - y(0);
-            var height = $("#y-legend" + i)[0].getBBox().height;
-            $("#y-legend" + i).attr("y", ((h - margin.bottom) / (options.length)) * i + deltaY / 2 - height / 2);
+            var textHeight = $("#y-legend" + i)[0].getBBox().height;
+
+            $("#y-legend" + i).attr("transform", "translate(" + (yPanelWidth + 10) + "," + (deltaY/2 - textHeight/2) + ")")
         }
     }
 
@@ -2452,28 +2461,28 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function wrap(text, width) {
-  text.each(function() {
-    var text = d3.select(this),
-        words = text.text().split(/\s+/).reverse(),
-        word,
-        line = [],
-        lineNumber = 0,
-        lineHeight = 1.1, // ems
-        y = text.attr("y"),
-        dy = parseFloat(text.attr("dy")),
-        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-    while (word = words.pop()) {
-      line.push(word);
-      tspan.text(line.join(" "));
-      if (tspan.node().getComputedTextLength() > width) {
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
-        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-      }
+        text.each(function () {
+            var text = d3.select(this),
+                words = text.text().split(/\s+/).reverse(),
+                word,
+                line = [],
+                lineNumber = 0,
+                lineHeight = 16, // px
+                y = text.attr("y"),
+                dy = parseFloat(text.attr("dy")),
+                tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "px");
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                if (tspan.node().getComputedTextLength() > width) {
+                    line.pop();
+                    tspan.text(line.join(" "));
+                    line = [word];
+                    tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "px").text(word);
+                }
+            }
+        });
     }
-  });
-}
 
     //function wrap(text, width) {
     //    var padding = 10;

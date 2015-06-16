@@ -13,6 +13,7 @@ if (typeof Array.prototype.getUnique != 'function') {
 }
 
 define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore'], function () {
+    $("#footer").remove();  // Do not display footer on survey visualization page
     var self = {};
     var data, metadata, selectedQuestion, svg, radius_scale;
     var yAxisMode = "All";
@@ -53,6 +54,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var mapContainer;
     var projection;
     var independetColors = d3.scale.category10();
+
 
     $(window).resize(_.debounce(function () {
         w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;

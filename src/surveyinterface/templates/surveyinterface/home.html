@@ -2,14 +2,14 @@
 {% load staticfiles %}
 
 {% block body %}
-    <div id="surveyContainer">
+    <div class="mainContainer" id="surveyContainer">
         <!-- Page Heading -->
         <div class="row">
             <div class="col-xs-12">
                 <h2 class="page-header">Surveys</h2>
             </div>
             {% for survey in object_list %}
-                <div class="col-xs-4">
+                <div class="col-xs-12 col-sm-4">
                     <div class="survey col-xs-12">
 
                         <div class="col-xs-12"><h4><img src="{% static 'images/survey-icon.png' %}" alt="..."> {{ survey.name }}</h4></div>

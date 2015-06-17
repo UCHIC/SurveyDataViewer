@@ -248,6 +248,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function loadTips (){
         var pageWidth = $("body").width();
         var pageHeight = $("body").height();
+        var left = $(".panel-left").width();
+
         tips = [
             {
                 top: pageHeight / 2 - 300,
@@ -256,7 +258,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             },
             {
                 top: 210,
-                left: 310,
+                left: left + 30,
                 arrow: "arrow_left"
             },
             {
@@ -266,12 +268,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             },
             {
                 top: 150,
-                left: 195,
+                left: left - 105,
                 arrow: "arrow_top"
             },
             {
-                top: pageHeight - 425,
-                left: 195,
+                top: pageHeight - 450,
+                left: left - 105,
                 arrow: "arrow_bottom"
             }];
 

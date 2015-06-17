@@ -47,33 +47,33 @@
         {% endblock %}
 
     </body>
-     <!-- Footer -->
-        <div id="footer" class="container">
-            <div class="row">
+    <!-- Footer -->
+    <div id="footer" class="container">
+        <div class="row">
 
-                <div class="footer-container">
-                    <div id="footer-left-image">
-                        <a href="http://utepscor.org/" target="_blank"><img src="{% static 'images/epscor_logo.jpg' %}"
-                                                                            alt="Utah EPSCoR" width="156"
-                                                                            height="73"></a>
-                    </div>
-
-                    <div id="footer-text">
-                        <p>This project is funded through <a
-                                href="http://www.nsf.gov/awardsearch/showAward.do?AwardNumber=1208732" target="_blank">EPS
-                            - 1208732</a>. Any opinions, findings, and
-                            conclusions or recommendations expressed in this material are those of the author(s) and do
-                            not
-                            necessarily reflect the views of the National Science Foundation.</p>
-                    </div>
-
-                    <aside id="footer-right-image">
-                        <a href="http://www.nsf.gov/div/index.jsp?div=EPSC" target="_blank">
-                            <img src="{% static 'images/nsf1.png' %}" alt="National Science Foundation" width="80"
-                                 height="80">
-                        </a>
-                    </aside>
+            <div class="footer-container">
+                <div class="col-xs-12 col-md-3">
+                    <a href="http://utepscor.org/" target="_blank"><img src="{% static 'images/epscor_logo.jpg' %}"
+                                                                        alt="Utah EPSCoR" width="156"
+                                                                        height="73"></a>
                 </div>
+
+                <div class="col-xs-12 col-md-6">
+                    <p>This project is funded through <a
+                            href="http://www.nsf.gov/awardsearch/showAward.do?AwardNumber=1208732" target="_blank">EPS
+                        - 1208732</a>. Any opinions, findings, and
+                        conclusions or recommendations expressed in this material are those of the author(s) and do
+                        not
+                        necessarily reflect the views of the National Science Foundation.</p>
+                </div>
+
+                <aside class="col-xs-12 col-md-3">
+                    <a href="http://www.nsf.gov/div/index.jsp?div=EPSC" target="_blank">
+                        <img src="{% static 'images/nsf1.png' %}" alt="National Science Foundation" width="80"
+                             height="80">
+                    </a>
+                </aside>
             </div>
         </div>
+    </div>
 </html>

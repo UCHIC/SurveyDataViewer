@@ -18,7 +18,6 @@ h6 {
 #visualizationContent {
     height: 100%;
     text-align: center;
-    width: calc(100% - 300px);
     float: right;
     overflow: hidden;
     padding: 4px;
@@ -65,9 +64,9 @@ h6 {
 }
 
 .panel-left {
-    width: 300px;
     float: left;
-    height: calc(100% - 52px);
+    height: 100%;
+    padding: 0;
 }
 
 .dropdown-menu {
@@ -115,12 +114,12 @@ svg {
 }
 
 .mainContainer {
-  min-height: calc(100% - 217px);
+  min-height: calc(100% - 261px);
 }
 
 #listQuestions {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 52px);
     overflow-y: scroll;
     overflow-x: hidden;
     float: left;
@@ -441,6 +440,7 @@ li .checkbox {
     border-radius: 0;
     margin-bottom: 0;
     height: 100px;
+    z-index:1;
     background-image: -webkit-linear-gradient(#484e55, #3a3f44 60%, #313539);
     background-image: -o-linear-gradient(#484e55, #3a3f44 60%, #313539);
     background-image: -webkit-gradient(linear, left top, left bottom, from(#484e55), color-stop(60%, #3a3f44), to(#313539));
@@ -454,8 +454,9 @@ li .checkbox {
 }
 
 .navbar-inverse .navbar-brand {
-    color: #c9c9c9;
+    color: #DDD;
     height:100%;
+    text-shadow: 0 1px 0 #000;
 }
 
 .navbar-inverse .navbar-nav > li > a {
@@ -900,32 +901,17 @@ div.arrow_box .carousel img {
 }
 
 #footer-text {
-    display: inline !important;
-    float: left;
-    margin-left: 10px;
-    max-width: 630px;
-    position: relative;
     text-shadow: 0 1px rgba(255, 255, 255, 0.6);
 }
 
-#footer-left-image {
-    display: inline !important;
-    position: relative;
-    float: left !important;
-    margin-left: 15px;
-    padding-right: 15px;
-    border-right: 1px solid #888;
+.footer-container img {
+    margin-bottom: 20px;
 }
 
-#footer-right-image {
-    display: inline !important;
-    position: relative;
-    float: right;
-    margin-right: 15px;
-    margin-top: -4px;
-}
 
 .footer-container {
     max-width: 945px;
     margin: auto;
+    text-align:center;
+    padding: 20px 0;
 }

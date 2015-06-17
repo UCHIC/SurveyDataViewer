@@ -992,7 +992,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .text(function () {
                         return labels[i];
                     })
-                //.call(wrap, 200);
+                .call(wrap, 150);
                 $("#txtDescription").text("");
 
                 //Center y axis legend

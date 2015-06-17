@@ -110,7 +110,7 @@ svg {
 
 #mainContent {
     height: calc(100% - 100px);
-    overflow: auto;
+    /*overflow: auto;*/
 }
 
 .mainContainer {
@@ -119,7 +119,7 @@ svg {
 
 #listQuestions {
     width: 100%;
-    height: calc(100% - 52px);
+    height: calc(100% - 43px);
     overflow-y: scroll;
     overflow-x: hidden;
     float: left;
@@ -211,6 +211,10 @@ text.shadow {
     border-color: #000;
     margin-bottom: 0;
     border-radius: 0;
+}
+
+#viewContainer .panel {
+    box-shadow: none;
 }
 
 #captionContainer .panel-heading, #viewContainer .panel-heading {
@@ -564,6 +568,40 @@ path[data-zip] {
     right: 500px;
     width: 200px;
     outline: none;
+}
+
+.tip[data-id="0"] {
+    left: 50%;
+    top: calc(50% - 150px);
+}
+
+.tip[data-id="1"] {
+    left: calc(16.67% + 30px);
+    top: 210px;
+}
+
+.tip[data-id="2"] {
+    height: calc(100% - 300px);
+    max-height: 625px;
+    left: calc(100% - 342px);
+    top: 110px;
+}
+
+.tip[data-id="2"] > div {
+    height: calc(100% - 20px);
+    width: calc(100% - 20px);
+    overflow-y: auto;
+    position: absolute;
+}
+
+.tip[data-id="3"] {
+    left: calc(16.67% - 105px);
+    top: 150px;
+}
+
+.tip[data-id="4"] {
+    left: calc(16.67% - 105px);
+    top: calc(100% - 380px);
 }
 
 .blue-button {

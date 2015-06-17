@@ -39,7 +39,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var spatialQuestion;
     var centerZip;
     var path;
-    var tips;
 
     var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 1/11, 2/11, 3/11, 4/11, 5/11, 6/11, 7/11, 8/11, 9/11, 10/11, 1])
@@ -63,7 +62,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("height", h);
 
         if ($("#listQuestions").find(".active").length > 1) {
-            var element = $("li.active .btnAdd").first();
+            var element = $("#listQuestions li.active .btnAdd").first();
             onAddRow(element);
             return;
         }
@@ -246,60 +245,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function loadTips (){
-        var pageWidth = $("body").width();
-        var pageHeight = $("body").height();
-        var left = $(".panel-left").width();
-
-        tips = [
-            {
-                top: pageHeight / 2 - 300,
-                left: pageWidth / 2 - 150,
-                arrow: ""
-            },
-            {
-                top: 210,
-                left: left + 30,
-                arrow: "arrow_left"
-            },
-            {
-                top: 110,
-                left: pageWidth - 342,
-                arrow: "arrow_top_right"
-            },
-            {
-                top: 150,
-                left: left - 105,
-                arrow: "arrow_top"
-            },
-            {
-                top: pageHeight - 450,
-                left: left - 105,
-                arrow: "arrow_bottom"
-            }];
-
         $("#btnPreviousTip")[0].disabled = true;
         $(".tip").hide();
         $(".tip[data-id=0]").show();
-
-        var window = $(".tip[data-id=0]");
-        window.removeClass("arrow_right");
-        window.removeClass("arrow_top");
-        window.removeClass("arrow_left");
-        window.removeClass("arrow_bottom");
-        window.removeClass("arrow_top_right");
-
-        window.addClass(tips[0].arrow);
-        window[0].style.left = (pageWidth/2 - 150) + "px";
-        window[0].style.top = (pageHeight/2 - 300) + "px";
         $("#btnGuide").click();
     }
 
     function finishGuide(){
         $("#btnNextTip")[0].setAttribute("data-count", "1");
         $("#btnPreviousTip")[0].setAttribute("data-count", "0");
-        $(".modal-backdrop")[0].style.opacity = "0.5";
+        //$(".modal-backdrop")[0].style.opacity = "0.5";
         $('#guideModal').modal('hide');
-        return;
     }
 
     function onNextTip(e){
@@ -313,17 +269,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".tip").hide();
         $(".tip[data-id=" + show + "]").show();
 
-        var window = $(".tip[data-id=" + show +"]");
-        window.removeClass("arrow_right");
-        window.removeClass("arrow_top");
-        window.removeClass("arrow_left");
-        window.removeClass("arrow_bottom");
-        window.removeClass("arrow_top_right");
-
-        window.addClass(tips[show].arrow);
-        window[0].style.left = tips[show].left + "px";
-        window[0].style.top = tips[show].top + "px";
-
         if (show > 0){
             $("#btnPreviousTip")[0].disabled = false;
         }
@@ -334,7 +279,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#btnPreviousTip")[0].setAttribute("data-count", String(show - 1));
         $("#btnNextTip")[0].setAttribute("data-count", String(show + 1));
 
-        if (show > tips.length - 2) {
+        if (show > 3) {
             $("#btnNextTip").text("Finish");
         }
         else {
@@ -740,7 +685,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         // Update legend
-        if (!$("li.active").length || hasPluggin(selectedQuestion, "spatial")) {
+        if (!$("#listQuestions li.active").length || hasPluggin(selectedQuestion, "spatial")) {
             numberOfAnswers = 5;                // 2 labels: Min and max number of participants
             colorScale = unidirectionalScale;
         }
@@ -802,7 +747,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("fill", "url(#line-gradient)")
             .attr("class", "graph-object");
 
-        if ($("li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
+        if ($("#listQuestions li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
             var counter = 0;
             for (var i = 0; i < numberOfAnswers; i++) {
                 var label = getLabel(selectedQuestion, answers[i]);
@@ -824,9 +769,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                             .attr("class", "hm-legend")
                             .style("fill", "#AAA")
                             .text("—");
+
+                        legendText.attr("transform", "translate(" + 60 + "," + 0 + ")")
                     }
 
-                    legendText.attr("transform", "translate(" + 60 + "," + 0 + ")")
                     counter++;
                 }
             }
@@ -1241,11 +1187,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // If a question has been clicked, update
         if ($("#listQuestions").find(".active").length > 1){
-            var element =  $("li.active .btnAdd").first();
+            var element =  $("#listQuestions li.active .btnAdd").first();
             onAddRow(element);
         }
         else if ($("#listQuestions").find(".active").length > 0){
-            var element = $("li.active .btnAdd").first();
+            var element = $("#listQuestions li.active .btnAdd").first();
             if (element.length) {
                 $(element[0].parentElement.parentElement).find(".btnAdd").show();
                 element.hide();
@@ -1279,12 +1225,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // If a question has been clicked, update
 
         if ($("#listQuestions").find(".active").length > 1){
-            var element =  $("li.active .btnAdd").first();
+            var element =  $("#listQuestions li.active .btnAdd").first();
             onAddRow(element);
 
         }
         else if ($("#listQuestions").find(".active").length > 0){
-            var element =  $("li.active .btnAdd").first();
+            var element =  $("#listQuestions li.active .btnAdd").first();
             if (element.length){
                 $(element[0].parentElement.parentElement).find(".btnAdd").show();
                 element.hide();
@@ -2131,7 +2077,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             //Center y axis legend
             var textHeight = $("#y-legend" + i)[0].getBBox().height;
 
-            $("#y-legend" + i).attr("transform", "translate(" + (yPanelWidth + 10) + "," + (deltaY/2 - textHeight/2) + ")")
+            var left = (yPanelWidth + 10);
+            var top = (deltaY/2 - textHeight/2);
+
+            if (view == "percentage"){
+                top -= 7;
+            }
+
+            $("#y-legend" + i).attr("transform", "translate(" + left + "," + top + ")")
         }
     }
 

@@ -19,7 +19,7 @@
                             <a href="{% url 'survey-view' survey.code %}" class="blue-button col-xs-12"
                                role="button">Explore results</a>
 
-                            <a href="{% static survey.pdf.url %}"
+                            <a href="{{ survey.pdf.url }}"
                                class="gray-button col-xs-12"
                                role="button" target="_blank">View copy of survey</a>
 

@@ -936,7 +936,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("y", ((h - margin.bottom) / (numberOfQuestions)) * i + 30)
                     .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
                     .text(function () {
-                        return labels[i];
+                        return labels[i].trim();
                     })
                 .call(wrap, 150);
                 $("#txtDescription").text("");

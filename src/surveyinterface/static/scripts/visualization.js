@@ -720,7 +720,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 curPath.transition().duration(100).attr("fill", "#3D4348");
 
                 if (participants[zip] > cutoff) {        // Cut off at 5
-                    if ($("li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
+                    if ($("#listQuestions li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
                         curPath.transition().duration(500).delay(100).attr("fill", function (d) {
                             return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
                         });

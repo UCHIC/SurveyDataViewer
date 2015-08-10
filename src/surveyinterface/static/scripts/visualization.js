@@ -30,7 +30,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var gradientCount = 0;
     var map;
     var nodes = [];
-    var markerQuestions = [];
+    //var markerQuestions = [];
     var numberOfQuestions = 0;
     var questionNodes = [];
     var cutoff = 5;
@@ -2369,9 +2369,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 questionContent = getCellContent(question, 'VariableLabel');
             }
 
-            if (getLabel(question, "data-type") == "map") {
-                markerQuestions.push(question);
-            }
+            //if (getLabel(question, "data-type") == "map") {
+            //    markerQuestions.push(question);
+            //}
 
             if (question != null && isMultipleSelectOne(question)) {
                 var answer = questionContent.substr(questionContent.lastIndexOf('-') + 1, questionContent.length);

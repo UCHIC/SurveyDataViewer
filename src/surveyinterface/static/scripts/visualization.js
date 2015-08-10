@@ -130,25 +130,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
     };
 
-    // Returns the cell value given a question ID and the name of the column
-    function getValue(questionID, label) {
-        for (var i = 0; i < metadata.rows.length; i++) {
-            if (metadata.rows[i]["ID"] == questionID) {
-                for (var prop in metadata.rows[i]) {
-                    if (metadata.rows[i][prop] == label) {
-                        return prop;
-                    }
-                }
-                return 0;
-            }
-        }
-    }
-
     function getLabel(question, value) {
         for (var j = 0; j < metadata.rows.length; j++) {
+            //var reGetQuestionID = /Q[0-9]+[a-z]*/;
+            var questionID = metadata.rows[j]["Variable"];
             var reGetQuestionID = /Q[0-9]+[a-z]*/;
-            var questionID = reGetQuestionID.exec(metadata.rows[j]["Variable"]);
-            if (questionID && questionID[0] == question) {
+
+            if (questionID == question) {
+                var isDefaultFormat = reGetQuestionID.exec(metadata.rows[j]["Variable"]);
+                if (!isDefaultFormat && !parseInt(value)) {
+                    return;
+                }
                 // Get the labels for this question
                 var labels;
                 for (var prop in metadata.rows[j]) {
@@ -332,19 +324,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Toggle Title visibility
         $("#txtDescription").text(content);
         $("#txtTitle").text(title);
-        //if ($("#txtTitle").text() == "") {
-        //    $(".titleContainer").hide();
-        //}
-        //else {
-        //    $(".titleContainer").show();
-        //}
-        ////$("#txtDescription").text(content);
-        ////if ($("#txtDescription").text() == "") {
-        ////    $(".descriptionContainer").hide();
-        ////}
-        //else {
-        //    $(".descriptionContainer").show();
-        //}
 
         if (hasPluggin(selectedQuestion, "unidirectional") || hasPluggin(selectedQuestion, "bidirectional")) {
             $("#map-view")[0].disabled = false;

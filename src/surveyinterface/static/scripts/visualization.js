@@ -752,7 +752,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                         legendText.attr("transform", "translate(" + 60 + "," + 0 + ")")
                     }
-
                     counter++;
                 }
             }
@@ -764,7 +763,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("dy", ".31em")
                 .attr("class", "hm-legend")
                 .style("fill", "#000")
-                .text(minParticipants + " participants");
+                .text(function(){
+                    if (minParticipants > 1){
+                        return minParticipants + " participants";
+                    }
+                    return minParticipants + " participant";
+                });
 
             heatMapLegendArea.append("svg:text")
                 .attr("x", 40)

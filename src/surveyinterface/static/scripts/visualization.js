@@ -628,6 +628,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var colorScale = getQuestionColors();
 
         var maxParticipants = _.max(participants, function(o){return o;});
+        var minParticipants = _.min(participants, function(o){return o;});
 
         for (var zip in totals) {
             var curPath = d3.select('path[data-zip="' + zip + '"]');
@@ -643,20 +644,20 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 // Map refresh animation
                 curPath.transition().duration(100).attr("fill", "#3D4348");
 
-                if (participants[zip] > cutoff) {        // Cut off at 5
+
                     if ($("#listQuestions li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
-                        curPath.transition().duration(500).delay(100).attr("fill", function (d) {
-                            return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
-                        });
+                         if (participants[zip] > cutoff) {        // Minimum threshold
+                             curPath.transition().duration(500).delay(100).attr("fill", function (d) {
+                                 return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                             });
+                         }
                     }
                     else{
-                        // When no questions selected, display gradient based on number of participants
+                        // When no questions selected or when displaying the spatial question, display gradient based on number of participants
                         curPath.transition().duration(500).delay(100).attr("fill", function (d) {
                             return unidirectionalScale(participants[zip] / maxParticipants);
                         });
                     }
-                }
-
             }
             else {
                 //console.log("Warning: path not found for zip code " + zip + " which contains " + participants[zip] + " participants.");
@@ -763,7 +764,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("dy", ".31em")
                 .attr("class", "hm-legend")
                 .style("fill", "#000")
-                .text("5 participants");
+                .text(minParticipants + " participants");
 
             heatMapLegendArea.append("svg:text")
                 .attr("x", 40)

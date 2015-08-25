@@ -33,7 +33,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     //var markerQuestions = [];
     var numberOfQuestions = 0;
     var questionNodes = [];
-    var cutoff = 5;
+    var cutoff = 15;
     var mapZoom = d3.behavior.zoom()
         .scaleExtent([1, 12]).on("zoom", zoom);
     var spatialQuestion;

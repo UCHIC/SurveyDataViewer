@@ -33,7 +33,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     //var markerQuestions = [];
     var numberOfQuestions = 0;
     var questionNodes = [];
-    var cutoff = 15;
+    var cutoff = 0;
     var mapZoom = d3.behavior.zoom()
         .scaleExtent([1, 12]).on("zoom", zoom);
     var spatialQuestion;
@@ -148,15 +148,20 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         labels = metadata.rows[j][prop];
                 }
 
-                labels = labels.split(";");
+                if (labels){
+                    labels = labels.split(";");
+                }
+                else {
+                    return null;
+                }
+
                 var labelsArray = {};
 
                 // Put the labels in an object for easy access
                 for (var i = 0; i < labels.length; i++) {
                     var pos = labels[i].indexOf("=");
-                    var index = parseInt(labels[i].substr(0, pos).trim());
-                    var val = labels[i].substr(pos + 1, labels[i].length).trim();
-                    labelsArray[index] = val;
+                    var index = labels[i].substr(0, pos).trim();
+                    labelsArray[index] = labels[i].substr(pos + 1, labels[i].length).trim();
                 }
                 return labelsArray[value];
             }
@@ -2381,10 +2386,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             // Find the spatial question ID
             if (hasPluggin(question, "spatial")){
                 spatialQuestion = question.trim();
+                var threshold = getLabel(spatialQuestion, "threshold");
+                if (threshold){
+                    cutoff = parseInt(threshold);
+                }
             }
-
         }
-
     }
 
     function isMultipleSelectOne(questionID) {

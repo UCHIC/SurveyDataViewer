@@ -232,7 +232,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $('#lstYAxisMode li:not(.disabled)').click(onYAxisModeChange);
         $("#lstYAxisMode li:first-child").addClass("disabled"); // Start with the selected category disabled
         $(".btnAdd").click(onBtnAddClick);
-        $(".btnSubstract").click(onBtnSubstractClick);
+        $(".btnSubtract").click(onBtnSubtractClick);
         $(".btn-tip").click(onNextTip);
         $("#btnSkipTips").click(finishGuide);
         $("#chkHideTip").click(function(e){
@@ -315,7 +315,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Toggle add button visibility
         $(".btnAdd").hide();
-        $(".btnSubstract").hide();
+        $(".btnSubtract").hide();
         removeTempNodes();
 
         if ($(this.parentElement).hasClass("indented")) {
@@ -592,14 +592,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         refreshValues();
         var responses = _.map(nodes, function (a, b) {
             for (var prop in data.rows[b]) {
-                if (prop.trim() == spatialQuestion)
+                if (prop.trim() == spatialQuestion) {
                     return {zipcode: data.rows[b][prop], value: data.rows[b][selectedQuestion]};
+                }
             }
         });
 
         var numberOfAnswers = answers.length;
 
-        // Substract "Not sure" answers
+        // Subtract "Not sure" answers
         for (var i = 0; i < answers.length; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
             if (label && label.trim() == "not sure") {
@@ -610,6 +611,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
+        // Subtract no responses
+        responses = _.filter(responses, function (resp) {
+            return resp.value != 0; // fields get parsed as 0 when they are empty.
+        });
+
         var participants = _(responses).countBy("zipcode");     // Array to keep track of the number of participants in each zip code
         var totals = {};                                        // Array to keep track of the total concern by all participants in each zip code
 
@@ -619,7 +625,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         for (var zip in responses) {
             if (responses[zip].zipcode != null)
-                totals[responses[zip].zipcode] += (responses[zip].value - 1);   // Populate totals. The labels start at 1, but the scale starts at 0. That's why we substract 1
+                totals[responses[zip].zipcode] += (responses[zip].value - 1);   // Populate totals. The labels start at 1, but the scale starts at 0. That's why we subtract 1
         }
 
         // Reset background and hover functions for all paths
@@ -830,11 +836,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
     }
+
     function showAllQuestions() {
         $(".clickable").removeClass("disabled");
     }
 
-    function onBtnSubstractClick(e) {
+    function onBtnSubtractClick(e) {
         $(this).closest("li").removeClass("active");
         $(this).hide();
         $(this).parent().find(".btnAdd").show();
@@ -844,7 +851,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function onBtnAddClick(e) {
         $(this).closest("li").addClass("active");
         $(this).hide();
-        $(this).parent().find(".btnSubstract").show();
+        $(this).parent().find(".btnSubtract").show();
         onAddRow($(this));
     }
 
@@ -890,13 +897,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         if (numberOfQuestions > 1) {
-            // Show substract button for this item
-            element.parent().parent().find(".active .clickable").parent().find(".btnSubstract").show();
+            // Show subtract button for this item
+            element.parent().parent().find(".active .clickable").parent().find(".btnSubtract").show();
             $("#btnCategories")[0].disabled = true;
             $("#map-view")[0].disabled = true;
         }
         else {
-            $(".btnSubstract").hide();
+            $(".btnSubtract").hide();
 
             restoreYAxisMode();
             $("#btnCategories")[0].disabled = false;
@@ -1150,7 +1157,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         }
         else if (view == "percentage") {
-
             updatePercentageView();
         }
         else if (view == "mean") {
@@ -1719,8 +1725,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
-
-
         var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
             .attr("class", "fixedNode graph-object")
             .attr("fill", "#FFF")
@@ -1733,7 +1737,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
 
         var numberOfAnswers = answers.length;
-        // Substract "Not sure" answers from the color gradient
+        // Subtract "Not sure" answers from the color gradient
         for (var i = 0; i < answers.length; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
             if (label && label != 0 && label.trim() == "not sure") {
@@ -1922,9 +1926,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             else {
                 showFlag(false);
             }
-        }
-        else {
-
         }
 
         svg.selectAll(".fixedNodeCircle").attr("transform", transform);
@@ -2375,7 +2376,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
 
                 $("#Q" + id).append('<li class="indented"><label class="clickable" data-value="' + question + '">' +
-                answer + '</label><span class="btnAdd glyphicon glyphicon-plus"></span></label><span class="btnSubstract glyphicon glyphicon-minus"></span></li>');
+                answer + '</label><span class="btnAdd glyphicon glyphicon-plus"></span></label><span class="btnSubtract glyphicon glyphicon-minus"></span></li>');
             }
             else if (question != null && isSingleChoice(question)) {
                 var id = regExp['singleChoice'].exec(question)[1];

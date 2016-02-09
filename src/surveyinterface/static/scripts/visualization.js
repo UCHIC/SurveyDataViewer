@@ -16,8 +16,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     $("#footer").remove();  // Do not display footer on survey visualization page
 
     // Fixes for scaling issues when browser opens for the first time.
-    $("#visualizationContent").height($(".mainContainer").height() - 10);
-    $(".panel-left").height($(".mainContainer").height() - 18);
+    $("#visualizationContent").height($(".mainContainer").height());
+    $(".panel-left").height($(".mainContainer").height());
 
 
     var self = {};

@@ -16,35 +16,29 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     $("#footer").remove();  // Do not display footer on survey visualization page
 
     // Fixes for scaling issues when browser opens for the first time.
-    $("#visualizationContent").height($(".mainContainer").height());
+    $("#visualizationContent").height($(".mainContainer").height() - 10);
     $(".panel-left").height($(".mainContainer").height());
 
-
     var self = {};
-    var data, metadata, selectedQuestion, svg, radius_scale;
+    var data, centerZip, path, spatialQuestion, map, svg, metadata, selectedQuestion, radius_scale;
     var yAxisMode = "All";
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top: 0, bottom: 60, left: 0, right: 5};
     var w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
     var view = "";
-    var svg;
     var answers = [];
     var options = [];
     var tableColor = "#666";
     var legendColor = "#000";
     var yPanelWidth = 80;
     var gradientCount = 0;
-    var map;
     var nodes = [];
     //var markerQuestions = [];
     var numberOfQuestions = 0;
     var questionNodes = [];
-    var cutoff = 0;
+    var cutoff = 1;
     var mapZoom = d3.behavior.zoom()
         .scaleExtent([1, 12]).on("zoom", zoom);
-    var spatialQuestion;
-    var centerZip;
-    var path;
 
     var bidirectionalScale = d3.scale.linear()     // To be used in nodes and heat map
         .domain([0, 1/11, 2/11, 3/11, 4/11, 5/11, 6/11, 7/11, 8/11, 9/11, 10/11, 1])
@@ -58,7 +52,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var notSureColor = "#777";
     var mapContainer;
     var projection;
-    var independetColors = d3.scale.category10();
+    var independantColors = d3.scale.category10();
 
 
     $(window).resize(_.debounce(function () {
@@ -617,11 +611,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
-        // Subtract no responses
-        responses = _.filter(responses, function (resp) {
-            return resp.value != 0; // fields get parsed as 0 when they are empty.
-        });
-
         var participants = _(responses).countBy("zipcode");     // Array to keep track of the number of participants in each zip code
         var totals = {};                                        // Array to keep track of the total concern by all participants in each zip code
 
@@ -660,21 +649,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 });
                 // Map refresh animation
                 curPath.transition().duration(100).attr("fill", "#3D4348");
-
-
-                    if ($("#listQuestions li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
-                         if (participants[zip] > cutoff) {        // Minimum threshold
-                             curPath.transition().duration(500).delay(100).attr("fill", function (d) {
-                                 return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
-                             });
-                         }
-                    }
-                    else{
-                        // When no questions selected or when displaying the spatial question, display gradient based on number of participants
-                        curPath.transition().duration(500).delay(100).attr("fill", function (d) {
-                            return unidirectionalScale(participants[zip] / maxParticipants);
+                if ($("#listQuestions li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
+                    if (participants[zip] >= cutoff) {        // Minimum threshold
+                        curPath.transition().duration(500).delay(100).attr("fill", function () {
+                            return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
                         });
                     }
+                }
+                else {
+                    // When no questions selected or when displaying the spatial question, display gradient based on number of participants
+                    curPath.transition().duration(500).delay(100).attr("fill", function (d) {
+                        return unidirectionalScale(participants[zip] / maxParticipants);
+                    });
+                }
             }
             else {
                 //console.log("Warning: path not found for zip code " + zip + " which contains " + participants[zip] + " participants.");
@@ -1758,7 +1745,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         getGradient(defaultBubbleColor, gradientCount++);           // gradient0 - default gradient
         getGradient(notSureColor, gradientCount++);                 // gradient1 - not sure gradient
         for (var i = 0; i < answers.length; i++) {
-            getGradient(independetColors(i), gradientCount++);      // From 2 to answers.length, color for each column
+            getGradient(independantColors(i), gradientCount++);      // From 2 to answers.length, color for each column
         }
 
         var colorScale = getQuestionColors();
@@ -1767,7 +1754,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .style("stroke", function (d) {
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
                 if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
-                    return d3.rgb(independetColors(d.pos.x)).darker(2);
+                    return d3.rgb(independantColors(d.pos.x)).darker(2);
                 }
                 if (!label || label.trim() != "not sure")
                     return d3.rgb(colorScale(d.pos.x / (numberOfAnswers - 1))).darker(2);

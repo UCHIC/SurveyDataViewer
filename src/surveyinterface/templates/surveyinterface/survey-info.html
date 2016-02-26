@@ -14,7 +14,8 @@
                     Explore results
                 </a>
 
-                <a target="_blank" href="{% static survey.pdf.url %}" id="view-instrument" href="../" type="button"
+                <a onclick="_gaq.push(['_trackEvent', 'Download', 'PDF', this.href]);"
+                   target="_blank" href="{% static survey.pdf.url %}" id="view-instrument" href="../" type="button"
                    class="btn btn-lg gray-button">
                     view copy of survey
                 </a>
@@ -22,7 +23,6 @@
             <div class="col-xs-12">
                 <h2 class="page-header">{{ object.name }}</h2>
                 <h4>{{ object.description }}</h4>
-
                 <p>{{ object.information }}</p>
             </div>
         </div>

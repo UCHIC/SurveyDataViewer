@@ -17,6 +17,7 @@ h6 {
 
 #visualizationContent {
     height: 100%;
+    max-height: 100%;
     text-align: center;
     float: right;
     overflow: hidden;
@@ -54,11 +55,14 @@ h6 {
     padding: 4px;
     float: left;
     display: inline;
-    width: 40px;
+    width: 50px;
+    height: 50px;
+    margin: 5px;
 }
 
 #surveyInfo {
     width: 100%;
+    height: 60px;
     border: 1px solid rgb(163, 163, 163);
     float: left;
 }
@@ -101,7 +105,7 @@ h6 {
     max-width: 1000px;
     margin: auto;
     padding:10px;
-      overflow-x: hidden;
+    overflow-x: hidden;
 }
 
 svg {
@@ -110,7 +114,7 @@ svg {
 
 #mainContent {
     height: calc(100% - 100px);
-    overflow: auto;
+    /*overflow: auto;*/
 }
 
 .mainContainer {
@@ -119,7 +123,7 @@ svg {
 
 #listQuestions {
     width: 100%;
-    height: calc(100% - 52px);
+    height: calc(100% - 60px);
     overflow-y: scroll;
     overflow-x: hidden;
     float: left;
@@ -213,6 +217,10 @@ text.shadow {
     border-radius: 0;
 }
 
+#viewContainer .panel {
+    box-shadow: none;
+}
+
 #captionContainer .panel-heading, #viewContainer .panel-heading {
     height: 38px;
     border-top-right-radius: 0;
@@ -276,7 +284,7 @@ text.shadow {
     top: -3px;
 }
 
-span.btnAdd, span.btnSubstract {
+span.btnAdd, span.btnSubtract {
     cursor: pointer;
     font-size: 14px;
     color: #AAA;
@@ -564,6 +572,40 @@ path[data-zip] {
     right: 500px;
     width: 200px;
     outline: none;
+}
+
+.tip[data-id="0"] {
+    left: 50%;
+    top: calc(50% - 150px);
+}
+
+.tip[data-id="1"] {
+    left: calc(16.67% + 30px);
+    top: 210px;
+}
+
+.tip[data-id="2"] {
+    height: calc(100% - 300px);
+    max-height: 625px;
+    left: calc(100% - 342px);
+    top: 110px;
+}
+
+.tip[data-id="2"] > div {
+    height: calc(100% - 20px);
+    width: calc(100% - 20px);
+    overflow-y: auto;
+    position: absolute;
+}
+
+.tip[data-id="3"] {
+    left: calc(16.67% - 105px);
+    top: 150px;
+}
+
+.tip[data-id="4"] {
+    left: calc(16.67% - 105px);
+    top: calc(100% - 380px);
 }
 
 .blue-button {

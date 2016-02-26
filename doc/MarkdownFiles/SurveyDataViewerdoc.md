@@ -25,7 +25,7 @@ This column contains the labels for any subvariables in nested questions and cor
 The 'ValueLabels' column enumerates the range of numeric responses to a question and their corresponding text labels. This column provides the interpretation for all of the response values in the data file. The '=' is used to associate a numeric code with the text label, and a ';' is used to separate each possible response. All repsonses may be listed or alternatively, only the minimum and maximum numeric values. For example, '1= Not at all Concerned; 5= Very Concerned'. In this case, 2, 3, and 4 are possible responses, but do not have labels. The Survey Data Viewer will interpret that integer responses between 1 and 5 should be used and will not include labels for 2, 3, and 4.
 
 ###'Features' Column###
-The 'Features' column permits the assignment of Survey Data Viewer features to appropriate questions, which determines how responses for each question will be visualized, including color scheme. If a question does not include a feature flag to specify color scheme (i.e., bidirectional or unidimensional), a color scheme will be assigned randomly and it will only be displayed in percentage view.   
+The 'Features' column permits the assignment of Survey Data Viewer features to appropriate questions, which determines how responses for each question will be visualized, including color scheme. If a question does not include a feature flag to specify color scheme (i.e., bidirectional or unidirectional), a color scheme will be assigned randomly and it will only be displayed in percentage view.   
 
 Currently implemented features are:
 
@@ -34,9 +34,9 @@ Currently implemented features are:
 *Note that multiple feature flags may be assigned to a question separated by a ';'. With the currently implemented features, multiple feature flags should only occur when the demographic feature flag is desired along with another.*
 
 - **bidirectional:** The variable consists of responses in two directions with central neutrality. In addition to the default percentage view, questions with this designation will be displayed on both the heat map and the mean data views. For all views, the color scheme consists of two colors to indicate positive and negative with a neutral color for the central response. For example: a bidirectional question might have ValueLabels of '1 = Very Bad; 3 = Neither Good Nor Bad; 5 = Very Good'.
-- **unidimensional:** The variable consists of responses that represent degree. In addition to the default percentage view, questions with this designation will be displayed on both the heat map and the mean data views. For all views, the color scheme consists of a single color with intensity increasing for numeric responses from low to high. For example, a unidimensional question might have ValueLabels of '1 = Not at all Concerned; 5 = Very Concerned'.
+- **unidirectional:** The variable consists of responses that represent degree. In addition to the default percentage view, questions with this designation will be displayed on both the heat map and the mean data views. For all views, the color scheme consists of a single color with intensity increasing for numeric responses from low to high. For example, a unidirectional question might have ValueLabels of '1 = Not at all Concerned; 5 = Very Concerned'.
 
-*Note that a question can be either bidirectional or unidimensional (but not both).*
+*Note that a question can be either bidirectional or unidirectional (but not both).*
 
 - **spatial**: The Survey Data Viewer looks for a single question with the 'spatial' flag. This flag corresponds to the field of interest in the shapefile for producing a heat map and should only be used once. If there is no spatial flag, the heat map view is not implemented for the survey. 
  

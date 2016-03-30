@@ -1620,28 +1620,29 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         gradientCount++;
+        getGradient('yellow', "info");
 
         svg.append("text")
             .attr("class", "graph-object flag-text")
             .attr("font-weight", "normal")
             .attr("fill", legendColor)
-            .attr("transform", "translate(" + 30 + "," + (h - margin.bottom + 20) + ")")
+            .attr("transform", "translate(" + 35 + "," + (h - margin.bottom/2 + 2.5) + ")")
             .attr("x", "0")
             .attr("y", "0")
             .attr("dx", "0")
             .attr("dy", "0")
             .text(function () {
-                if (flag == true)
-                    return "This result is statistically significant.";
-
-                return "This result is NOT statistically significant."
+                if (flag == true) {
+                    return "Statistically significant";
+                }
+                return "NOT statistically significant";
             })
             .on("click", function () {
                 $("#btnHelp").click()
             })
             .call(wrap, xDistance - 30);
-        //
-        var textHeight = $(".flag-text")[0].getBBox().height;
+
+        var textWidth = $(".flag-text")[0].getBBox().width;
         var flagRadius = 10;
 
         flagContainer.append("svg:circle")
@@ -1650,7 +1651,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("stroke", d3.rgb(color).darker(2))
             .attr("stroke-width", "1px")
             .attr("fill", 'url(#gradientFlag)')
-            .attr("transform", "translate(" + 15 + "," + (h - margin.bottom + textHeight / 2 + 10) + ")");
+            .attr("transform", "translate(" + 18 + "," + (h - margin.bottom/2 - 2) + ")");
 
         // Check mark
         svg.append("text")
@@ -1660,13 +1661,28 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("text-anchor", "middle")
             .attr("font-weight", "normal")
             .attr("fill", "#FFF")
-            .attr("transform", "translate(" + 15 + "," + (h - margin.bottom + textHeight/2 + 15) + ")")
+            .attr("transform", "translate(" + 17 + "," + (h - margin.bottom/2 + 3) + ")")
             .text(function () {
                 if (flag == true)
                     return "✔";
                 else
                     return "✖"
-            })
+            });
+
+        // Info symbol
+        svg.append("text")
+            .attr("dx", 0)
+            .attr("class", "graph-object info-symbol")
+            .attr("dy", 0)
+            .attr("text-anchor", "middle")
+            .attr("font-weight", "normal")
+            .attr("font-size", "20px")
+             .attr("fill", 'url(#gradientinfo)')
+            .attr("transform", "translate(" + (textWidth + 44) + "," + (h - margin.bottom/2 + 4) + ")")
+            .text("𝒊")
+            .on("click", function () {
+                $("#btnHelp").click()
+            });
     }
 
     function updatePercentageView() {

@@ -1626,21 +1626,36 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "graph-object flag-text")
             .attr("font-weight", "normal")
             .attr("fill", legendColor)
-            .attr("transform", "translate(" + 35 + "," + (h - margin.bottom/2 + 2.5) + ")")
+            .attr("transform", "translate(" + 35 + "," + (h - margin.bottom/2) + ")")
             .attr("x", "0")
             .attr("y", "0")
             .attr("dx", "0")
             .attr("dy", "0")
             .text(function () {
                 if (flag == true) {
-                    return "Statistically significant";
+                    return "Statistically";
                 }
-                return "NOT statistically significant";
+                return "NOT statistically";
+            })
+            .on("click", function () {
+                $("#btnHelp").click();
+            });
+
+        svg.append("text")
+            .attr("class", "graph-object flag-text")
+            .attr("font-weight", "normal")
+            .attr("fill", legendColor)
+            .attr("transform", "translate(" + 35 + "," + (h - margin.bottom / 2 + 16) + ")")
+            .attr("x", "0")
+            .attr("y", "0")
+            .attr("dx", "0")
+            .attr("dy", "0")
+            .text(function () {
+                    return "significant";
             })
             .on("click", function () {
                 $("#btnHelp").click()
-            })
-            .call(wrap, xDistance - 30);
+            });
 
         var textWidth = $(".flag-text")[0].getBBox().width;
         var flagRadius = 10;

@@ -667,7 +667,6 @@ path[data-zip] {
 }
 
 .flag-text:hover {
-    text-decoration: underline;
     cursor: pointer;
 }
 

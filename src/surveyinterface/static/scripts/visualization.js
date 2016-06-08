@@ -101,8 +101,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     // Multiple choices (s:select one, m:select multiple) - Single choice group - Single choice
     var regExp = {multipleQuestionSelectOne: /^Q([0-9]+)([a-z])/, singleChoice: /^Q([0-9])/};
     var infoQuestions = {};
-
-
+    
     // ---------------------- Modified csv2json script BEGINS ----------------------
     function isdef(ob) {
         if (typeof(ob) == "undefined") return false;

@@ -102,13 +102,106 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var regExp = {multipleQuestionSelectOne: /^Q([0-9]+)([a-z])/, singleChoice: /^Q([0-9])/};
     var infoQuestions = {};
 
+
+    // ---------------------- Modified csv2json script BEGINS ----------------------
+    function isdef(ob) {
+        if (typeof(ob) == "undefined") return false;
+        return true;
+    }
+
+	/**
+	 * splitCSV function (c) 2009 Brian Huisman, see http://www.greywyvern.com/?post=258
+	 * Works by spliting on seperators first, then patching together quoted values
+	 */
+	function splitCSV(str, sep) {
+        for (var foo = str.split(sep = sep || ","), x = foo.length - 1, tl; x >= 0; x--) {
+            if (foo[x].replace(/"\s+$/, '"').charAt(foo[x].length - 1) == '"') {
+                if ((tl = foo[x].replace(/^\s+"/, '"')).length > 1 && tl.charAt(0) == '"') {
+                    foo[x] = foo[x].replace(/^\s*"|"\s*$/g, '').replace(/""/g, '"');
+                } else if (x) {
+                    foo.splice(x - 1, 2, [foo[x - 1], foo[x]].join(sep));
+                } else foo = foo.shift().split(sep).concat(foo);
+            } else foo[x].replace(/""/g, '"');
+        }
+        return foo;
+    };
+
+
+	/**
+	 * Converts from CSV formatted data (as a string) to JSON returning
+	 * 	an object.
+	 * @required csvdata {string} The CSV data, formatted as a string.
+	 * @param args.delim {string} The delimiter used to seperate CSV
+	 * 	items. Defauts to ','.
+	 * @param args.textdelim {string} The delimiter used to wrap text in
+	 * 	the CSV data. Defaults to nothing (an empty string).
+	 */
+	csv2json = function(csvdata, args) {
+		args = args || {};
+		var delim = isdef(args.delim) ? args.delim : ",";
+	  	var header = isdef(args.header) ? args.header : true;
+		// Unused
+		//var textdelim = isdef(args.textdelim) ? args.textdelim : "";
+
+    		// normalize line breaks before continue
+    		csvdata.replace(/\x0A\x0D/g, '\n').replace(/\x0D/g, '\n');
+
+		var csvlines = csvdata.split("\n");
+		var csvheaders = splitCSV(csvlines[0], delim);
+		var csvrows = csvlines.slice(1, csvlines.length);
+
+		if (!header) {
+			for (var i = 0; i < csvheaders.length; i++) {
+		  	csvheaders[i] = i;
+			};
+		}
+
+		var ret = {};
+		ret.headers = csvheaders;
+		ret.rows = [];
+
+		for(var r in csvrows) {
+			if (csvrows.hasOwnProperty(r)) {
+				var row = csvrows[r];
+				var rowitems = splitCSV(row, delim);
+
+
+				// Break if we're at the end of the file
+				if(row.length == 0) break;
+
+				var rowob = {};
+				for(var i in rowitems) {
+					if (rowitems.hasOwnProperty(i)) {
+						var item = rowitems[i];
+
+                        if (!item.trim().length) {
+                            rowob[csvheaders[i]] = "SDVNoResponseFlag";
+                        }
+						// Try to (intelligently) cast the item to a number, if applicable
+						else if(!isNaN(item*1)) {
+							item = item*1;
+						}
+
+						rowob[csvheaders[i]] = item;
+					}
+				}
+
+				ret.rows.push(rowob);
+			}
+		}
+
+		return ret;
+	};
+
+    // ---------------------- Modified csv2json script ENDS ----------------------
+
     self.loadData = function () {
         $.ajax(self.dataFile, {
             success: function (csvData) {
-                data = csvjson.csv2json(csvData);
+                data = csv2json(csvData);
                 $.ajax(self.metadataFile, {
                     success: function (csvMetaData) {
-                        metadata = csvjson.csv2json(csvMetaData);
+                        metadata = csv2json(csvMetaData);
                         self.drawPivotView();
                     },
                     error: function () {
@@ -636,8 +729,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var maxParticipants = _.max(participants, function(o){return o;});
         var minParticipants = _.min(participants, function(o){return o;});
 
+        var counter = 0;
         for (var zip in totals) {
+            counter++;
+
+            if (zip == 0) {
+                continue
+            }
+
             var curPath = d3.select('path[data-zip="' + zip + '"]');
+
             if (curPath[0][0] != null) {
                 curPath.on("mouseover", function (obj) {
                     var zip = obj.properties.ZIP5;
@@ -1456,7 +1557,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (questionNodes.length < 2) {
             for (var i = 0; i < data.rows.length; i++) {
                 nodes[i].value = data.rows[i][selectedQuestion];
-                if (nodes[i].value == 0 || nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0) {
+                if (isNaN(nodes[i].value) ||nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0 || nodes[i].value.toString().trim() === "") {
                     continue;
                 }
                 valuesX.push(nodes[i].value);

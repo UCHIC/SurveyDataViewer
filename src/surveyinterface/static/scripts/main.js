@@ -40,7 +40,7 @@ requirejs.config({
 });
 
 define('generalLibraries', ['jquery', 'bootstrap']);
-define('d3Libraries', ['d3', 'd3_nvd3', 'queue','csvjson', 'custom_tooltip', 'topojson']);
+define('d3Libraries', ['d3', 'd3_nvd3', 'queue', 'custom_tooltip', 'topojson']);
 define('mapLibraries', ['async!https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyANPfBBVteHSTx4o9O-kgjC8RVMuXW0O2o&sensor=false&libraries=geometry']);
 
 define('d3_global', ['d3'], function(d3Module) {

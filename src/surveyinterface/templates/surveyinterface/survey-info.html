@@ -13,8 +13,8 @@
                    class="btn btn-lg blue-button">
                     Explore results
                 </a>
-
-                <a target="_blank" href="{% static survey.pdf.url %}" id="view-instrument" href="../" type="button"
+                <a onclick="ga('send', 'event', 'PDF', 'Download', 'Survey Document - PDF Download');"
+                   target="_blank" href="{% static survey.pdf.url %}" id="view-instrument" href="../" type="button"
                    class="btn btn-lg gray-button">
                     View copy of survey
                 </a>
@@ -22,7 +22,6 @@
             <div class="col-xs-12">
                 <h2 class="page-header">{{ object.name }}</h2>
                 <h4>{{ object.description }}</h4>
-
                 <p>{{ object.information }}</p>
             </div>
         </div>

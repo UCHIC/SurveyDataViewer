@@ -342,6 +342,10 @@ hr {
     background: #EFEFEF;
 }
 
+.info-symbol:hover {
+    cursor: pointer;
+}
+
 #listQuestions li:not(.indented) {
     border: 1px solid #aaa;
     border-top: 0;
@@ -663,7 +667,6 @@ path[data-zip] {
 }
 
 .flag-text:hover {
-    text-decoration: underline;
     cursor: pointer;
 }
 

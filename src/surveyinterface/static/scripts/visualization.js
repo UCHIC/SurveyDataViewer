@@ -504,7 +504,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                     labelsArray[index] = value;
 
-                    if (value == "not sure" && answers.indexOf(index) != -1) {
+                    if (String(value).toLowerCase() == "not sure" && answers.indexOf(index) != -1) {
                         x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
                         deltaX = (x(1) - x(0));
                     }
@@ -512,7 +512,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                 // Draw x-axis legend
                 for (var i = 0; i < answers.length; i++) {
-                    if (labelsArray[answers[i]] != "not sure") {
+                    if (String(labelsArray[answers[i]]).toLowerCase() != "not sure") {
                         svg.append("text")
                             .attr("dx", 0)
                             .attr("dy", 0)
@@ -548,7 +548,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Draw vertical dotted lines
         for (var i = 1; i < answers.length + 1; i++) {
-            if (labelsArray[answers[i - 1]] != "not sure" || answers.length == 1) {
+            if (String(labelsArray[answers[i - 1]]).toLowerCase() != "not sure" || answers.length == 1) {
                 svg.append("svg:line")
                     .attr("x1", x(i) + marginLeft - deltaX / 2)
                     .attr("x2", x(i) + marginLeft - deltaX / 2)
@@ -588,7 +588,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         var numberOfAnswers = answers.length;
         for (var i = 0; i < answers.length; i++){
-            if (getLabel(selectedQuestion, answers[i]) == "not sure"){
+            if (String(getLabel(selectedQuestion, answers[i])).toLowerCase() == "not sure"){
                 numberOfAnswers--;
             }
         }
@@ -638,7 +638,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
 
             nodes.forEach(function (d) {
-                if (getLabel(selectedQuestion, d.value) == "not sure" || d.value == 0) {
+                var currentLabel = getLabel(selectedQuestion, d.value);
+                if (String(currentLabel).toLowerCase() == "not sure" || d.value == 0) {
                     return;
                 }
                 var posOption = ($.inArray(d.info[yAxisMode], options));
@@ -646,6 +647,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     posOption = d.tempPosY;
                 }
                 var val = d.value;
+                if (val == 6) {
+                    console.log("warning")
+                }
 
                 nodeRows.forEach(function (o) {
                     if (o.y == posOption) {
@@ -704,7 +708,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Subtract "Not sure" answers
         for (var i = 0; i < answers.length; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
-            if (label && label.trim() == "not sure") {
+            if (label && String(label).toLowerCase() == "not sure") {
                 responses = _.filter(responses, function (resp) {
                     return resp.value != answers[i];
                 });
@@ -720,8 +724,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         for (var zip in responses) {
-            if (responses[zip].zipcode != null)
-                totals[responses[zip].zipcode] += (responses[zip].value - 1);   // Populate totals. The labels start at 1, but the scale starts at 0. That's why we subtract 1
+            if (responses[zip].zipcode != null) {
+                var curr = parseInt(responses[zip].value);
+                if (curr) {
+                    totals[responses[zip].zipcode] += parseInt(responses[zip].value);
+                }
+            }
         }
 
         // Reset background and hover functions for all paths
@@ -749,11 +757,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
             if (curPath[0][0] != null) {
                 curPath.on("mouseover", function (obj) {
-                    var zip = obj.properties.ZIP5;
+                    var pathZip = obj.properties.ZIP5;
+                    var avgScore = parseFloat(totals[pathZip] / participants[pathZip]).toFixed(2);
+
                     var content = "<span class=\"name\">" + obj.properties.NAME + "</span><span class=\"value\"></span><br/>" +
-                        "<span class=\"name\">Zip code: </span><span class=\"value\">" + zip + "</span><br/>" +
-                            //"<span class=\"name\">Avg: </span><span class=\"value\">" + parseFloat((totals[zip] / participants[zip])).toFixed(2) + "</span><br/>" +
-                        "<span class=\"name\">Participants: </span><span class=\"value\">" + participants[zip] + "</span><br/>";
+                        "<span class=\"name\">ZIP Code: </span><span class=\"value\">" + pathZip + "</span><br/>" +
+                        "<span class=\"name\">Mean: </span><span class=\"value\">" + avgScore + "</span><br/>" +
+                        "<span class=\"name\">Participants: </span><span class=\"value\">" + participants[pathZip] + "</span><br/>";
                     tooltip.showTooltip(content, d3.event);
                 });
                 // Map refresh animation
@@ -761,7 +771,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 if ($("#listQuestions li.active").length && !hasPluggin(selectedQuestion, "spatial")) {
                     if (participants[zip] >= cutoff) {        // Minimum threshold
                         curPath.transition().duration(500).delay(100).attr("fill", function () {
-                            return colorScale((totals[zip] / participants[zip]) / numberOfAnswers);
+                            var linearScale = d3.scale.linear()
+                                .domain([answers[0], answers[numberOfAnswers - 1]])
+                                .range([0, 1]);
+
+                            var avg = totals[zip] / participants[zip];
+                            return colorScale(linearScale(avg));
                         });
                     }
                 }
@@ -846,14 +861,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 var label = getLabel(selectedQuestion, answers[i]);
                 if (label)
                     label = label.trim();
-                if (label != "not sure") {
+                if (String(label).toLowerCase() != "not sure") {
                     if (label != null){
                         var legendText = heatMapLegendArea.append("svg:text")
                             .attr("y", (counter * 30) + 20)
                             .attr("dy", ".31em")
                             .attr("class", "hm-legend")
                             .style("fill", "#000")
-                            .text(label)
+                            .text("(" + answers[i] + ")   " + label)
                             .call(wrap, rWidth - 60);
                         heatMapLegendArea.append("svg:text")
                             .attr("x", 40)
@@ -1109,7 +1124,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                             labelsArray[index] = value;
 
-                            if (value == "not sure") {
+                            if (String(value).toLowerCase() == "not sure") {
                                 x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
                                 deltaX = (x(1) - x(0));
                             }
@@ -1120,7 +1135,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
             for (var i = 1; i < answers.length + 1; i++) {
                 // Draw vertical dotted lines
-                if ((answers[i - 1] && labelsArray[answers[i - 1]] != "not sure") || answers.length == 1) {
+                if ((answers[i - 1] && String(labelsArray[answers[i - 1]]).toLowerCase() != "not sure") || answers.length == 1) {
                     svg.append("svg:line")
                         .attr("x1", x(i) + marginLeft - deltaX / 2)
                         .attr("x2", x(i) + marginLeft - deltaX / 2)
@@ -1201,7 +1216,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         posOption = 0;
                     }
                     var val = d.value;
-                    if (labelsArray[d.value] != "not sure") {
+                    if (String(labelsArray[d.value]).toLowerCase() != "not sure") {
                         nodeRows.forEach(function (o) {
                             if (o.y == posOption) {
                                 o.participants++;
@@ -1873,7 +1888,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Subtract "Not sure" answers from the color gradient
         for (var i = 0; i < answers.length; i++) {
             var label = getLabel(selectedQuestion, answers[i]);
-            if (label && label != 0 && label.trim() == "not sure") {
+            if (label && label != 0 && String(label).toLowerCase() == "not sure") {
                 numberOfAnswers--;
             }
         }
@@ -1896,7 +1911,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
                     return d3.rgb(independantColors(d.pos.x)).darker(2);
                 }
-                if (!label || label.trim() != "not sure")
+                if (!label || String(label).toLowerCase() != "not sure")
                     return d3.rgb(colorScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
                 else {
                     return d3.rgb(notSureColor).darker(2);
@@ -1907,10 +1922,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("fill", function (d) {
                 var label = getLabel(selectedQuestion, answers[d.pos.x]);
                 if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
+                     if (String(label).toLowerCase() == "not sure") {
+                        return d3.rgb(notSureColor).darker(2);
+                     }
+
                     return 'url(#gradient' + (d.pos.x + 2) + ')';   // Independent gradients
                 }
 
-                if (!label || label.trim() != "not sure") {
+                if (!label || String(label).toLowerCase() != "not sure") {
                     var color = colorScale(d.pos.x / (numberOfAnswers - 1));
                     getGradient(color, gradientCount);
                     var gradient = 'url(#gradient' + gradientCount + ')';
@@ -2121,7 +2140,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     var index = parseInt(labels[i].substr(0, pos).trim());
                     var value = labels[i].substr(pos + 1, labels[i].length).trim();
                     labelsArray[index] = value;
-                    if (value == "not sure" && view == "mean") {
+                    if (String(value).toLowerCase() == "not sure" && view == "mean") {
                         x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses in mean view
                         deltaX = (x(1) - x(0));
                     }
@@ -2129,7 +2148,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                 // Draw legend for each answer
                 for (var i = 0; i < answers.length; i++) {
-                    if (!(labelsArray[answers[i]] == "not sure" && view == "mean")) {   // Ignore no response answers in mean view
+                    if (!(String(labelsArray[answers[i]]).toLowerCase() == "not sure" && view == "mean")) {   // Ignore no response answers in mean view
                         svg.append("text")
                             .attr("dx", 0)
                             .attr("dy", 0)

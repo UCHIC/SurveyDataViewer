@@ -1161,8 +1161,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             $("defs").remove();
             $("linearGradient").remove();
 
+            var numberOfAnswers = answers.length;
+            // Subtract "Not sure" answers from the color gradient
+            for (var i = 0; i < answers.length; i++) {
+                var label = getLabel(selectedQuestion, answers[i]);
+                if (label && label != 0 && String(label).toLowerCase() == "not sure") {
+                    numberOfAnswers--;
+                }
+            }
+
             x = d3.scale.linear()
-                .domain([1, answers.length])
+                .domain([0, 1])
                 .range([left, right]);
 
             svg.append("linearGradient")
@@ -1184,9 +1193,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             var deltaY = y(1) - y(0);
             for (var i = 1; i <= options.length; i++) {
                 svg.append("svg:rect")
-                    .attr("width", x(answers.length) - x(1))
+                    .attr("width", x(1) - x(0))
                     .attr("height", "40")
-                    .attr("x", x(1))
+                    .attr("x", x(0))
                     .attr("y", y(i) - deltaY / 2)
                     .style("stroke", "#777")
                     .style("stroke-width", "1px")
@@ -1215,8 +1224,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     else if (yAxisMode == "All"){
                         posOption = 0;
                     }
-                    var val = d.value;
-                    if (String(labelsArray[d.value]).toLowerCase() != "not sure") {
+                    var val = parseInt(d.value);
+                    if (val && String(labelsArray[d.value]).toLowerCase() != "not sure") {
                         nodeRows.forEach(function (o) {
                             if (o.y == posOption) {
                                 o.participants++;
@@ -1247,10 +1256,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .style("stroke-width", "1px")
                     .attr("transform", "translate(" + 0 + "," + top + ")");
 
+                var linearScale = d3.scale.linear()
+                    .domain([answers[0], answers[numberOfAnswers - 1]])
+                    .range([0, 1]);
+
                 currLine.transition()
                     .duration(400)
                     .ease("linear")
-                    .attr("x", (x(xCord) - 10))
+                    .attr("x", (x(linearScale(xCord)) - 10));    // - 10 to make up for centering the width of the market
             }
         }
     }

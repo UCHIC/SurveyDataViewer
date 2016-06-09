@@ -101,7 +101,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     // Multiple choices (s:select one, m:select multiple) - Single choice group - Single choice
     var regExp = {multipleQuestionSelectOne: /^Q([0-9]+)([a-z])/, singleChoice: /^Q([0-9])/};
     var infoQuestions = {};
-    
+
     // ---------------------- Modified csv2json script BEGINS ----------------------
     function isdef(ob) {
         if (typeof(ob) == "undefined") return false;
@@ -389,7 +389,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         $("#btnCategories")[0].disabled = false;
-        $("#map-view")[0].disabled = false;
+        if (spatialQuestion) {
+            $("#map-view")[0].disabled = false;
+        }
         $("#mean-view")[0].disabled = false;
         $("#percentage-view")[0].disabled = false;
 
@@ -423,11 +425,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#txtTitle").text(title);
 
         if (hasPluggin(selectedQuestion, "unidirectional") || hasPluggin(selectedQuestion, "bidirectional")) {
-            $("#map-view")[0].disabled = false;
+            if (spatialQuestion) {
+                $("#map-view")[0].disabled = false;
+            }
             $("#mean-view")[0].disabled = false;
         }
         else {
-            $("#map-view")[0].disabled = true;
+            if (spatialQuestion) {
+                $("#map-view")[0].disabled = true;
+            }
             $("#mean-view")[0].disabled = true;
         }
 
@@ -498,7 +504,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                     labelsArray[index] = value;
 
-                    if (value == "not sure") {
+                    if (value == "not sure" && answers.indexOf(index) != -1) {
                         x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
                         deltaX = (x(1) - x(0));
                     }
@@ -533,13 +539,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                             .call(wrap, deltaX);
                     }
                 }
+
+                break;
             }
         }
         // -----
         drawGradientBackground(marginLeft);
+
         // Draw vertical dotted lines
         for (var i = 1; i < answers.length + 1; i++) {
-            if ((answers[i - 1] && labelsArray[answers[i - 1]] != "not sure") || answers.length == 1) {
+            if (labelsArray[answers[i - 1]] != "not sure" || answers.length == 1) {
                 svg.append("svg:line")
                     .attr("x1", x(i) + marginLeft - deltaX / 2)
                     .attr("x2", x(i) + marginLeft - deltaX / 2)
@@ -585,7 +594,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         x = d3.scale.linear()
-            .domain([1, numberOfAnswers])
+            .domain([answers[0], answers[numberOfAnswers - 1]])
             .range([left, right]);
 
         svg.append("linearGradient")
@@ -606,9 +615,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         //Draw mean base lines
         for (var i = 1; i <= options.length; i++) {
             svg.append("svg:rect")
-                .attr("width", x(numberOfAnswers) - x(1))
+                .attr("width", x(answers[numberOfAnswers - 1]) - x(answers[0]))
                 .attr("height", "40")
-                .attr("x", x(1))
+                .attr("x", x(answers[0]))
                 .attr("y", y(i) - deltaY / 2)
                 .style("stroke", "#777")
                 .style("stroke-width", "1px")
@@ -2516,6 +2525,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     cutoff = parseInt(threshold);
                 }
             }
+        }
+
+        if (!spatialQuestion) {
+            $("#map-view").remove();
         }
     }
 

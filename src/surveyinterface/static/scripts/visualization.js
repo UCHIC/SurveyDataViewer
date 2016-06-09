@@ -24,7 +24,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var yAxisMode = "All";
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top: 0, bottom: 60, left: 0, right: 5};
-    var w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
+    var w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 7;
+    var tempHeight = h;
     var view = "";
     var answers = [];
     var options = [];
@@ -58,8 +59,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     $(window).resize(_.debounce(function () {
         w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
         clearCanvas();
-        svg.attr("width", w)
-            .attr("height", h);
+
+        tempHeight = Math.max(h, options.length * 200 - 5);
+        svg.attr("height", tempHeight);
+        svg.attr("width", w);
 
         if ($("#listQuestions").find(".active").length > 1) {
             var element = $("#listQuestions li.active .btnAdd").first();
@@ -462,9 +465,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function drawMeanViewTable() {
         clearCanvas();
 
+        svg.attr("height", tempHeight);
+
         var y = d3.scale.linear()
             .domain([0, options.length])
-            .range([0, h - margin.bottom - margin.top]);
+            .range([0, tempHeight - margin.bottom - margin.top]);
 
         drawYAxisLegend(y);
 
@@ -476,8 +481,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         drawOuterRect();
         drawYAxisPanel();
-
-        //drawHorizontalLines(y);
         drawGrayAlternation(y);
 
         // Draw x axis legend and ignore not sure responses
@@ -522,7 +525,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                             .attr("text-anchor", "middle")
                             .attr("font-weight", "normal")
                             .attr("fill", legendColor)
-                            .attr("y", h - margin.bottom + 30)
+                            .attr("y", tempHeight - margin.bottom + 30)
                             .attr("id", "x-legend" + i)
                             .attr("transform", "translate(" + ( x(i) + marginLeft + deltaX / 2) + "," + 0 + ")")
                             .attr("data-id", i)
@@ -546,7 +549,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
         // -----
-        drawGradientBackground(marginLeft);
+        drawGradientBackground(marginLeft, h);
 
         // Draw vertical dotted lines
         for (var i = 1; i < answers.length + 1; i++) {
@@ -555,7 +558,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("x1", x(i) + marginLeft - deltaX / 2)
                     .attr("x2", x(i) + marginLeft - deltaX / 2)
                     .attr("y1", margin.top)
-                    .attr("y2", h - margin.bottom)
+                    .attr("y2", tempHeight - margin.bottom)
                     .attr("class", "vertical-mean-line graph-object")
                     .attr("stroke-dasharray", "1, 5")
                     .attr("stroke-linecap", "round")
@@ -567,8 +570,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.append("svg:line")
             .attr("x1", 0)
             .attr("x2", w)
-            .attr("y1", h - margin.bottom)
-            .attr("y2", h - margin.bottom)
+            .attr("y1", tempHeight - margin.bottom)
+            .attr("y2", tempHeight - margin.bottom)
             .attr("class", "horizontal-line graph-object")
             .style("stroke", tableColor)
             .style("stroke-width", "1.3px");
@@ -687,7 +690,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         }
 
-        drawLegendContainers(marginLeft);
+        drawLegendContainers(marginLeft, tempHeight);
     }
 
     function updateMeanView() {
@@ -697,6 +700,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function updateHeatMap() {
         refreshValues();
+
         var responses = _.map(nodes, function (a, b) {
             for (var prop in data.rows[b]) {
                 if (prop.trim() == spatialQuestion) {
@@ -1010,7 +1014,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     info: nodesCopy[i].info,
                     temp: true,
                     tempPosY: j
-                }
+                };
                 questionNodes[j].push(tempNode);
             }
         }
@@ -1037,10 +1041,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         clearCanvas();
         refreshValues();
+        svg.attr("height", tempHeight);
 
         var y = d3.scale.linear()
             .domain([0, options.length])
-            .range([0, h - margin.bottom - margin.top]);
+            .range([0, tempHeight - margin.bottom - margin.top]);
 
         if (numberOfQuestions > 1) {
             // Draw y-axis legend
@@ -1053,7 +1058,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .attr("dx", 0)
                     .attr("dy", 0)
                     .attr("text-anchor", "start")
-                    .attr("y", ((h - margin.bottom) / (numberOfQuestions)) * i + 30)
+                    .attr("y", ((tempHeight - margin.bottom) / (numberOfQuestions)) * i + 30)
                     .attr("transform", "translate(" + (yPanelWidth + 10) + "," + margin.top + ")")
                     .text(function () {
                         return labels[i].trim();
@@ -1064,7 +1069,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 //Center y axis legend
                 var deltaY = y(1) - y(0);
                 var height = $("#y-legend" + i)[0].getBBox().height;
-                $("#y-legend" + i).attr("y", ((h - margin.bottom) / (options.length)) * i + deltaY / 2 - height / 2);
+                $("#y-legend" + i).attr("y", ((tempHeight - margin.bottom) / (options.length)) * i + deltaY / 2 - height / 2);
             }
         }
         else {
@@ -1081,22 +1086,22 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         // Draw stuff
         drawOuterRect();
         drawGrayAlternation(y);
-        drawGradientBackground(marginLeft)
+        drawGradientBackground(marginLeft);
         drawLegendContainers(marginLeft);
         drawYAxisPanel();
         drawXAxisLegend(marginLeft, x);
 
         if (view == "percentage"){
             drawVerticalLines(marginLeft, x);
-            drawHorizontalLines(y, marginLeft);
+            drawHorizontalLines(y);
         }
         else{
             // Line at the top of x axis legend
             svg.append("svg:line")
                 .attr("x1", 0)
                 .attr("x2", w)
-                .attr("y1", h - margin.bottom)
-                .attr("y2", h - margin.bottom)
+                .attr("y1", tempHeight - margin.bottom)
+                .attr("y2", tempHeight - margin.bottom)
                 .attr("class", "horizontal-line graph-object")
                 .style("stroke", tableColor)
                 .style("stroke-width", "1.3px")
@@ -1147,7 +1152,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         .attr("x1", x(i) + marginLeft - deltaX / 2)
                         .attr("x2", x(i) + marginLeft - deltaX / 2)
                         .attr("y1", margin.top)
-                        .attr("y2", h - margin.bottom)
+                        .attr("y2", tempHeight - margin.bottom)
                         .attr("class", "vertical-mean-line graph-object")
                         .attr("stroke-dasharray", "1, 5")
                         .attr("stroke-linecap", "round")
@@ -1633,6 +1638,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         answers = valuesX.getUnique().sort(function (a, b) {
             return a - b
         });
+
+        tempHeight = Math.max(h, options.length * 200 - 5);
     }
 
     function getGradient(color, id) {
@@ -1750,8 +1757,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function showFlag(flag){
-        var xDistance = getYLabelSize() + yPanelWidth;
-
         var flagContainer = svg.append("g")
             .attr("dx", "10")
             .attr("id", "flag")
@@ -1775,7 +1780,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "graph-object flag-text")
             .attr("font-weight", "normal")
             .attr("fill", legendColor)
-            .attr("transform", "translate(" + 35 + "," + (h - margin.bottom/2) + ")")
+            .attr("transform", "translate(" + 35 + "," + (tempHeight - margin.bottom/2) + ")")
             .attr("x", "0")
             .attr("y", "0")
             .attr("dx", "0")
@@ -1794,7 +1799,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "graph-object flag-text")
             .attr("font-weight", "normal")
             .attr("fill", legendColor)
-            .attr("transform", "translate(" + 35 + "," + (h - margin.bottom / 2 + 16) + ")")
+            .attr("transform", "translate(" + 35 + "," + (tempHeight - margin.bottom / 2 + 16) + ")")
             .attr("x", "0")
             .attr("y", "0")
             .attr("dx", "0")
@@ -1815,7 +1820,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("stroke", d3.rgb(color).darker(2))
             .attr("stroke-width", "1px")
             .attr("fill", 'url(#gradientFlag)')
-            .attr("transform", "translate(" + 18 + "," + (h - margin.bottom/2 - 2) + ")");
+            .attr("transform", "translate(" + 18 + "," + (tempHeight - margin.bottom/2 - 2) + ")");
 
         // Check mark
         svg.append("text")
@@ -1825,7 +1830,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("text-anchor", "middle")
             .attr("font-weight", "normal")
             .attr("fill", "#FFF")
-            .attr("transform", "translate(" + 17 + "," + (h - margin.bottom/2 + 3) + ")")
+            .attr("transform", "translate(" + 17 + "," + (tempHeight - margin.bottom/2 + 3) + ")")
             .text(function () {
                 if (flag == true)
                     return "✔";
@@ -1842,7 +1847,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("font-weight", "normal")
             .attr("font-size", "20px")
              .attr("fill", 'url(#gradientinfo)')
-            .attr("transform", "translate(" + (textWidth + 44) + "," + (h - margin.bottom/2 + 4) + ")")
+            .attr("transform", "translate(" + (textWidth + 44) + "," + (tempHeight - margin.bottom/2 + 4) + ")")
             .text("𝒊")
             .on("click", function () {
                 $("#btnHelp").click()
@@ -1851,6 +1856,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function updatePercentageView() {
         refreshValues();
+
+        svg.attr("height", tempHeight);
+
         var marginLeft = getYLabelSize() + yPanelWidth;
         // Add fixed nodes
         var fixedNodes = d3.range(answers.length * options.length).map(function (i) {
@@ -1859,7 +1867,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 fixed: true,
                 amount: 0,
                 x: (i % answers.length) * ((w - marginLeft) / answers.length) + ((w - marginLeft) / (answers.length * 2)) + marginLeft, // x coordinate computation for the grid
-                y: margin.top - 10 + Math.floor(i / answers.length) * ((h - margin.bottom - margin.top) / options.length) + ((h - margin.bottom - margin.top) / (options.length * 2)),  // y coordinate computation for the grid
+                y: margin.top - 10 + Math.floor(i / answers.length) * ((tempHeight - margin.bottom - margin.top) / options.length) + ((tempHeight - margin.bottom - margin.top) / (options.length * 2)),  // y coordinate computation for the grid
                 pos: {x: (i % answers.length), y: Math.floor(i / answers.length)}
             };
         });
@@ -1983,7 +1991,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .range([0, w - marginLeft]);
                 var y = d3.scale.linear()
                     .domain([0, options.length])
-                    .range([0, h - margin.bottom - margin.top - 20]);
+                    .range([0, tempHeight - margin.bottom - margin.top - 20]);
                 var maxRadius = (Math.min(x(1) - x(0), y(1) - y(0))) / 2 - 10;
                 var maxArea = maxRadius * maxRadius * Math.PI;
 
@@ -1997,7 +2005,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
 
         var deltaX = (w - marginLeft) / (answers.length);
-        var deltaY = (h - margin.bottom) / (options.length);
+        var deltaY = (tempHeight - margin.bottom) / (options.length);
 
         // ----------- Append percentages --------------
 
@@ -2065,7 +2073,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 return (d.pos.x * delta) + marginLeft + delta - deltaX / 4;
             })
             .attr("y", function (d) {
-                var delta = (h - margin.bottom) / (options.length);
+                var delta = (tempHeight - margin.bottom) / (options.length);
                 return (d.pos.y + 1) * delta - 10;
             })
             .style("text-anchor", "middle")
@@ -2112,7 +2120,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         //var marginLeft = yAxisMode != "All" ? margin.left : 0;
         svg.append("svg:rect")
             .attr("width", w)
-            .attr("height", h - margin.top)
+            .attr("height", tempHeight - margin.top)
             .attr("transform", "translate(" + 0 + "," + margin.top + ")")
             .style("stroke", tableColor)
             .style("stroke-width", "2px")
@@ -2199,7 +2207,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                             .call(wrap, delta);
 
                         var textHeight = $("#x-legend" + i)[0].getBBox().height;
-                        $("#x-legend" + i).attr("y", h - margin.bottom + 10 + (margin.bottom / 2) - textHeight / 2);
+                        $("#x-legend" + i).attr("y", tempHeight - margin.bottom + 10 + (margin.bottom / 2) - textHeight / 2);
                     }
                 }
             }
@@ -2262,7 +2270,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("x2", w)
                 .attr("y1", y(i))
                 .attr("y2", y(i))
-                //.attr("id", "line" + i)
                 .attr("data-id", i)
                 .attr("class", "horizontal-line graph-object")
                 .attr("transform", "translate(" + 0 + "," + margin.top + ")")
@@ -2274,8 +2281,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         svg.append("svg:line")
             .attr("x1", 0)
             .attr("x2", w)
-            .attr("y1", h - margin.bottom)
-            .attr("y2", h - margin.bottom)
+            .attr("y1", tempHeight - margin.bottom)
+            .attr("y2", tempHeight - margin.bottom)
             .attr("class", "horizontal-line graph-object")
             .style("stroke", tableColor)
             .style("stroke-width", "1.3px")
@@ -2304,7 +2311,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("x1", x(i) + marginLeft)
                 .attr("x2", x(i) + marginLeft)
                 .attr("y1", margin.top)
-                .attr("y2", h)
+                .attr("y2", tempHeight)
                 .attr("class", "vertical-line graph-object")
                 .style("stroke", tableColor)
                 .attr("stroke-width", "1.3px");
@@ -2316,7 +2323,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("x1", marginLeft)
             .attr("x2", marginLeft)
             .attr("y1", margin.top)
-            .attr("y2", h)
+            .attr("y2", tempHeight)
             .attr("class", "vertical-line graph-object")
             .style("stroke", tableColor)
             .attr("stroke-width", "1.3px");
@@ -2328,7 +2335,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("x1", yPanelWidth)
                 .attr("x2", yPanelWidth)
                 .attr("y1", margin.top)
-                .attr("y2", h - margin.bottom)
+                .attr("y2", tempHeight - margin.bottom)
                 .attr("class", "vertical-line graph-object")
                 .style("stroke", tableColor)
                 .attr("stroke-width", "1.3px");
@@ -2355,7 +2362,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
          }*/
 
         // Reposition y-panelLabel
-        $(".yPanelLabel").attr("x", -(h - margin.bottom) / 2);
+        $(".yPanelLabel").attr("x", -(tempHeight - margin.bottom) / 2);
         $(".yPanelLabel").attr("y", (yPanelWidth / 2) + textHeight / 2);
     }
 
@@ -2371,16 +2378,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 //.attr("x", 0).attr("y", 0)
                 .append("g").style("fill", "none").style("stroke", "#CCC").style("stroke-width", 0.5);
             g.append("path").attr("d", "M0,0 l" + dashWidth + "," + dashWidth);
-            //g.append("path").attr("d", "M" + dashWidth + ",0 l-" + dashWidth + "," + dashWidth);
         }
 
         var width = w - marginLeft;
         var height;
         if (view == "heatmap") {
-            height = h - margin.top;    // Heat map doesn't use margin bottom
+            height = tempHeight - margin.top;    // Heat map doesn't use margin bottom
         }
         else {
-            height = h - margin.top - margin.bottom
+            height = tempHeight - margin.top - margin.bottom
         }
 
         var grid = svg.append("svg:rect")
@@ -2398,7 +2404,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function drawRowTotals(fixedNodes){
         // ---------------- Append total container box and labels  ----------------
-        var deltaY = (h - margin.bottom) / (options.length);
+        var deltaY = (tempHeight - margin.bottom) / (options.length);
         var mWidth;
         if (yAxisMode == "All"){
             mWidth = yPanelWidth - 2;
@@ -2415,7 +2421,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     var left, top;
                     if (yAxisMode == "All"){
                         left = 1;
-                        top = h - margin.bottom - 21;
+                        top = tempHeight - margin.bottom - 21;
                     }
                     else{
                         left = yPanelWidth;
@@ -2458,9 +2464,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         refreshValues();
 
+        svg.attr("height", tempHeight);
+
         var y = d3.scale.linear()
             .domain([0, options.length])
-            .range([0, h - margin.bottom - margin.top]);
+            .range([0, tempHeight - margin.bottom - margin.top]);
 
         drawYAxisLegend(y);
 
@@ -2471,12 +2479,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .range([0, w - marginLeft]);
 
         // Draw stuff
-
         drawOuterRect();
         drawXAxisLegend(marginLeft, x);
         drawGrayAlternation(y);
         drawGradientBackground(marginLeft);
-        drawHorizontalLines(y, marginLeft);
+        drawHorizontalLines(y);
         drawVerticalLines(marginLeft, x);
         drawLegendContainers(marginLeft);
         drawYAxisPanel();

@@ -316,7 +316,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Bind click events
         $("#percentage-view").click(setPercentageView);
-        $("#map-view").click(setHeatMapView);
+        if (spatialQuestion) {
+            $("#map-view").click(setHeatMapView);
+        }
         $("#mean-view").click(setMeanView);
 
         $('#listQuestions .clickable').click(onListQuestionClick);
@@ -1017,14 +1019,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             // Show subtract button for this item
             element.parent().parent().find(".active .clickable").parent().find(".btnSubtract").show();
             $("#btnCategories")[0].disabled = true;
-            $("#map-view")[0].disabled = true;
+            if (spatialQuestion) {
+                $("#map-view")[0].disabled = true;
+            }
+
         }
         else {
             $(".btnSubtract").hide();
 
             restoreYAxisMode();
             $("#btnCategories")[0].disabled = false;
-            $("#map-view")[0].disabled = false;
+            if (spatialQuestion) {
+                $("#map-view")[0].disabled = false;
+            }
             $("#mean-view")[0].disabled = false;
         }
 
@@ -1296,7 +1303,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
     function setMeanView() {
         $("#percentage-view").removeClass("disabled");
-        $("#map-view").removeClass("disabled");
+        if (spatialQuestion) {
+            $("#map-view").removeClass("disabled");
+        }
         $("#mean-view").addClass("disabled");
         $("#significance-flag-container").hide();
 
@@ -1335,7 +1344,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $(".zoom-controls").hide();
 
         $("#percentage-view").addClass("disabled");
-        $("#map-view").removeClass("disabled");
+        if (spatialQuestion) {
+            $("#map-view").removeClass("disabled");
+        }
         $("#mean-view").removeClass("disabled");
 
         $("#btnCategories").show();
@@ -1373,7 +1384,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     function setHeatMapView() {
         view = "heatmap";
 
-        $("#map-view").addClass("disabled");
+        if (spatialQuestion) {
+            $("#map-view").addClass("disabled");
+        }
         $("#percentage-view").removeClass("disabled");
         $("#mean-view").removeClass("disabled");
         $("#significance-flag-container").hide();
@@ -1608,11 +1621,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             // Add data when multiple questions are selected
             for (var j = 0; j < questionNodes.length; j++) {
                 for (var i = 0; i < data.rows.length; i++) {
-                    if (questionNodes[j][i].value == 0 || questionNodes[j][i].info[yAxisMode] == "No response" || questionNodes[j][i].info[yAxisMode] == 0) {
+                    if (isNaN(questionNodes[j][i].value) || (String(questionNodes[j][i].value).trim() == "") ||  questionNodes[j][i].info[yAxisMode] == "No response" || questionNodes[j][i].info[yAxisMode] == 0) {
                         continue;
                     }
                     valuesX.push(questionNodes[j][i].value);
-
                 }
             }
             options = _.range(numberOfQuestions);

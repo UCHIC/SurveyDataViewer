@@ -34,7 +34,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var yPanelWidth = 80;
     var gradientCount = 0;
     var nodes = [];
-    //var markerQuestions = [];
     var numberOfQuestions = 0;
     var questionNodes = [];
     var cutoff = 1;
@@ -70,15 +69,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return;
         }
 
-        if (view == "percentage") {
-            drawTable();
-            if ($("#listQuestions").find(".active").length > 0) {
-                updatePercentageView();
-            }
+        if (view == "percentage" || view == "mean") {
+            onAddRow([]);
         }
-        else if (view == "mean") {
-            updateMeanView();
-        }
+
         else if (view=="heatmap"){
             drawOuterRect();
             drawGradientBackground(0);
@@ -410,7 +404,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         var title = getCellContent(selectedQuestion, "VariableLabel");
 
-        var content = getCellContent(selectedQuestion, "SubVariableLabel")
+        var content = getCellContent(selectedQuestion, "SubVariableLabel");
 
         // Toggle add button visibility
         $(".btnAdd").hide();
@@ -443,15 +437,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
 
         if (view == "percentage") {
-            drawTable();
-            updatePercentageView();
+            onAddRow($(this).parent().find(".btnAdd"));
         }
         else if (view == "heatmap") {
             $(".btnAdd").hide();
             updateHeatMap();
         }
         else if (view == "mean") {
-            updateMeanView();
+            onAddRow($(this).parent().find(".btnAdd"));
         }
     }
 
@@ -460,242 +453,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return bidirectionalScale;
         }
         return unidirectionalScale;
-    }
-
-    function drawMeanViewTable() {
-        clearCanvas();
-
-        svg.attr("height", tempHeight);
-
-        var y = d3.scale.linear()
-            .domain([0, options.length])
-            .range([0, tempHeight - margin.bottom - margin.top]);
-
-        drawYAxisLegend(y);
-
-        var marginLeft = getYLabelSize() + yPanelWidth;
-
-        var x = d3.scale.linear()
-            .domain([0, answers.length])
-            .range([0, w - marginLeft]);
-
-        drawOuterRect();
-        drawYAxisPanel();
-        drawGrayAlternation(y);
-
-        // Draw x axis legend and ignore not sure responses
-        var value = $(".active label").attr("data-value");
-        var deltaX = (x(1) - x(0));
-        var deltaY = y(1) - y(0);
-
-        for (var j = 0; j < metadata.rows.length; j++) {
-            var questionID = metadata.rows[j]["Variable"];
-            if (questionID == value) {
-                // Get the labels for this question
-                var labels;
-                for (var prop in metadata.rows[j]) {
-                    if (prop.trim() == "ValueLabels")
-                        labels = String(metadata.rows[j][prop]);
-                }
-
-                labels = labels.split(";");
-                var labelsArray = {};
-
-                // Put the labels in an object for easy access
-                for (var i = 0; i < labels.length; i++) {
-                    var pos = labels[i].indexOf("=");
-                    var index = parseInt(labels[i].substr(0, pos).trim());
-                    var value = labels[i].substr(pos + 1, labels[i].length).trim();
-
-                    labelsArray[index] = value;
-
-                    if (String(value).toLowerCase() == "not sure" && answers.indexOf(index) != -1) {
-                        x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
-                        deltaX = (x(1) - x(0));
-                    }
-                }
-
-                // Draw x-axis legend
-                for (var i = 0; i < answers.length; i++) {
-                    if (String(labelsArray[answers[i]]).toLowerCase() != "not sure") {
-                        svg.append("text")
-                            .attr("dx", 0)
-                            .attr("dy", 0)
-                            .attr("class", "x-legend graph-object")
-                            .attr("text-anchor", "middle")
-                            .attr("font-weight", "normal")
-                            .attr("fill", legendColor)
-                            .attr("y", tempHeight - margin.bottom + 30)
-                            .attr("id", "x-legend" + i)
-                            .attr("transform", "translate(" + ( x(i) + marginLeft + deltaX / 2) + "," + 0 + ")")
-                            .attr("data-id", i)
-                            .text(function () {
-                                if (!selectedQuestion) {
-                                    return "";
-                                }
-
-                                // Just return the actual value for text input questions
-                                if (selectedQuestion.indexOf("- Text") != -1) {
-                                    return answers[i];
-                                }
-
-                                return labelsArray[answers[i]];
-                            })
-                            .call(wrap, deltaX);
-                    }
-                }
-
-                break;
-            }
-        }
-        // -----
-        drawGradientBackground(marginLeft, h);
-
-        // Draw vertical dotted lines
-        for (var i = 1; i < answers.length + 1; i++) {
-            if (String(labelsArray[answers[i - 1]]).toLowerCase() != "not sure" || answers.length == 1) {
-                svg.append("svg:line")
-                    .attr("x1", x(i) + marginLeft - deltaX / 2)
-                    .attr("x2", x(i) + marginLeft - deltaX / 2)
-                    .attr("y1", margin.top)
-                    .attr("y2", tempHeight - margin.bottom)
-                    .attr("class", "vertical-mean-line graph-object")
-                    .attr("stroke-dasharray", "1, 5")
-                    .attr("stroke-linecap", "round")
-                    .style("stroke", tableColor)
-            }
-        }
-
-        // Line at the top of x axis legend
-        svg.append("svg:line")
-            .attr("x1", 0)
-            .attr("x2", w)
-            .attr("y1", tempHeight - margin.bottom)
-            .attr("y2", tempHeight - margin.bottom)
-            .attr("class", "horizontal-line graph-object")
-            .style("stroke", tableColor)
-            .style("stroke-width", "1.3px");
-
-        var colorScale = getQuestionColors();
-
-        var colorData = [];
-        var stops = $(".vertical-mean-line").length - 1;
-        for (var i = 0; i <= stops; i++) {
-            var offset = i * 100 / stops;
-            colorData.push({offset: offset + "%", color: colorScale(offset / 100)})
-        }
-
-        var left = yPanelWidth + deltaX / 2 + getYLabelSize();
-        var right = w - deltaX / 2;
-
-        $("defs").remove();
-        $("linearGradient").remove();
-
-        var numberOfAnswers = answers.length;
-        for (var i = 0; i < answers.length; i++){
-            if (String(getLabel(selectedQuestion, answers[i])).toLowerCase() == "not sure"){
-                numberOfAnswers--;
-            }
-        }
-
-        x = d3.scale.linear()
-            .domain([answers[0], answers[numberOfAnswers - 1]])
-            .range([left, right]);
-
-        svg.append("linearGradient")
-            .attr("id", "line-gradient")
-            .attr("gradientUnits", "userSpaceOnUse")
-            .attr("x1", left).attr("y1", 0)
-            .attr("x2", right).attr("y2", 0)
-            .selectAll("stop")
-            .data(colorData)
-            .enter().append("stop")
-            .attr("offset", function (d) {
-                return d.offset;
-            })
-            .attr("stop-color", function (d) {
-                return d.color;
-            });
-
-        //Draw mean base lines
-        for (var i = 1; i <= options.length; i++) {
-            svg.append("svg:rect")
-                .attr("width", x(answers[numberOfAnswers - 1]) - x(answers[0]))
-                .attr("height", "40")
-                .attr("x", x(answers[0]))
-                .attr("y", y(i) - deltaY / 2)
-                .style("stroke", "#777")
-                .style("stroke-width", "1px")
-                .style("fill", "url(#line-gradient)")
-                //.style("opacity", 0.75)
-                .attr("transform", "translate(" + 0 + "," + (-20) + ")")
-                .attr("class", "mean-base-line graph-object");
-        }
-
-        if (selectedQuestion) {
-            // ---------- Draw means ----------------------
-            var nodeRows = d3.range(options.length).map(function (i) {
-                return {
-                    total: 0,
-                    participants: 0,
-                    y: i
-                };
-            });
-
-            nodes.forEach(function (d) {
-                var currentLabel = getLabel(selectedQuestion, d.value);
-                if (String(currentLabel).toLowerCase() == "not sure" || String(d.value).trim() == "") {
-                    return;
-                }
-                var posOption = ($.inArray(d.info[yAxisMode], options));
-                if (yAxisMode == "") {
-                    posOption = d.tempPosY;
-                }
-                var val = d.value;
-                if (val == 6) {
-                    console.log("warning")
-                }
-
-                nodeRows.forEach(function (o) {
-                    if (o.y == posOption) {
-                        o.participants += 1;
-                        o.total += val;
-                    }
-                })
-            });
-
-            for (var i = 1; i <= options.length; i++) {
-                if ($("#gradient0").length == 0) {
-                    getGradient("#888", 0);
-                }
-                // Draw mean
-                var xCord = (nodeRows[i - 1].total) / nodeRows[i - 1].participants;
-
-                var top = y(i) - deltaY / 2 - 40;
-
-                var currLine = svg.append("svg:rect")
-                    .attr("width", "20")
-                    .attr("height", "80")
-                    .attr("x", (left + right) / 2 - 10)
-                    .attr("class", "vertical-mean-line graph-object")
-                    .style("stroke", d3.rgb("#888").darker(2))
-                    .style("fill", 'url(#gradient0)')
-                    .style("stroke-width", "1px")
-                    .attr("transform", "translate(" + 0 + "," + top + ")");
-
-                currLine.transition()
-                    .duration(400)
-                    .ease("linear")
-                    .attr("x", (x(xCord) - 10))
-            }
-        }
-
-        drawLegendContainers(marginLeft, tempHeight);
-    }
-
-    function updateMeanView() {
-        refreshValues();
-        drawMeanViewTable();
     }
 
     function updateHeatMap() {
@@ -983,10 +740,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         yAxisMode = mode;
     }
 
-    // Custom draws for multiple question selection feature
+    // Draws the selected question(s) for mean and percentage view
     function onAddRow(element) {
         yAxisMode = "";
-        numberOfQuestions = element.parent().parent().find(".active").length;
+        if (element.length) {
+            numberOfQuestions = element.parent().parent().find(".active").length;
+        }
+        else {
+            element = $(".active .clickable");
+            numberOfQuestions = 1;
+        }
 
         // Load labels for y-axis
         var labels = element.parent().parent().find(".active .clickable");
@@ -1036,7 +799,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             if (spatialQuestion) {
                 $("#map-view")[0].disabled = false;
             }
-            $("#mean-view")[0].disabled = false;
         }
 
         clearCanvas();
@@ -1063,7 +825,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     .text(function () {
                         return labels[i].trim();
                     })
-                .call(wrap, 150);
+                    .call(wrap, 150);
                 $("#txtDescription").text("");
 
                 //Center y axis legend
@@ -1079,6 +841,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         var marginLeft = getYLabelSize() + yPanelWidth;
 
+        var numberOfAnswers = answers.length;
+        // Subtract "Not sure" answers from the color gradient
+        for (var i = 0; i < answers.length; i++) {
+            var label = getLabel(selectedQuestion, answers[i]);
+            if (label && label != 0 && String(label).toLowerCase() == "not sure") {
+                numberOfAnswers--;
+            }
+        }
+
         var x = d3.scale.linear()
             .domain([0, answers.length])
             .range([0, w - marginLeft]);
@@ -1089,13 +860,272 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawGradientBackground(marginLeft);
         drawLegendContainers(marginLeft);
         drawYAxisPanel();
-        drawXAxisLegend(marginLeft, x);
 
-        if (view == "percentage"){
+        if (view == "percentage") {
             drawVerticalLines(marginLeft, x);
             drawHorizontalLines(y);
+            drawXAxisLegend(marginLeft, x)
+
+            refreshValues();
+
+            svg.attr("height", tempHeight);
+
+            // Add fixed nodes
+            var fixedNodes = d3.range(answers.length * options.length).map(function (i) {
+                return {
+                    radius: 0,
+                    fixed: true,
+                    amount: 0,
+                    x: (i % answers.length) * ((w - marginLeft) / answers.length) + ((w - marginLeft) / (answers.length * 2)) + marginLeft, // x coordinate computation for the grid
+                    y: margin.top - 10 + Math.floor(i / answers.length) * ((tempHeight - margin.bottom - margin.top) / options.length) + ((tempHeight - margin.bottom - margin.top) / (options.length * 2)),  // y coordinate computation for the grid
+                    pos: {x: (i % answers.length), y: Math.floor(i / answers.length)}
+                };
+            });
+
+            if (questionNodes < 2) {
+                nodes.forEach(function (d) {
+                    var posAnswer = ($.inArray(d.value, answers));
+                    var posOption = ($.inArray(d.info[yAxisMode], options));
+                    if (yAxisMode == "") {
+                        posOption = d.tempPosY;
+                    }
+
+                    fixedNodes.forEach(function (o) {
+                        if (o.pos.x == posAnswer && o.pos.y == posOption) {
+                            o.amount += 1;
+                        }
+                    })
+                });
+            }
+            else {
+                for (var i = 0; i < questionNodes.length; i++) {
+                    for (var j = 0; j < questionNodes[i].length; j++) {
+                        var node = questionNodes[i][j];
+                        var posAnswer = ($.inArray(node.value, answers));
+                        var posOption = ($.inArray(node.info[yAxisMode], options));
+                        if (yAxisMode == "") {
+                            posOption = node.tempPosY;
+                        }
+
+                        fixedNodes.forEach(function (o) {
+                            if (o.pos.x == posAnswer && o.pos.y == posOption) {
+                                o.amount += 1;
+                            }
+                        })
+                    }
+                }
+            }
+
+            var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
+                .attr("class", "fixedNode graph-object")
+                .attr("fill", "#FFF")
+                .attr("stroke-width", "1")
+                .on("mouseover", function (d) {
+                    d3.select(this).attr("stroke-width", "2");
+                })
+                .on("mouseout", function () {
+                    d3.select(this).attr("stroke-width", "1");
+                });
+
+            var numberOfAnswers = answers.length;
+            // Subtract "Not sure" answers from the color gradient
+            for (var i = 0; i < answers.length; i++) {
+                var label = getLabel(selectedQuestion, answers[i]);
+                if (label && label != 0 && String(label).toLowerCase() == "not sure") {
+                    numberOfAnswers--;
+                }
+            }
+
+            // Define the gradient
+            $("defs").remove();
+            $("linearGradient").remove();                               // Remove previous ones
+            gradientCount = 0;
+            getGradient(defaultBubbleColor, gradientCount++);           // gradient0 - default gradient
+            getGradient(notSureColor, gradientCount++);                 // gradient1 - not sure gradient
+            for (var i = 0; i < answers.length; i++) {
+                getGradient(independantColors(i), gradientCount++);      // From 2 to answers.length, color for each column
+            }
+
+            var colorScale = getQuestionColors();
+
+            fixedNodesContainers.append("svg:circle")
+                .style("stroke", function (d) {
+                    var label = getLabel(selectedQuestion, answers[d.pos.x]);
+                    if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
+                        return d3.rgb(independantColors(d.pos.x)).darker(2);
+                    }
+                    if (!label || String(label).toLowerCase() != "not sure")
+                        return d3.rgb(colorScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
+                    else {
+                        return d3.rgb(notSureColor).darker(2);
+                    }
+                })
+                .attr("r", "1")
+                .attr("class", "fixedNodeCircle")
+                .attr("fill", function (d) {
+                    var label = getLabel(selectedQuestion, answers[d.pos.x]);
+                    if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
+                        if (String(label).toLowerCase() == "not sure") {
+                            return d3.rgb(notSureColor).darker(2);
+                        }
+
+                        return 'url(#gradient' + (d.pos.x + 2) + ')';   // Independent gradients
+                    }
+
+                    if (!label || String(label).toLowerCase() != "not sure") {
+                        var color = colorScale(d.pos.x / (numberOfAnswers - 1));
+                        getGradient(color, gradientCount);
+                        var gradient = 'url(#gradient' + gradientCount + ')';
+                        gradientCount++;
+                        return gradient;
+                    }
+                    else {
+                        return 'url(#gradient1)';
+                    }
+                })
+                .attr("visibility", function (d) {
+                    if (d.amount == 0) {
+                        return "hidden";
+                    }
+                    return "visible";
+                })
+                .transition().duration(700).attr("r", function (d) {
+                var rowTotal = 0;
+                fixedNodes.forEach(function (o) {
+                    if (o.y == d.y) {
+                        rowTotal += o.amount;
+                    }
+                });
+                var x = d3.scale.linear()
+                    .domain([0, answers.length])
+                    .range([0, w - marginLeft]);
+                var y = d3.scale.linear()
+                    .domain([0, options.length])
+                    .range([0, tempHeight - margin.bottom - margin.top - 20]);
+                var maxRadius = (Math.min(x(1) - x(0), y(1) - y(0))) / 2 - 10;
+                var maxArea = maxRadius * maxRadius * Math.PI;
+
+                var customScale = d3.scale.linear()
+                    .domain([0, rowTotal])
+                    .range([2, maxArea]);
+
+                var curArea = customScale(d.amount);
+
+                return Math.pow(curArea / Math.PI, 0.5);    // Return the radius
+            });
+
+            var deltaX = (w - marginLeft) / (answers.length);
+            var deltaY = (tempHeight - margin.bottom) / (options.length);
+
+            // ----------- Append percentages --------------
+
+            getGradient("#555", gradientCount);
+
+            // Append box containers
+            fixedNodesContainers.append("svg:rect")
+                .attr("width", deltaX - 2)
+                .attr("height", "20px")
+                .attr("transform", function (d) {
+                    var left, top;
+                    left = (d.pos.x * deltaX) + marginLeft + 1;
+                    top = (d.pos.y + 1) * deltaY - 21;
+                    return "translate(" + left + "," + top + ")";
+                })
+                .style("fill", "url(#gradient" + gradientCount + ")")
+                .attr("class", "table-rect graph-object");
+
+            drawRowTotals(fixedNodes);
+
+            gradientCount++;
+
+            fixedNodesContainers.append("svg:text")
+                .attr("x", function (d) {
+                    //var delta = (w - marginLeft)/(answers.length);
+                    return (d.pos.x * deltaX) + marginLeft + deltaX / 4;
+                })
+                .attr("y", function (d) {
+                    return (d.pos.y + 1) * deltaY - 10;
+                })
+                .style("text-anchor", "middle")
+                .style("font-size", "16px")
+                .attr("visibility", function (d) {
+                    if (d.amount == 0) {
+                        return "hidden";
+                    }
+                    return "visible";
+                })
+                .attr("dy", ".31em")
+                //.style("text-decoration", "underline")
+                .style("fill", "#FFF")
+                .text(0).transition().duration(700).tween("text", function (d) {
+                var rowTotal = 0;   // Percentage is calculated per row
+
+                fixedNodes.forEach(function (o) {
+                    if (o.y == d.y) {
+                        rowTotal += o.amount;
+                    }
+                });
+
+                var i = d3.interpolate(this.textContent, (100 / rowTotal) * d.amount),
+                    prec = (d.amount + "").split("."),
+                    round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
+
+                return function (t) {
+                    var value = (i(t) * round / round).toFixed(2);
+                    this.textContent = value + "%";
+                };
+            });
+
+            // Append (n)
+            fixedNodesContainers.append("svg:text")
+                .attr("x", function (d) {
+                    var delta = (w - marginLeft) / (answers.length);
+                    return (d.pos.x * delta) + marginLeft + delta - deltaX / 4;
+                })
+                .attr("y", function (d) {
+                    var delta = (tempHeight - margin.bottom) / (options.length);
+                    return (d.pos.y + 1) * delta - 10;
+                })
+                .style("text-anchor", "middle")
+                .style("font-size", "12px")
+                .attr("visibility", function (d) {
+                    if (d.amount == 0) {
+                        return "hidden";
+                    }
+                    return "visible";
+                })
+                .attr("dy", ".31em")
+                //.style("text-decoration", "underline")
+                .style("fill", "rgb(194, 219, 240)")
+                .text(0).transition().duration(700).tween("text", function (d) {
+                var i = d3.interpolate(this.textContent, d.amount)
+                var rowTotal = 0;   // Percentage is calculated per row
+
+                fixedNodes.forEach(function (o) {
+                    if (o.y == d.y) {
+                        rowTotal += o.amount;
+                    }
+                });
+
+                return function (t) {
+                    this.textContent = "n = " + (Math.round(i(t)));
+                };
+            });
+
+            // Calculate and draw significance flag
+            if (options.length > 1 && answers.length > 1) {
+                $("#significance-flag-container").show();
+                if (isSignificant(fixedNodes)) {
+                    showFlag(true);
+                }
+                else {
+                    showFlag(false);
+                }
+            }
+
+            svg.selectAll(".fixedNodeCircle").attr("transform", transform);
         }
-        else{
+        else if (view == "mean") {
             // Line at the top of x axis legend
             svg.append("svg:line")
                 .attr("x1", 0)
@@ -1104,16 +1134,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("y2", tempHeight - margin.bottom)
                 .attr("class", "horizontal-line graph-object")
                 .style("stroke", tableColor)
-                .style("stroke-width", "1.3px")
-        }
-
-        if (view == "percentage"){
-            updatePercentageView();
-        }
-        else if(view == "mean"){
-            var x = d3.scale.linear()
-                .domain([0, answers.length])
-                .range([0, w - marginLeft]);
+                .style("stroke-width", "1.3px");
 
             var deltaX = x(1) - x(0);
 
@@ -1144,6 +1165,36 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                             if (String(value).toLowerCase() == "not sure" && $.inArray(index, answers) >= 0) {
                                 x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
                                 deltaX = (x(1) - x(0));
+                            }
+                        }
+
+                        // Draw x axis legend and ignore "not sure" responses
+                        for (var k = 0; k < answers.length; k++) {
+                            if (String(labelsArray[answers[k]]).toLowerCase() != "not sure") {
+                                svg.append("text")
+                                    .attr("dx", 0)
+                                    .attr("dy", 0)
+                                    .attr("class", "x-legend graph-object")
+                                    .attr("text-anchor", "middle")
+                                    .attr("font-weight", "normal")
+                                    .attr("fill", legendColor)
+                                    .attr("y", tempHeight - margin.bottom + 30)
+                                    .attr("id", "x-legend" + k)
+                                    .attr("transform", "translate(" + ( x(k) + marginLeft + deltaX / 2) + "," + 0 + ")")
+                                    .attr("data-id", i)
+                                    .text(function () {
+                                        if (!selectedQuestion) {
+                                            return "";
+                                        }
+
+                                        // Just return the actual value for text input questions
+                                        if (selectedQuestion.indexOf("- Text") != -1) {
+                                            return answers[k];
+                                        }
+
+                                        return labelsArray[answers[k]];
+                                    })
+                                    .call(wrap, deltaX);
                             }
                         }
                     }
@@ -1238,7 +1289,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     if (yAxisMode == "") {
                         posOption = d.tempPosY;
                     }
-                    else if (yAxisMode == "All"){
+                    else if (yAxisMode == "All") {
                         posOption = 0;
                     }
                     var val = parseInt(d.value);
@@ -1286,7 +1337,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
     }
 
-
     function removeTempNodes() {
         questionNodes = [];
     }
@@ -1298,17 +1348,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#lstYAxisMode li").removeClass("disabled");
         $(this).addClass("disabled");
         yAxisMode = e.target.getAttribute("data-axis");
-        // $("#btnCategories").text(yAxisMode);
-        drawTable();
 
         if (view == "heatmap") {
 
         }
         else if (view == "percentage") {
-            updatePercentageView();
+            onAddRow([]);
         }
         else if (view == "mean") {
-            updateMeanView();
+            onAddRow([]);
         }
     }
 
@@ -1341,7 +1389,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 $(element[0].parentElement.parentElement).find(".btnAdd").show();
                 element.hide();
             }
-            updateMeanView();
+            onAddRow([]);
         }
     }
 
@@ -1362,10 +1410,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $("#btnCategories").show();
 
-        //$("#btnCategories")[0].disabled = false;
-
-        drawTable();
-
         showAllQuestions();
         disableSpatialQuestions();
 
@@ -1383,7 +1427,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 element.hide();
             }
 
-            updatePercentageView();
+            onAddRow([]);
         }
     }
 
@@ -1860,268 +1904,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             });
     }
 
-    function updatePercentageView() {
-        refreshValues();
-
-        svg.attr("height", tempHeight);
-
-        var marginLeft = getYLabelSize() + yPanelWidth;
-        // Add fixed nodes
-        var fixedNodes = d3.range(answers.length * options.length).map(function (i) {
-            return {
-                radius: 0,
-                fixed: true,
-                amount: 0,
-                x: (i % answers.length) * ((w - marginLeft) / answers.length) + ((w - marginLeft) / (answers.length * 2)) + marginLeft, // x coordinate computation for the grid
-                y: margin.top - 10 + Math.floor(i / answers.length) * ((tempHeight - margin.bottom - margin.top) / options.length) + ((tempHeight - margin.bottom - margin.top) / (options.length * 2)),  // y coordinate computation for the grid
-                pos: {x: (i % answers.length), y: Math.floor(i / answers.length)}
-            };
-        });
-
-        if (questionNodes < 2) {
-            nodes.forEach(function (d) {
-                var posAnswer = ($.inArray(d.value, answers));
-                var posOption = ($.inArray(d.info[yAxisMode], options));
-                if (yAxisMode == "") {
-                    posOption = d.tempPosY;
-                }
-
-                fixedNodes.forEach(function (o) {
-                    if (o.pos.x == posAnswer && o.pos.y == posOption) {
-                        o.amount += 1;
-                    }
-                })
-            });
-        }
-        else {
-            for (var i = 0; i < questionNodes.length; i++) {
-                for (var j = 0; j < questionNodes[i].length; j++) {
-                    var node = questionNodes[i][j];
-                    var posAnswer = ($.inArray(node.value, answers));
-                    var posOption = ($.inArray(node.info[yAxisMode], options));
-                    if (yAxisMode == "") {
-                        posOption = node.tempPosY;
-                    }
-
-                    fixedNodes.forEach(function (o) {
-                        if (o.pos.x == posAnswer && o.pos.y == posOption) {
-                            o.amount += 1;
-                        }
-                    })
-                }
-            }
-        }
-
-        var fixedNodesContainers = svg.selectAll().data(fixedNodes).enter().append("svg:g")
-            .attr("class", "fixedNode graph-object")
-            .attr("fill", "#FFF")
-            .attr("stroke-width", "1")
-            .on("mouseover", function (d) {
-                d3.select(this).attr("stroke-width", "2");
-            })
-            .on("mouseout", function () {
-                d3.select(this).attr("stroke-width", "1");
-            });
-
-        var numberOfAnswers = answers.length;
-        // Subtract "Not sure" answers from the color gradient
-        for (var i = 0; i < answers.length; i++) {
-            var label = getLabel(selectedQuestion, answers[i]);
-            if (label && label != 0 && String(label).toLowerCase() == "not sure") {
-                numberOfAnswers--;
-            }
-        }
-
-        // Define the gradient
-        $("defs").remove();
-        $("linearGradient").remove();                               // Remove previous ones
-        gradientCount = 0;
-        getGradient(defaultBubbleColor, gradientCount++);           // gradient0 - default gradient
-        getGradient(notSureColor, gradientCount++);                 // gradient1 - not sure gradient
-        for (var i = 0; i < answers.length; i++) {
-            getGradient(independantColors(i), gradientCount++);      // From 2 to answers.length, color for each column
-        }
-
-        var colorScale = getQuestionColors();
-
-        fixedNodesContainers.append("svg:circle")
-            .style("stroke", function (d) {
-                var label = getLabel(selectedQuestion, answers[d.pos.x]);
-                if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
-                    return d3.rgb(independantColors(d.pos.x)).darker(2);
-                }
-                if (!label || String(label).toLowerCase() != "not sure")
-                    return d3.rgb(colorScale(d.pos.x / (numberOfAnswers - 1))).darker(2);
-                else {
-                    return d3.rgb(notSureColor).darker(2);
-                }
-            })
-            .attr("r", "1")
-            .attr("class", "fixedNodeCircle")
-            .attr("fill", function (d) {
-                var label = getLabel(selectedQuestion, answers[d.pos.x]);
-                if (!hasPluggin(selectedQuestion, "unidirectional") && !hasPluggin(selectedQuestion, "bidirectional")) {
-                     if (String(label).toLowerCase() == "not sure") {
-                        return d3.rgb(notSureColor).darker(2);
-                     }
-
-                    return 'url(#gradient' + (d.pos.x + 2) + ')';   // Independent gradients
-                }
-
-                if (!label || String(label).toLowerCase() != "not sure") {
-                    var color = colorScale(d.pos.x / (numberOfAnswers - 1));
-                    getGradient(color, gradientCount);
-                    var gradient = 'url(#gradient' + gradientCount + ')';
-                    gradientCount++;
-                    return gradient;
-                }
-                else {
-                    return 'url(#gradient1)';
-                }
-            })
-            .attr("visibility", function (d) {
-                if (d.amount == 0) {
-                    return "hidden";
-                }
-                return "visible";
-            })
-            .transition().duration(700).attr("r", function (d) {
-                var rowTotal = 0;
-                fixedNodes.forEach(function (o) {
-                    if (o.y == d.y) {
-                        rowTotal += o.amount;
-                    }
-                });
-                var x = d3.scale.linear()
-                    .domain([0, answers.length])
-                    .range([0, w - marginLeft]);
-                var y = d3.scale.linear()
-                    .domain([0, options.length])
-                    .range([0, tempHeight - margin.bottom - margin.top - 20]);
-                var maxRadius = (Math.min(x(1) - x(0), y(1) - y(0))) / 2 - 10;
-                var maxArea = maxRadius * maxRadius * Math.PI;
-
-                var customScale = d3.scale.linear()
-                    .domain([0, rowTotal])
-                    .range([2, maxArea]);
-
-                var curArea = customScale(d.amount);
-
-                return Math.pow(curArea / Math.PI, 0.5);    // Return the radius
-            });
-
-        var deltaX = (w - marginLeft) / (answers.length);
-        var deltaY = (tempHeight - margin.bottom) / (options.length);
-
-        // ----------- Append percentages --------------
-
-        getGradient("#555", gradientCount);
-
-        // Append box containers
-        fixedNodesContainers.append("svg:rect")
-            .attr("width", deltaX - 2)
-            .attr("height", "20px")
-            .attr("transform", function (d) {
-                var left, top;
-                left = (d.pos.x * deltaX) + marginLeft + 1;
-                top = (d.pos.y + 1) * deltaY - 21;
-                return "translate(" + left + "," + top + ")";
-            })
-            .style("fill", "url(#gradient" + gradientCount + ")")
-            .attr("class", "table-rect graph-object");
-
-        drawRowTotals(fixedNodes);
-
-        gradientCount++;
-
-        fixedNodesContainers.append("svg:text")
-            .attr("x", function (d) {
-                //var delta = (w - marginLeft)/(answers.length);
-                return (d.pos.x * deltaX) + marginLeft + deltaX / 4;
-            })
-            .attr("y", function (d) {
-                return (d.pos.y + 1) * deltaY - 10;
-            })
-            .style("text-anchor", "middle")
-            .style("font-size", "16px")
-            .attr("visibility", function (d) {
-                if (d.amount == 0) {
-                    return "hidden";
-                }
-                return "visible";
-            })
-            .attr("dy", ".31em")
-            //.style("text-decoration", "underline")
-            .style("fill", "#FFF")
-            .text(0).transition().duration(700).tween("text", function (d) {
-                var rowTotal = 0;   // Percentage is calculated per row
-
-                fixedNodes.forEach(function (o) {
-                    if (o.y == d.y) {
-                        rowTotal += o.amount;
-                    }
-                });
-
-                var i = d3.interpolate(this.textContent, (100 / rowTotal) * d.amount),
-                    prec = (d.amount + "").split("."),
-                    round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
-
-                return function (t) {
-                    var value = (i(t) * round / round).toFixed(2);
-                    this.textContent = value + "%";
-                };
-            });
-
-        // Append (n)
-        fixedNodesContainers.append("svg:text")
-            .attr("x", function (d) {
-                var delta = (w - marginLeft) / (answers.length);
-                return (d.pos.x * delta) + marginLeft + delta - deltaX / 4;
-            })
-            .attr("y", function (d) {
-                var delta = (tempHeight - margin.bottom) / (options.length);
-                return (d.pos.y + 1) * delta - 10;
-            })
-            .style("text-anchor", "middle")
-            .style("font-size", "12px")
-            .attr("visibility", function (d) {
-                if (d.amount == 0) {
-                    return "hidden";
-                }
-                return "visible";
-            })
-            .attr("dy", ".31em")
-            //.style("text-decoration", "underline")
-            .style("fill", "rgb(194, 219, 240)")
-            .text(0).transition().duration(700).tween("text", function (d) {
-                var i = d3.interpolate(this.textContent, d.amount)
-                var rowTotal = 0;   // Percentage is calculated per row
-
-                fixedNodes.forEach(function (o) {
-                    if (o.y == d.y) {
-                        rowTotal += o.amount;
-                    }
-                });
-
-                return function (t) {
-                    this.textContent = "n = " + (Math.round(i(t)));
-                };
-            });
-
-        // Calculate and draw significance flag
-        if (options.length > 1 && answers.length > 1) {
-            $("#significance-flag-container").show();
-            if (isSignificant(fixedNodes)) {
-                showFlag(true);
-            }
-            else {
-                showFlag(false);
-            }
-        }
-
-        svg.selectAll(".fixedNodeCircle").attr("transform", transform);
-    }
-
     function drawOuterRect() {
         //var marginLeft = yAxisMode != "All" ? margin.left : 0;
         svg.append("svg:rect")
@@ -2463,36 +2245,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     return "n = " + rowTotal;
                 });
         }
-    }
-
-    function drawTable() {
-        clearCanvas();
-
-        refreshValues();
-
-        svg.attr("height", tempHeight);
-
-        var y = d3.scale.linear()
-            .domain([0, options.length])
-            .range([0, tempHeight - margin.bottom - margin.top]);
-
-        drawYAxisLegend(y);
-
-        var marginLeft = getYLabelSize() + yPanelWidth;
-
-        var x = d3.scale.linear()
-            .domain([0, answers.length])
-            .range([0, w - marginLeft]);
-
-        // Draw stuff
-        drawOuterRect();
-        drawXAxisLegend(marginLeft, x);
-        drawGrayAlternation(y);
-        drawGradientBackground(marginLeft);
-        drawHorizontalLines(y);
-        drawVerticalLines(marginLeft, x);
-        drawLegendContainers(marginLeft);
-        drawYAxisPanel();
     }
 
     function getYLabelSize() {

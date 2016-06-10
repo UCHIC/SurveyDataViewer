@@ -54,7 +54,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var projection;
     var independantColors = d3.scale.category10();
 
-
     $(window).resize(_.debounce(function () {
         w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
         clearCanvas();
@@ -86,12 +85,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             if (firstChild) {
                 this.parentNode.insertBefore(this, firstChild);
             }
-        });
-    };
-
-    d3.selection.prototype.moveToFront = function () {
-        return this.each(function () {
-            this.parentNode.appendChild(this);
         });
     };
 
@@ -864,7 +857,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (view == "percentage") {
             drawVerticalLines(marginLeft, x);
             drawHorizontalLines(y);
-            drawXAxisLegend(marginLeft, x)
+            drawXAxisLegend(marginLeft, x);
 
             refreshValues();
 

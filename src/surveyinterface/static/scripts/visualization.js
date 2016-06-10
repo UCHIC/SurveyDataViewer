@@ -644,7 +644,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
             nodes.forEach(function (d) {
                 var currentLabel = getLabel(selectedQuestion, d.value);
-                if (String(currentLabel).toLowerCase() == "not sure" || d.value == 0) {
+                if (String(currentLabel).toLowerCase() == "not sure" || String(d.value).trim() == "") {
                     return;
                 }
                 var posOption = ($.inArray(d.info[yAxisMode], options));
@@ -1111,7 +1111,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             updatePercentageView();
         }
         else if(view == "mean"){
+            var x = d3.scale.linear()
+                .domain([0, answers.length])
+                .range([0, w - marginLeft]);
+
             var deltaX = x(1) - x(0);
+
             var value = $(".active label").attr("data-value");
             for (var i = 1; i < answers.length + 1; i++) {
                 // Get the list of labels
@@ -1136,7 +1141,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                             labelsArray[index] = value;
 
-                            if (String(value).toLowerCase() == "not sure") {
+                            if (String(value).toLowerCase() == "not sure" && $.inArray(index, answers) >= 0) {
                                 x.domain([0, answers.length - 1]);  // Rescale x axis to make up for ignoring 'not sure' responses
                                 deltaX = (x(1) - x(0));
                             }
@@ -1147,7 +1152,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
             for (var i = 1; i < answers.length + 1; i++) {
                 // Draw vertical dotted lines
-                if ((answers[i - 1] && String(labelsArray[answers[i - 1]]).toLowerCase() != "not sure") || answers.length == 1) {
+                if (String(labelsArray[answers[i - 1]]).toLowerCase() != "not sure" || answers.length == 1) {
                     svg.append("svg:line")
                         .attr("x1", x(i) + marginLeft - deltaX / 2)
                         .attr("x2", x(i) + marginLeft - deltaX / 2)
@@ -1237,7 +1242,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         posOption = 0;
                     }
                     var val = parseInt(d.value);
-                    if (val && String(labelsArray[d.value]).toLowerCase() != "not sure") {
+                    var currentLabel = String(labelsArray[d.value]).trim().toLowerCase();
+                    if (currentLabel != "not sure" && currentLabel != "" && String(d.value).trim() != "") {
                         nodeRows.forEach(function (o) {
                             if (o.y == posOption) {
                                 o.participants++;
@@ -1611,7 +1617,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (questionNodes.length < 2) {
             for (var i = 0; i < data.rows.length; i++) {
                 nodes[i].value = data.rows[i][selectedQuestion];
-                if (isNaN(nodes[i].value) ||nodes[i].info[yAxisMode] == "No response" || nodes[i].info[yAxisMode] == 0 || nodes[i].value.toString().trim() === "") {
+                if (isNaN(nodes[i].value) ||nodes[i].info[yAxisMode] == "No response" || String(nodes[i].info[yAxisMode]).trim() == "" || String(nodes[i].value).trim() === "") {
                     continue;
                 }
                 valuesX.push(nodes[i].value);

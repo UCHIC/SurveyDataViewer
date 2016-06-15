@@ -829,7 +829,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         }
         else {
             drawYAxisLegend(y);
-            $("#txtDescription").text(element.parent().parent().find(".active .clickable").text());
         }
 
         var marginLeft = getYLabelSize() + yPanelWidth;

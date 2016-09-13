@@ -55,6 +55,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var independantColors = d3.scale.category10();
 
     $(window).resize(_.debounce(function () {
+        // Fixes for scaling issues when browser opens for the first time or resizes.
+        $("#visualizationContent").height($(".mainContainer").height() - 10);
+        $(".panel-left").height($(".mainContainer").height());
+
         w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
         clearCanvas();
 
@@ -1654,7 +1658,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             for (var i = 0; i < data.rows.length; i++) {
                 // Need to access it like this because some keys get parsed wrongly and need to be trimmed
                 for (var key in data.rows[i]) {
-                    if (selectedQuestion = key.trim()) {
+                    if (selectedQuestion == key.trim()) {
                         nodes[i].value = data.rows[i][key];
                     }
                 }

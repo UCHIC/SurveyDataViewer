@@ -26,6 +26,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var margin = {top: 0, bottom: 60, left: 0, right: 5};
     var w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 7;
     var tempHeight = h;
+    var tableRowMinHeight = 150;
     var view = "";
     var answers = [];
     var options = [];
@@ -62,7 +63,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
         clearCanvas();
 
-        tempHeight = Math.max(h, options.length * 200 - 5);
+        tempHeight = Math.max(h, options.length * tableRowMinHeight - 5);
         svg.attr("height", tempHeight);
         svg.attr("width", w);
 
@@ -285,7 +286,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 var pluggins = getCellContent(questionID, "Features").split(";");
                 for (var p = 0; p < pluggins.length; p++) {
                     if (pluggins[p].trim() == "isDemographic") {
-                        info[questionLabel] = data.rows[i][questionID];
+
+                        for (var key in data.rows[i]) {
+                            if (questionID == key.trim()) {
+                                info[questionLabel] = data.rows[i][key];
+                            }
+
+                        }
                     }
                 }
             }
@@ -761,7 +768,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         // Get list of selected questions
         for (var i = 0; i < labels.length; i++) {
-            tempQuestions[i] = tempQuestions[i].getAttribute("data-value");
+            tempQuestions[i] = tempQuestions[i].getAttribute("data-value").trim();
         }
 
         questionNodes = [];
@@ -769,8 +776,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         for (var j = 0; j < tempQuestions.length; j++) {
             questionNodes[j] = [];
             for (var i = 0; i < nodesCopy.length; i++) {
+                var val;
+                // Need to look for the value by each index since some indexes cannot be accessed directly without trimming the key
+                for (var key in data.rows[i]) {
+                    if (tempQuestions[j] == key.trim()) {
+                        val = data.rows[i][key];
+                        break;
+                    }
+                }
                 var tempNode = {
-                    value: data.rows[i][tempQuestions[j]],
+                    value: val,
                     info: nodesCopy[i].info,
                     temp: true,
                     tempPosY: j
@@ -1425,6 +1440,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
             onAddRow([]);
         }
+        else {
+            // Just draw an empty frame
+            drawOuterRect();
+        }
     }
 
     function clearCanvas() {
@@ -1657,16 +1676,21 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         if (questionNodes.length < 2) {
             for (var i = 0; i < data.rows.length; i++) {
                 // Need to access it like this because some keys get parsed wrongly and need to be trimmed
+                var yValue;
                 for (var key in data.rows[i]) {
                     if (selectedQuestion == key.trim()) {
-                        nodes[i].value = data.rows[i][key];
+                        nodes[i].value = data.rows[i][key]; // value for X Axis
+                    }
+
+                    if (infoQuestions[yAxisMode] && infoQuestions[yAxisMode].trim() == key.trim()) {
+                        yValue = data.rows[i][key]; // value for Y Axis
                     }
                 }
                 if (isNaN(nodes[i].value) ||nodes[i].info[yAxisMode] == "No response" || String(nodes[i].info[yAxisMode]).trim() == "" || String(nodes[i].value).trim() === "") {
                     continue;
                 }
                 valuesX.push(nodes[i].value);
-                valuesY.push(data.rows[i][infoQuestions[yAxisMode]]);
+                valuesY.push(yValue);
             }
 
             options = valuesY.getUnique().sort(function (a, b) {
@@ -1690,7 +1714,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             return a - b
         });
 
-        tempHeight = Math.max(h, options.length * 200 - 5);
+        tempHeight = Math.max(h, options.length * tableRowMinHeight - 5);
     }
 
     function getGradient(color, id) {

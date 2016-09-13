@@ -393,7 +393,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         $('#listQuestions li').removeClass("active");
         that.closest("li").addClass("active");
-        selectedQuestion = that.attr("data-value");
+        selectedQuestion = that.attr("data-value").trim();
 
         var title = getCellContent(selectedQuestion, "VariableLabel");
 
@@ -1652,7 +1652,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
         if (questionNodes.length < 2) {
             for (var i = 0; i < data.rows.length; i++) {
-                nodes[i].value = data.rows[i][selectedQuestion];
+                // Need to access it like this because some keys get parsed wrongly and need to be trimmed
+                for (var key in data.rows[i]) {
+                    if (selectedQuestion = key.trim()) {
+                        nodes[i].value = data.rows[i][key];
+                    }
+                }
                 if (isNaN(nodes[i].value) ||nodes[i].info[yAxisMode] == "No response" || String(nodes[i].info[yAxisMode]).trim() == "" || String(nodes[i].value).trim() === "") {
                     continue;
                 }
@@ -1930,12 +1935,12 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function drawXAxisLegend(marginLeft, x) {
-        var value = $(".active label").attr("data-value");
+        var value = $(".active label").attr("data-value").trim();
         var delta = (x(1) - x(0));
 
         for (var j = 0; j < metadata.rows.length; j++) {
             //var reGetQuestionID = /Q[0-9]+[a-z]*/;
-            var questionID = metadata.rows[j]["Variable"];
+            var questionID = metadata.rows[j]["Variable"].trim();
             if (questionID == value) {
                 // Get the labels for this question
                 var labels;

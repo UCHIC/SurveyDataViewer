@@ -1149,7 +1149,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
             var deltaX = x(1) - x(0);
 
-            var value = $(".active label").attr("data-value");
+            var value = $(".active label").attr("data-value").trim();
             for (var i = 1; i < answers.length + 1; i++) {
                 // Get the list of labels
                 for (var j = 0; j < metadata.rows.length; j++) {
@@ -2316,7 +2316,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var evenOddCounter = "even";
 
         for (var prop in data.rows[0]) {
-            var question = prop;
+            var question = prop.trim();
             var questionContent;
 
             if(isMultipleSelectOne(question)){

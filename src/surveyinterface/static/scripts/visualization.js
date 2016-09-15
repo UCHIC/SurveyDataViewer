@@ -776,16 +776,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         for (var j = 0; j < tempQuestions.length; j++) {
             questionNodes[j] = [];
             for (var i = 0; i < nodesCopy.length; i++) {
-                var val;
+                var nodeValue;
                 // Need to look for the value by each index since some indexes cannot be accessed directly without trimming the key
                 for (var key in data.rows[i]) {
                     if (tempQuestions[j] == key.trim()) {
-                        val = data.rows[i][key];
+                        nodeValue = data.rows[i][key];
                         break;
                     }
                 }
                 var tempNode = {
-                    value: val,
+                    value: nodeValue,
                     info: nodesCopy[i].info,
                     temp: true,
                     tempPosY: j
@@ -893,19 +893,42 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 };
             });
 
-            if (questionNodes < 2) {
+            if (questionNodes.length < 2) {
                 nodes.forEach(function (d) {
-                    var posAnswer = ($.inArray(d.value, answers));
-                    var posOption = ($.inArray(d.info[yAxisMode], options));
-                    if (yAxisMode == "") {
-                        posOption = d.tempPosY;
+                    if (hasPluggin(selectedQuestion, "multiResponse") && isNaN(d.value)) {
+                        var values = d.value.split(";");
+
+                        for (var j = 0; j < values.length; j++) {
+                            if (values[j].length) {
+                                var posAnswer = ($.inArray(parseInt(values[j]), answers));
+                                var posOption = ($.inArray(d.info[yAxisMode], options));
+                                if (yAxisMode == "") {
+                                    posOption = d.tempPosY;
+                                }
+
+                                fixedNodes.forEach(function (o) {
+                                    if (o.pos.x == posAnswer && o.pos.y == posOption) {
+                                        o.amount += 1;
+                                    }
+                                });
+                            }
+                        }
+
+                    }
+                    else {
+                        var posAnswer = ($.inArray(d.value, answers));
+                        var posOption = ($.inArray(d.info[yAxisMode], options));
+                        if (yAxisMode == "") {
+                            posOption = d.tempPosY;
+                        }
+
+                        fixedNodes.forEach(function (o) {
+                            if (o.pos.x == posAnswer && o.pos.y == posOption) {
+                                o.amount += 1;
+                            }
+                        })
                     }
 
-                    fixedNodes.forEach(function (o) {
-                        if (o.pos.x == posAnswer && o.pos.y == posOption) {
-                            o.amount += 1;
-                        }
-                    })
                 });
             }
             else {
@@ -1069,23 +1092,27 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 //.style("text-decoration", "underline")
                 .style("fill", "#FFF")
                 .text(0).transition().duration(700).tween("text", function (d) {
-                var rowTotal = 0;   // Percentage is calculated per row
-
-                fixedNodes.forEach(function (o) {
-                    if (o.y == d.y) {
-                        rowTotal += o.amount;
+                    if (hasPluggin(selectedQuestion, "multiResponse")) {
+                        this.textContent = "";
+                        return;
                     }
+                    var rowTotal = 0;   // Percentage is calculated per row
+
+                    fixedNodes.forEach(function (o) {
+                        if (o.y == d.y) {
+                            rowTotal += o.amount;
+                        }
+                    });
+
+                    var i = d3.interpolate(this.textContent, (100 / rowTotal) * d.amount),
+                        prec = (d.amount + "").split("."),
+                        round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
+
+                    return function (t) {
+                        var value = (i(t) * round / round).toFixed(2);
+                        this.textContent = value + "%";
+                    };
                 });
-
-                var i = d3.interpolate(this.textContent, (100 / rowTotal) * d.amount),
-                    prec = (d.amount + "").split("."),
-                    round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
-
-                return function (t) {
-                    var value = (i(t) * round / round).toFixed(2);
-                    this.textContent = value + "%";
-                };
-            });
 
             // Append (n)
             fixedNodesContainers.append("svg:text")
@@ -1106,10 +1133,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     return "visible";
                 })
                 .attr("dy", ".31em")
-                //.style("text-decoration", "underline")
                 .style("fill", "rgb(194, 219, 240)")
                 .text(0).transition().duration(700).tween("text", function (d) {
-                var i = d3.interpolate(this.textContent, d.amount)
+                var i = d3.interpolate(this.textContent, d.amount);
                 var rowTotal = 0;   // Percentage is calculated per row
 
                 fixedNodes.forEach(function (o) {
@@ -1123,16 +1149,19 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 };
             });
 
-            // Calculate and draw significance flag
-            if (options.length > 1 && answers.length > 1) {
-                $("#significance-flag-container").show();
-                if (isSignificant(fixedNodes)) {
-                    showFlag(true);
-                }
-                else {
-                    showFlag(false);
+            if (!hasPluggin(selectedQuestion, "multiResponse")) {
+                // Calculate and draw significance flag
+                if (options.length > 1 && answers.length > 1) {
+                    $("#significance-flag-container").show();
+                    if (isSignificant(fixedNodes)) {
+                        showFlag(true);
+                    }
+                    else {
+                        showFlag(false);
+                    }
                 }
             }
+
 
             svg.selectAll(".fixedNodeCircle").attr("transform", transform);
         }
@@ -1673,9 +1702,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         var valuesY = [];
         var valuesX = [];
 
+        // Only one question selected
         if (questionNodes.length < 2) {
             for (var i = 0; i < data.rows.length; i++) {
-                // Need to access it like this because some keys get parsed wrongly and need to be trimmed
+                // Need to access the data like this because some keys get parsed wrongly and need to be trimmed
                 var yValue;
                 for (var key in data.rows[i]) {
                     if (selectedQuestion == key.trim()) {
@@ -1686,10 +1716,22 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         yValue = data.rows[i][key]; // value for Y Axis
                     }
                 }
-                if (isNaN(nodes[i].value) ||nodes[i].info[yAxisMode] == "No response" || String(nodes[i].info[yAxisMode]).trim() == "" || String(nodes[i].value).trim() === "") {
+
+                if (hasPluggin(selectedQuestion, "multiResponse") && nodes[i].value.length && nodes[i].value.split) {
+                    var values = nodes[i].value.split(";");
+                    for (var j = 0; j < values.length; j++) {
+                        if (values[j].length) {
+                            valuesX.push(parseInt(values[j]));
+                        }
+                    }
+                }
+                else if (isNaN(nodes[i].value) ||nodes[i].info[yAxisMode] == "No response" || String(nodes[i].info[yAxisMode]).trim() == "" || String(nodes[i].value).trim() === "") {
                     continue;
                 }
-                valuesX.push(nodes[i].value);
+                else {
+                    valuesX.push(parseInt(nodes[i].value));
+                }
+
                 valuesY.push(yValue);
             }
 
@@ -2253,22 +2295,26 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             else{
                 left = yPanelWidth + getYLabelSize() / 2;
             }
-            svg.append("svg:text")
-                .attr("x", left)
-                .attr("y", (i + 1) * deltaY - 6)
-                .style("text-anchor", "middle")
-                .attr("class", "yPanelLabel graph-object")
-                .style("font-size", "12px")
-                .style("fill", "rgb(194, 219, 240)")
-                .text(function () {
-                    var rowTotal = 0;   // Percentage is calculated per row
-                    fixedNodes.forEach(function (o) {
-                        if (o.pos.y == i) {
-                            rowTotal += o.amount;
-                        }
+
+            if (!hasPluggin(selectedQuestion, "multiResponse")) {
+                svg.append("svg:text")
+                    .attr("x", left)
+                    .attr("y", (i + 1) * deltaY - 6)
+                    .style("text-anchor", "middle")
+                    .attr("class", "yPanelLabel graph-object")
+                    .style("font-size", "12px")
+                    .style("fill", "rgb(194, 219, 240)")
+                    .text(function () {
+                        var rowTotal = 0;   // Percentage is calculated per row
+                        fixedNodes.forEach(function (o) {
+                            if (o.pos.y == i) {
+                                rowTotal += o.amount;
+                            }
+                        });
+                        return "n = " + rowTotal;
                     });
-                    return "n = " + rowTotal;
-                });
+            }
+
         }
     }
 

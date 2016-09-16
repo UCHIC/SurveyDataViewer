@@ -334,6 +334,36 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             localStorage.setItem("hideTips", e.target.checked);
         });
 
+        $("#btn-order-rows").click(function () {
+            var order = parseInt($(this).attr("data-order"));
+            if (order == -1) {
+                $(this).children('span').removeClass("glyphicon-triangle-top");
+                $(this).children('span').addClass("glyphicon-triangle-bottom");
+            }
+            else {
+                $(this).children('span').addClass("glyphicon-triangle-top");
+                $(this).children('span').removeClass("glyphicon-triangle-bottom");
+            }
+            $(this).attr("data-order", -order);
+
+            onAddRow([]);
+        });
+
+        $("#btn-order-columns").click(function () {
+            var order = parseInt($(this).attr("data-order"));
+            if (order == -1) {
+                $(this).children('span').removeClass("glyphicon-triangle-left");
+                $(this).children('span').addClass("glyphicon-triangle-right");
+            }
+            else {
+                $(this).children('span').addClass("glyphicon-triangle-left");
+                $(this).children('span').removeClass("glyphicon-triangle-right");
+            }
+            $(this).attr("data-order", -order);
+
+            onAddRow([]);
+        });
+
     }
 
     function loadTips (){
@@ -801,7 +831,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             if (spatialQuestion) {
                 $("#map-view")[0].disabled = true;
             }
-
         }
         else {
             $(".btnSubtract").hide();
@@ -821,6 +850,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .domain([0, options.length])
             .range([0, tempHeight - margin.bottom - margin.top]);
 
+        var deltaY = y(1) - y(0);
         if (numberOfQuestions > 1) {
             // Draw y-axis legend
             for (var i = 0; i < numberOfQuestions; i++) {
@@ -841,13 +871,20 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 $("#txtDescription").text("");
 
                 //Center y axis legend
-                var deltaY = y(1) - y(0);
-                var height = $("#y-legend" + i)[0].getBBox().height;
-                $("#y-legend" + i).attr("y", ((tempHeight - margin.bottom) / (options.length)) * i + deltaY / 2 - height / 2);
+                var textHeight = $("#y-legend" + i)[0].getBBox().height;
+                var left = (yPanelWidth + 10);
+                var top = (deltaY / 2 - textHeight / 2);
+
+                if (view == "percentage") {
+                    top -= 7;
+                }
+
+                $("#y-legend" + i).attr("transform", "translate(" + left + "," + top + ")")
             }
         }
         else {
             drawYAxisLegend(y);
+            $("#btn-order-rows").hide();
         }
 
         var marginLeft = getYLabelSize() + yPanelWidth;
@@ -871,6 +908,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         drawGradientBackground(marginLeft);
         drawLegendContainers(marginLeft);
         drawYAxisPanel();
+
+        if (options.length > 1 && numberOfQuestions < 2) {
+            $("#btn-order-rows").show();
+            $("#btn-order-rows").width(getYLabelSize() - 12);
+        }
+        else {
+            $("#btn-order-rows").hide();
+        }
 
         if (view == "percentage") {
             drawVerticalLines(marginLeft, x);
@@ -1237,6 +1282,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                                     .call(wrap, deltaX);
                             }
                         }
+
+                        // Reposition reorder button
+                        if (answers.length > 1 && numberOfQuestions < 2) {
+                            $("#btn-order-columns").css("top", (tempHeight + margin.bottom - 20) + "px");
+                            $("#btn-order-columns").css("left", (marginLeft + 8) + "px");
+                            $("#btn-order-columns").css("height", (margin.bottom - 8) + "px");
+                            $("#btn-order-columns").show();
+                        }
+                        else {
+                            $("#btn-order-columns").hide();
+                        }
                     }
                 }
             }
@@ -1489,6 +1545,8 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#percentage-view").removeClass("disabled");
         $("#mean-view").removeClass("disabled");
         $("#significance-flag-container").hide();
+        $("#btn-order-columns").hide();
+        $("#btn-order-rows").hide();
 
         clearCanvas();
 
@@ -1755,6 +1813,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         answers = valuesX.getUnique().sort(function (a, b) {
             return a - b
         });
+
+        if ($("#btn-order-rows").attr("data-order") == "-1" && options.length > 1) {
+            options = options.reverse();
+        }
+
+        if ($("#btn-order-columns").attr("data-order") == "-1" && answers.length > 1) {
+            answers = answers.reverse();
+        }
 
         tempHeight = Math.max(h, options.length * tableRowMinHeight - 5);
     }
@@ -2066,6 +2132,17 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     }
                 }
             }
+
+            // Reposition reorder button
+            if (answers.length > 1 && numberOfQuestions < 2) {
+                $("#btn-order-columns").css("top", (tempHeight + margin.bottom - 20) + "px");
+                $("#btn-order-columns").css("left", (marginLeft + 8) + "px");
+                $("#btn-order-columns").css("height", (margin.bottom - 8) + "px");
+                $("#btn-order-columns").show();
+            }
+            else {
+                $("#btn-order-columns").hide();
+            }
         }
 
     }
@@ -2114,7 +2191,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 top -= 7;
             }
 
-            $("#y-legend" + i).attr("transform", "translate(" + left + "," + top + ")")
+            $("#y-legend" + i).attr("transform", "translate(" + left + "," + top + ")");
         }
     }
 
@@ -2296,24 +2373,33 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 left = yPanelWidth + getYLabelSize() / 2;
             }
 
-            if (!hasPluggin(selectedQuestion, "multiResponse")) {
-                svg.append("svg:text")
-                    .attr("x", left)
-                    .attr("y", (i + 1) * deltaY - 6)
-                    .style("text-anchor", "middle")
-                    .attr("class", "yPanelLabel graph-object")
-                    .style("font-size", "12px")
-                    .style("fill", "rgb(194, 219, 240)")
-                    .text(function () {
-                        var rowTotal = 0;   // Percentage is calculated per row
+            // Draw row totals n
+            svg.append("svg:text")
+                .attr("x", left)
+                .attr("y", (i + 1) * deltaY - 6)
+                .style("text-anchor", "middle")
+                .attr("class", "yPanelLabel graph-object")
+                .style("font-size", "12px")
+                .style("fill", "rgb(194, 219, 240)")
+                .text(function () {
+                    var rowTotal = 0;
+
+                    if (hasPluggin(selectedQuestion, "multiResponse")) {
+                        // Compute total participants per row
+                        console.log(options);
+                        nodes.forEach(function (d) {
+
+                        });
+                    }
+                    else {
                         fixedNodes.forEach(function (o) {
                             if (o.pos.y == i) {
                                 rowTotal += o.amount;
                             }
                         });
-                        return "n = " + rowTotal;
-                    });
-            }
+                    }
+                    return "n = " + rowTotal;
+                });
 
         }
     }

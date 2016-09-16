@@ -13,7 +13,7 @@ requirejs.config({
             'vendor/jquery/jquery.min'
         ],
         bootstrap: [
-            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min',
+            '//netdna.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min',
             'vendor/bootstrap/bootstrap.min'
         ],
         d3: ['//cdnjs.cloudflare.com/ajax/libs/d3/3.4.6/d3.min',

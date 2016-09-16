@@ -274,14 +274,13 @@ text.shadow {
     background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);
     text-shadow: 0 1px 0 #fff;
     border: 1px solid rgb(108, 96, 96);
-    text-align: left;
+    text-align: center;
     position: absolute;
     left: 7px;
     top: 5px;
 }
 
 #btnCategories span {
-    margin-left: -7px;
     top: -3px;
 }
 
@@ -421,6 +420,7 @@ li .checkbox {
 .navbar-brand img {
     max-height: 68px;
     margin-right: 15px;
+    display: inline-block;
 }
 
 .navbar-collapse.in {
@@ -966,4 +966,33 @@ div.arrow_box .carousel img {
     max-height: 500px;
     max-width: 800px;
     overflow: auto;
+}
+
+#btn-order-rows, #btn-order-columns {
+    position: absolute;
+    border: 1px solid rgb(108, 96, 96);
+    border-radius: 0;
+    display: none;
+    padding: 0;
+}
+
+#btn-order-rows {
+    left: 89px;
+    top: 100px;
+    height: 16px;
+}
+
+#btn-order-columns {
+    left: 89px;
+    top: 200px;
+    width: 16px;
+    height: 50px;
+}
+
+#btn-order-rows > span {
+    top: -1px;
+}
+
+#btn-order-columns > span {
+    top: calc(50% - 7px);
 }

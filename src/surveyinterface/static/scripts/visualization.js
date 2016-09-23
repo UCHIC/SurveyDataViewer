@@ -24,7 +24,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var yAxisMode = "All";
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top: 0, bottom: 60, left: 0, right: 5};
-    var w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 7;
+    var w = $("#top-bar").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 7;
     var tempHeight = h;
     var tableRowMinHeight = 150;
     var view = "";
@@ -60,7 +60,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#visualizationContent").height($(".mainContainer").height() - 10);
         $(".panel-left").height($(".mainContainer").height());
 
-        w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
+        w = $("#top-bar").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
         clearCanvas();
 
         tempHeight = Math.max(h, options.length * tableRowMinHeight - 5);
@@ -903,6 +903,10 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .range([0, w - marginLeft]);
 
         // Draw stuff
+        // Compute width again in case the scroll bar has appeared
+        w = $("#top-bar").width();
+        svg.attr("width", w);
+
         drawOuterRect();
         drawGrayAlternation(y);
         drawGradientBackground(marginLeft);
@@ -1207,7 +1211,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
             }
 
-
             svg.selectAll(".fixedNodeCircle").attr("transform", transform);
         }
         else if (view == "mean") {
@@ -1279,7 +1282,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                                         return labelsArray[answers[k]];
                                     })
-                                    .call(wrap, deltaX);
+                                    .call(wrap, deltaX, k);
                             }
                         }
 
@@ -1532,7 +1535,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function clearCanvas() {
-        //svg.selectAll("*:not(.map-container)").remove();
         svg.selectAll(".graph-object").remove();
     }
 
@@ -2168,7 +2170,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 .attr("x", "0")
                 .attr("dx", "0")
                 .attr("dy", "0")
-                //.attr("transform", "translate(" + (yPanelWidth + 10) + "," + 0 + ")")
                 .text(function () {
                     if (yAxisMode == 'All')
                         return "";
@@ -2390,11 +2391,11 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     var rowTotal = 0;
 
                     if (hasPluggin(selectedQuestion, "multiResponse")) {
+                        return "";
                         // Compute total participants per row
-                        console.log(options);
-                        nodes.forEach(function (d) {
-
-                        });
+                        // nodes.forEach(function (d) {
+                        //
+                        // });
                     }
                     else {
                         fixedNodes.forEach(function (o) {
@@ -2548,17 +2549,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             }
         });
     }
-
-    //function wrap(text, width) {
-    //    var padding = 10;
-    //    var textLength = width,
-    //        val = text.text();
-    //    while (textLength > (width - 2 * padding) && val.length > 0) {
-    //        val = val.slice(0, -1);
-    //        text.text(val + '...');
-    //        textLength = text.node().getComputedTextLength();
-    //    }
-    //}
 
     return self;
 });

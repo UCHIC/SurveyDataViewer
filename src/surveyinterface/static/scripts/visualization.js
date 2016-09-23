@@ -1792,11 +1792,14 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     valuesX.push(parseInt(nodes[i].value));
                 }
 
-                valuesY.push(yValue);
+                if (yValue && yValue.toString().trim()) {
+                    valuesY.push(yValue);
+                }
+
 
             }
 
-            options = valuesY.getUnique().filter(function(a) {return parseInt(a)}).sort(function (a, b) {
+            options = valuesY.getUnique().filter(function(a) {return a}).sort(function (a, b) {
                 return b - a
             });
 

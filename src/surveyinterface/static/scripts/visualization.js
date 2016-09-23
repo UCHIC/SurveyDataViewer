@@ -2022,26 +2022,27 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("fill", "#FFF")
             .attr("transform", "translate(" + 17 + "," + (tempHeight - margin.bottom/2 + 3) + ")")
             .text(function () {
-                if (flag == true)
-                    return "✔";
-                else
-                    return "✖"
-            });
-
-        // Info symbol
-        svg.append("text")
-            .attr("dx", 0)
-            .attr("class", "graph-object info-symbol")
-            .attr("dy", 0)
-            .attr("text-anchor", "middle")
-            .attr("font-weight", "normal")
-            .attr("font-size", "20px")
-             .attr("fill", 'url(#gradientinfo)')
-            .attr("transform", "translate(" + (textWidth + 44) + "," + (tempHeight - margin.bottom/2 + 4) + ")")
-            .text("𝒊")
+                return "𝒊";
+            })
             .on("click", function () {
                 $("#btnHelp").click()
             });
+        ;
+
+        // // Info symbol
+        // svg.append("text")
+        //     .attr("dx", 0)
+        //     .attr("class", "graph-object info-symbol")
+        //     .attr("dy", 0)
+        //     .attr("text-anchor", "middle")
+        //     .attr("font-weight", "normal")
+        //     .attr("font-size", "20px")
+        //      .attr("fill", 'url(#gradientinfo)')
+        //     .attr("transform", "translate(" + (textWidth + 44) + "," + (tempHeight - margin.bottom/2 + 4) + ")")
+        //     .text("𝒊")
+        //     .on("click", function () {
+        //         $("#btnHelp").click()
+        //     });
     }
 
     function drawOuterRect() {

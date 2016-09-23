@@ -1791,11 +1791,16 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 }
 
                 valuesY.push(yValue);
+
             }
 
-            options = valuesY.getUnique().sort(function (a, b) {
+            options = valuesY.getUnique().filter(function(a) {return parseInt(a)}).sort(function (a, b) {
                 return b - a
             });
+
+            if (options.length == 0) {
+                options.push(undefined);    // default in case there are no valid options listed
+            }
         }
         else {
             // Add data when multiple questions are selected
@@ -2125,7 +2130,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                                 return labelsArray[answers[i]];
                             })
-                            .call(wrap, delta);
+                            .call(wrap, delta, i);
 
                         var textHeight = $("#x-legend" + i)[0].getBBox().height;
                         $("#x-legend" + i).attr("y", tempHeight - margin.bottom + 10 + (margin.bottom / 2) - textHeight / 2);
@@ -2512,7 +2517,15 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         return false;
     }
 
-    function wrap(text, width) {
+    function wrap(text, width, i) {
+
+        var offsetLeft = 0;
+        if (i == 0) {
+            var offset =  $("#btn-order-columns").width() + 4;
+            width -= $("#btn-order-columns").width() + 8; // At the first question, make space for the order button
+            offsetLeft = offset / 2;
+        }
+
         text.each(function () {
             var text = d3.select(this),
                 words = text.text().split(/\s+/).reverse(),
@@ -2522,7 +2535,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 lineHeight = 16, // px
                 y = text.attr("y"),
                 dy = parseFloat(text.attr("dy")),
-                tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "px");
+                tspan = text.text(null).append("tspan").attr("x", 0 + offsetLeft).attr("y", y).attr("dy", dy + "px");
             while (word = words.pop()) {
                 line.push(word);
                 tspan.text(line.join(" "));
@@ -2530,7 +2543,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     line.pop();
                     tspan.text(line.join(" "));
                     line = [word];
-                    tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "px").text(word);
+                    tspan = text.append("tspan").attr("x", 0 + offsetLeft).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "px").text(word);
                 }
             }
         });

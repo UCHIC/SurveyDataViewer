@@ -24,7 +24,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var yAxisMode = "All";
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top: 0, bottom: 60, left: 0, right: 5};
-    var w = $("#top-bar").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 7;
+    var w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 7;
     var tempHeight = h;
     var tableRowMinHeight = 150;
     var view = "";
@@ -60,7 +60,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         $("#visualizationContent").height($(".mainContainer").height() - 10);
         $(".panel-left").height($(".mainContainer").height());
 
-        w = $("#top-bar").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
+        w = $("#visualizationContent").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 1;
         clearCanvas();
 
         tempHeight = Math.max(h, options.length * tableRowMinHeight - 5);
@@ -845,6 +845,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         clearCanvas();
         refreshValues();
         svg.attr("height", tempHeight);
+        // Compute width again in case the scroll bar has appeared
+        // w = $("#top-bar").width();
+        // svg.attr("width", w);
 
         var y = d3.scale.linear()
             .domain([0, options.length])
@@ -903,9 +906,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .range([0, w - marginLeft]);
 
         // Draw stuff
-        // Compute width again in case the scroll bar has appeared
-        w = $("#top-bar").width();
-        svg.attr("width", w);
 
         drawOuterRect();
         drawGrayAlternation(y);
@@ -2001,7 +2001,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 $("#btnHelp").click()
             });
 
-        var textWidth = $(".flag-text")[0].getBBox().width;
+        // var textWidth = $(".flag-text")[0].getBBox().width;
         var flagRadius = 10;
 
         flagContainer.append("svg:circle")

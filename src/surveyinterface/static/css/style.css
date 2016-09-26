@@ -22,7 +22,7 @@ h6 {
     float: right;
     padding: 4px;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 
 #surveyContainer .survey {

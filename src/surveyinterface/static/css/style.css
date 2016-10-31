@@ -263,8 +263,7 @@ text.shadow {
 }
 
 #btnCategories {
-    width: 67px;
-    height: 24px;
+    height: 32px;
     border-radius: 1px;
     color: #000;
     background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
@@ -277,10 +276,6 @@ text.shadow {
     position: absolute;
     left: 7px;
     top: 5px;
-}
-
-#btnCategories span {
-    top: -3px;
 }
 
 span.btnAdd, span.btnSubtract {
@@ -976,13 +971,13 @@ div.arrow_box .carousel img {
 }
 
 #btn-order-rows {
-    left: 89px;
+    left: 157px;
     top: 100px;
     height: 16px;
 }
 
 #btn-order-columns {
-    left: 89px;
+    left: 157px;
     top: 200px;
     width: 16px;
     height: 50px;

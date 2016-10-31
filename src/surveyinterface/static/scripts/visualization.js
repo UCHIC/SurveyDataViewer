@@ -32,7 +32,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var options = [];
     var tableColor = "#666";
     var legendColor = "#000";
-    var yPanelWidth = 80;
+    var yPanelWidth = 148;
     var gradientCount = 0;
     var nodes = [];
     var numberOfQuestions = 0;
@@ -1531,6 +1531,9 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
         else {
             // Just draw an empty frame
             drawOuterRect();
+            var marginLeft = getYLabelSize() + yPanelWidth;
+            drawGradientBackground(marginLeft);
+            drawHorizontalLines();
         }
     }
 

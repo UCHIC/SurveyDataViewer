@@ -34,7 +34,7 @@ h6 {
     border-radius: 2px;
     padding: 20px;
     margin-bottom: 20px;
-    height: 330px;
+    height: 340px;
 }
 
 #txtDescription {
@@ -89,7 +89,7 @@ h6 {
 }
 
 .survey a.blue-button, .survey a.gray-button {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     text-decoration: none;
 }
 
@@ -629,6 +629,10 @@ path[data-zip] {
 .tip[data-id="4"] {
     left: calc(16.67% - 105px);
     top: calc(100% - 380px);
+}
+
+button:focus {
+    outline: none !important;
 }
 
 .blue-button {

@@ -46,6 +46,10 @@ h6 {
     width: 100%;
 }
 
+.fa-users {
+    color: #00a6e9;
+}
+
 .survey .caption {
     color: #333;
     float: left;
@@ -603,15 +607,15 @@ path[data-zip] {
 }
 
 .tip[data-id="1"] {
-    left: calc(16.67% + 30px);
+    left: 16.67%;
     top: 210px;
 }
 
 .tip[data-id="2"] {
     height: calc(100% - 300px);
     max-height: 625px;
-    left: calc(100% - 342px);
-    top: 110px;
+    left: calc(100% - 347px);
+    top: 112px;
 }
 
 .tip[data-id="2"] > div {
@@ -622,13 +626,13 @@ path[data-zip] {
 }
 
 .tip[data-id="3"] {
-    left: calc(16.67% - 105px);
-    top: 150px;
+    left: calc(16.67% - 114px);
+    top: 202px;
 }
 
 .tip[data-id="4"] {
-    left: calc(16.67% - 105px);
-    top: calc(100% - 380px);
+    left: calc(16.67% - 116px);
+    top: calc(100% - 343px);
 }
 
 button:focus {
@@ -734,8 +738,8 @@ button:focus {
 
 .modal-backdrop {
     opacity: 0.1 !important;
-    height: calc(100% - 100px);
-    margin-top: 100px;
+    height: calc(100% - 75px);
+    margin-top: 75px;
 }
 
 /* -----  Arrow box ---------- */
@@ -892,14 +896,12 @@ div.arrow_box .carousel img {
 .no-click-layer {
     width: 100%;
     position: absolute;
-    top: 0;
-    height: calc(100% - 30px);
-    margin-top: 30px;
+    height: calc(100%);
 }
 
 #guideModal {
     height: calc(100% - 70px);
-    margin-top: 100px;
+    margin-top: 70px;
 }
 
 .tip-title {

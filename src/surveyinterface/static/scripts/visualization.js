@@ -32,7 +32,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var options = [];
     var tableColor = "#666";
     var legendColor = "#000";
-    var yPanelWidth = 115;
+    var yPanelWidth = 86;
     var gradientCount = 0;
     var nodes = [];
     var numberOfQuestions = 0;

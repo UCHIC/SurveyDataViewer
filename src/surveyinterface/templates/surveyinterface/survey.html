@@ -30,11 +30,9 @@
                     significant according to a chi-square test. The distribution of observed frequencies is compared
                     to expected frequencies from a distribution where there is no relationship between the two axes.
                     If the total difference is greater than the chi-square statistic for the 95% confidence level,
-                    than the results are considered statistically significant.</p>
-
+                    then the results are considered statistically significant.</p>
                 <button type="button" class="gray-button" data-dismiss="modal">Close</button>
             </div>
-
         </div>
     </div>
 
@@ -182,17 +180,19 @@
                     </div>
                 </div>
             </div>
-            <span id="btn-order-rows" data-order="1" class="btn" title="Order">
+            <span id="btn-order-rows" data-order="1" class="btn btn-info" title="Order">
                 <span class="glyphicon glyphicon-triangle-bottom"></span>
             </span>
-            <span id="btn-order-columns" data-order="1" class="btn" title="Order">
+            <span id="btn-order-columns" data-order="1" class="btn btn-info" title="Order">
                 <span class="glyphicon glyphicon-triangle-right"></span>
             </span>
             <div class="dropdown">
-                <button title="Demographic variables" id="btnCategories" class="btn dropdown-toggle" type="button"
+                <button title="Demographic variables" id="btnCategories" class="btn dropdown-toggle text-center"
+                        type="button"
                         data-toggle="dropdown">
-                    <span class="pull-left">Group<br>Results&nbsp;</span>
-                    <span class="glyphicon glyphicon-chevron-down pull-right" aria-hidden="true"></span>
+                    <div>Group</div>
+                    <div>Results</div>
+                    <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
                 </button>
                 <ul id="lstYAxisMode" class="dropdown-menu">
                     <li><a data-axis="All" href="#">All</a></li>

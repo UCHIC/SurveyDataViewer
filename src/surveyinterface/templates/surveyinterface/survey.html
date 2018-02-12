@@ -143,19 +143,17 @@
     </div>
 
     <div class="mainContainer" id="mainContent">
-        <div class="panel-left col-xs-2">
+        <div class="panel-left col-sm-2">
             <div id="surveyInfo">
-                <img src="{% static 'images/survey-icon.png' %}" alt="...">
-
                 <div class="caption">
-                    <h4>{{ object.name }}</h4>
+                    <h4><i style="margin-left: 4px;" class="fas fa-users"></i> {{ object.name }}</h4>
                 </div>
             </div>
             <div id="listQuestions" class="panel-group">
             </div>
         </div>
 
-        <div id="visualizationContent" class="col-xs-10">
+        <div id="visualizationContent" class="col-sm-10">
             <div id="top-bar">
                 <div id="captionContainer" class="panel panel-primary">
                     <div class="panel-heading">
@@ -193,7 +191,7 @@
             <div class="dropdown">
                 <button title="Demographic variables" id="btnCategories" class="btn dropdown-toggle" type="button"
                         data-toggle="dropdown">
-                    <span >Group Results&nbsp;</span>
+                    <span class="pull-left">Group<br>Results&nbsp;</span>
                     <span class="glyphicon glyphicon-chevron-down pull-right" aria-hidden="true"></span>
                 </button>
                 <ul id="lstYAxisMode" class="dropdown-menu">

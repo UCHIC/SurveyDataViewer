@@ -32,7 +32,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var options = [];
     var tableColor = "#666";
     var legendColor = "#000";
-    var yPanelWidth = 148;
+    var yPanelWidth = 115;
     var gradientCount = 0;
     var nodes = [];
     var numberOfQuestions = 0;
@@ -2447,7 +2447,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                             return metadata.rows[j][prop];
                         }
                         else {
-                            return "";
+                            return "No content found.";
                         }
                     }
                 }
@@ -2483,7 +2483,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
 
                     $("#listQuestions").append('<li class="' + evenOddCounter + '"><a data-toggle="collapse" class="accordion-toggle" data-parent="#listQuestions" href="' + "#Q" + id + '">' +
                     title +
-                    '</a><span class="caret"></span></li>' + '<div id="Q' + id + '"  class="panel-collapse collapse">' + '</div>');
+                    '</a><span class="caret"></span>' + '<div id="Q' + id + '"  class="panel-collapse collapse">' + '</div></li>');
                     evenOddCounter = evenOddTick(evenOddCounter);
                 }
 

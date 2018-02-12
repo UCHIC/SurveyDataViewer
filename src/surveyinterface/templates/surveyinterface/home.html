@@ -5,25 +5,25 @@
     <div class="mainContainer" id="surveyContainer">
         <!-- Page Heading -->
         <div class="row">
-            <div class="col-xs-12">
+            <div class="col-sm-12">
                 <h2 class="page-header">Surveys</h2>
             </div>
             {% for survey in object_list %}
-                <div class="col-xs-12 col-sm-4">
-                    <div class="survey col-xs-12">
+                <div class="col-sm-12 col-sm-4">
+                    <div class="survey col-sm-12">
 
-                        <div class="col-xs-12"><h4><img src="{% static 'images/survey-icon.png' %}" alt="..."> {{ survey.name }}</h4></div>
-                        <div class="col-xs-12">{{ survey.description }}</div>
+                        <div class="col-sm-12"><h4><i class="glyphicon glyphicon-asterisk"></i> {{ survey.name }}</h4></div>
+                        <div class="col-sm-12">{{ survey.description }}</div>
 
-                        <div class="col-xs-12 buttons-container">
-                            <a href="{% url 'survey-view' survey.code %}" class="blue-button col-xs-12"
+                        <div class="col-sm-12 buttons-container">
+                            <a href="{% url 'survey-view' survey.code %}" class="blue-button col-sm-12"
                                role="button">Explore results</a>
 
                             <a href="{{ survey.pdf.url }}"
-                               class="gray-button col-xs-12"
+                               class="gray-button col-sm-12"
                                role="button" target="_blank">View copy of survey</a>
 
-                            <a href="{% url 'survey-info' survey.code %}" class="gray-button col-xs-12"
+                            <a href="{% url 'survey-info' survey.code %}" class="gray-button col-sm-12"
                                role="button">About
                                 Survey</a>
                         </div>

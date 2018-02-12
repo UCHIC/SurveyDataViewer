@@ -52,19 +52,12 @@ h6 {
     width: 150px;
 }
 
-#surveyInfo img {
-    padding: 4px;
-    float: left;
-    display: inline;
-    width: 50px;
-    height: 50px;
-    margin: 5px;
-}
-
 #surveyInfo {
+    height: 95px;
     width: 100%;
     border: 1px solid rgb(163, 163, 163);
     float: left;
+    overflow: hidden;
 }
 
 .panel-left {
@@ -123,7 +116,7 @@ svg {
 
 #listQuestions {
     width: 100%;
-    height: calc(100% - 60px);
+    height: calc(100% - 96px);
     overflow-y: auto;
     overflow-x: hidden;
     float: left;
@@ -263,7 +256,7 @@ text.shadow {
 }
 
 #btnCategories {
-    height: 32px;
+    height: 54px;
     border-radius: 1px;
     color: #000;
     background-image: -webkit-linear-gradient(top, #f4f5f5, #dfdddd);
@@ -272,10 +265,15 @@ text.shadow {
     background-image: -ms-linear-gradient(top, #f4f5f5, #dfdddd);
     text-shadow: 0 1px 0 #fff;
     border: 1px solid rgb(108, 96, 96);
-    text-align: center;
+    text-align: left;
     position: absolute;
     left: 7px;
     top: 5px;
+}
+
+#btnCategories .glyphicon-chevron-down {
+    margin-top: 12px;
+    margin-left: 9px;
 }
 
 span.btnAdd, span.btnSubtract {
@@ -328,16 +326,21 @@ hr {
     border-bottom: 1px solid #838383;
 }
 
-.even {
+.info-symbol:hover {
+    cursor: pointer;
+}
+
+#listQuestions li:nth-child(even) {
     background: #FFF;
 }
 
-.odd {
+#listQuestions li:nth-child(odd) {
     background: #EFEFEF;
 }
 
-.info-symbol:hover {
-    cursor: pointer;
+#listQuestions li > .collapse {
+    border-top: 1px solid #aaa;
+    margin: -1px;
 }
 
 #listQuestions li:not(.indented) {

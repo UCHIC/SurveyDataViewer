@@ -10,22 +10,23 @@
             </div>
             {% for survey in object_list %}
                 <div class="col-sm-12 col-sm-4">
-                    <div class="survey col-sm-12">
+                    <div class="survey">
+                        <div class="survey-title">
+                            <h4 title="{{ survey.name }}"><i class="fas fa-users"></i> {{ survey.name }}</h4>
+                        </div>
 
-                        <div class="col-sm-12"><h4><i class="glyphicon glyphicon-asterisk"></i> {{ survey.name }}</h4></div>
-                        <div class="col-sm-12">{{ survey.description }}</div>
+                        <div class="survey-description" title="{{ survey.description }}" style="margin-top: 20px;">{{ survey.description }}</div>
 
-                        <div class="col-sm-12 buttons-container">
+                        <div class="buttons-container">
                             <a href="{% url 'survey-view' survey.code %}" class="blue-button col-sm-12"
-                               role="button">Explore results</a>
+                               role="button"><i class="fas fa-clipboard"></i> Explore results</a>
 
                             <a href="{{ survey.pdf.url }}"
                                class="gray-button col-sm-12"
-                               role="button" target="_blank">View copy of survey</a>
+                               role="button" target="_blank"><i class="fas fa-file-pdf"></i> View copy of survey</a>
 
                             <a href="{% url 'survey-info' survey.code %}" class="gray-button col-sm-12"
-                               role="button">About
-                                Survey</a>
+                               role="button"><i class="fas fa-question-circle"></i> About Survey</a>
                         </div>
                     </div>
                 </div>

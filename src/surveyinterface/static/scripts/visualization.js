@@ -2291,7 +2291,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("class", "yPanelLabel graph-object")
             .attr("fill", legendColor)
             .style("text-anchor", "middle")
-            .style("font-size", "14px")
+            .style("font-size", "16px")
             .text(yAxisMode);
 
         // Reposition label
@@ -2447,7 +2447,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                             return metadata.rows[j][prop];
                         }
                         else {
-                            return "No content found.";
+                            return "";
                         }
                     }
                 }

@@ -3,7 +3,7 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    min-width: 500px;
+    min-width: 1150px;
 }
 
 body,
@@ -65,7 +65,8 @@ h6 {
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
-    height: 84px;
+    height: 92px;
+    padding: 4px;
 }
 
 .panel-left {

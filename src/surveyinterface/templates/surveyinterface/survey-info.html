@@ -6,16 +6,17 @@
         <div class="row">
             <div class="col-sm-12">
                 <a id="btn-back" href="../">
-                    <span class="glyphicon glyphicon-eur"></span><span>Back to browsing</span>
+                    <i class="fas fa-arrow-circle-left"></i><span> Back to browsing</span>
                 </a>
 
                 <a href="{% url 'survey-view' survey.code %}" id="view-data" href="../" type="button"
                    class="btn btn-lg blue-button">
                     Explore results
                 </a>
+
                 <a onclick="ga('send', 'event', 'PDF', 'Download', 'Survey Document - PDF Download');"
                    target="_blank" href="{% static survey.pdf.url %}" id="view-instrument" href="../" type="button"
-                   class="btn btn-lg gray-button">
+                   class="btn btn-lg gray-button" style="margin-right: 8px;">
                     View copy of survey
                 </a>
             </div>

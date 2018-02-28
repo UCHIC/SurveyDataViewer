@@ -24,7 +24,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     var yAxisMode = "All";
     var tooltip = CustomTooltip("gates_tooltip", 240);
     var margin = {top: 0, bottom: 60, left: 0, right: 5};
-    var w = $("#top-bar").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 7;
+    var w = $("#top-bar").width(), h = $("#visualizationContent").height() - $("#top-bar").height() - 8;
     var tempHeight = h;
     var tableRowMinHeight = 150;
     var view = "";
@@ -1798,8 +1798,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 if (yValue && yValue.toString().trim()) {
                     valuesY.push(yValue);
                 }
-
-
             }
 
             options = valuesY.getUnique().filter(function(a) {return a}).sort(function (a, b) {
@@ -2026,29 +2024,13 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
             .attr("text-anchor", "middle")
             .attr("font-weight", "normal")
             .attr("fill", "#FFF")
-            .attr("transform", "translate(" + 17 + "," + (tempHeight - margin.bottom/2 + 3) + ")")
+            .attr("transform", "translate(" + 17 + "," + (tempHeight - margin.bottom / 2 + 3) + ")")
             .text(function () {
                 return "𝒊";
             })
             .on("click", function () {
                 $("#btnHelp").click()
             });
-        ;
-
-        // // Info symbol
-        // svg.append("text")
-        //     .attr("dx", 0)
-        //     .attr("class", "graph-object info-symbol")
-        //     .attr("dy", 0)
-        //     .attr("text-anchor", "middle")
-        //     .attr("font-weight", "normal")
-        //     .attr("font-size", "20px")
-        //      .attr("fill", 'url(#gradientinfo)')
-        //     .attr("transform", "translate(" + (textWidth + 44) + "," + (tempHeight - margin.bottom/2 + 4) + ")")
-        //     .text("𝒊")
-        //     .on("click", function () {
-        //         $("#btnHelp").click()
-        //     });
     }
 
     function drawOuterRect() {
@@ -2526,7 +2508,6 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
     }
 
     function wrap(text, width, i) {
-
         var offsetLeft = 0;
         if (i == 0) {
             var offset =  $("#btn-order-columns").width() + 4;
@@ -2543,15 +2524,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                 lineHeight = 16, // px
                 y = text.attr("y"),
                 dy = parseFloat(text.attr("dy")),
-                tspan = text.text(null).append("tspan").attr("x", 0 + offsetLeft).attr("y", y).attr("dy", dy + "px");
+                tspan = text.text(null).append("tspan").attr("x", offsetLeft).attr("y", y).attr("dy", dy + "px");
             while (word = words.pop()) {
                 line.push(word);
                 tspan.text(line.join(" "));
-                if (tspan.node().getComputedTextLength() > width) {
+                if (tspan.node().getComputedTextLength() > width - 10) {
+                    lineNumber++;
                     line.pop();
                     tspan.text(line.join(" "));
                     line = [word];
-                    tspan = text.append("tspan").attr("x", 0 + offsetLeft).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "px").text(word);
+                    tspan = text.append("tspan").attr("x", offsetLeft)
+                        .attr("dy", lineHeight + "px")
+                        .text(word);
                 }
             }
         });

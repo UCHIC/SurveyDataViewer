@@ -1795,18 +1795,18 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                     valuesX.push(parseInt(nodes[i].value));
                 }
 
-                if (yValue && yValue.toString().trim()) {
+                if (!isNaN(yValue) && yValue.toString().trim()) {
                     valuesY.push(yValue);
                 }
             }
 
-            options = valuesY.getUnique().filter(function(a) {return a}).sort(function (a, b) {
-                return b - a
-            });
+            options = valuesY.getUnique()
+                .sort(function (a, b) {
+                    return b - a;
+                });
 
-            if (options.length == 0) {
+            if (!options.length)
                 options.push(undefined);    // default in case there are no valid options listed
-            }
         }
         else {
             // Add data when multiple questions are selected
@@ -2167,7 +2167,7 @@ define('visualization', ['bootstrap', 'd3Libraries', 'mapLibraries', 'underscore
                         var questionID = metadata.rows[j]["Variable"];
                         if (questionID == infoQuestions[yAxisMode]) {
                             if (getLabel(questionID, options[i]) == null) {
-                                return options[i];
+                                return "";
                             }
                             return getLabel(questionID, options[i]);
                         }

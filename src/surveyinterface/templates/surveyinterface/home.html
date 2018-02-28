@@ -11,8 +11,11 @@
             {% for survey in object_list %}
                 <div class="col-sm-12 col-sm-4">
                     <div class="survey">
+                        <b class="page-stamp page-stamp-article">
+                            <i class="fas fa-users"></i>
+                        </b>
                         <div class="survey-title">
-                            <h4 title="{{ survey.name }}"><i class="fas fa-users"></i> {{ survey.name }}</h4>
+                            <h4 title="{{ survey.name }}">{{ survey.name }}</h4>
                         </div>
 
                         <div class="survey-description" title="{{ survey.description }}" style="margin-top: 20px;">{{ survey.description }}</div>

@@ -21,7 +21,6 @@ body, h1, h2, h3, h4, h5, h6 {
 }
 
 #surveyContainer .survey {
-    border: 1px solid #ddd;
     background-color: #F3FAFF;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
@@ -29,6 +28,7 @@ body, h1, h2, h3, h4, h5, h6 {
     padding: 20px;
     margin-bottom: 20px;
     height: 340px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 
 #txtDescription {
@@ -40,7 +40,7 @@ body, h1, h2, h3, h4, h5, h6 {
     width: 100%;
 }
 
-.fa-users {
+#surveyInfo .fa-users {
     color: #00a6e9;
 }
 
@@ -116,6 +116,7 @@ body, h1, h2, h3, h4, h5, h6 {
 
 #surveyContainer .survey-title {
     height: 68px;
+    margin-left: 20px;
     -webkit-line-clamp: 3;
 }
 
@@ -1006,4 +1007,29 @@ div.arrow_box .carousel img {
 
 #btn-order-columns > span {
     top: calc(50% - 7px);
+}
+
+.page-stamp {
+    position: absolute;
+    width: 35px;
+    text-align: center;
+    left: 9px;
+    padding: 5px 0 5px 2px;
+    margin-top: 5px;
+    background: #34b8ee;
+    font-size: 18px;
+    color: #FFF;
+    stroke: #003e58;
+    stroke-width: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.page-stamp:after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    border: 3px solid transparent;
+    border-top-color: #007bae;
+    border-right-color: #007bae;
 }

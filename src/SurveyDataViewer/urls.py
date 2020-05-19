@@ -7,7 +7,7 @@ from surveyinterface.views import HomeView, SurveyView, SurveyInfoView, AboutVie
 from django.contrib import admin
 admin.autodiscover()
 
-BASE_URL = settings.SITE_URL[1:]
+BASE_URL = ''  # settings.SITE_URL[1:]
 
 urlpatterns = patterns('',
     url(r'^' + BASE_URL + '$', HomeView.as_view(), name='home'),

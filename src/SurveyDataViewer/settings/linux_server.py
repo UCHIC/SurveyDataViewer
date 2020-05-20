@@ -11,8 +11,9 @@ if "host" in data:
 if "host_alt" in data:
     ALLOWED_HOSTS.append(data["host_alt"])
 
-STATIC_ROOT = data["static_root"]
-STATIC_URL = data["static_url"]
-MEDIA_ROOT = data["media_root"]
-MEDIA_URL = data["media_url"]
 SITE_URL = 'surveys/'
+STATIC_ROOT = data["static_root"]
+STATIC_URL = SITE_URL + data["static_url"]
+MEDIA_ROOT = data["media_root"]
+MEDIA_URL = SITE_URL + data["media_url"]
+

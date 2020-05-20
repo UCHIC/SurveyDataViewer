@@ -6,13 +6,13 @@ DEPLOYED = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-if "host" in config:
+if "host" in data:
     ALLOWED_HOSTS.append(config["host"])
-if "host_alt" in config:
+if "host_alt" in data:
     ALLOWED_HOSTS.append(config["host_alt"])
 
-STATIC_ROOT = config["static_root"]
-STATIC_URL = config["static_url"]
-MEDIA_ROOT = config["media_root"]
-MEDIA_URL = config["media_url"]
+STATIC_ROOT = data["static_root"]
+STATIC_URL = data["static_url"]
+MEDIA_ROOT = data["media_root"]
+MEDIA_URL = data["media_url"]
 SITE_URL = ''

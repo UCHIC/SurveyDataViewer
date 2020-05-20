@@ -15,4 +15,4 @@ STATIC_ROOT = data["static_root"]
 STATIC_URL = data["static_url"]
 MEDIA_ROOT = data["media_root"]
 MEDIA_URL = data["media_url"]
-SITE_URL = ''
+SITE_URL = 'surveys/'

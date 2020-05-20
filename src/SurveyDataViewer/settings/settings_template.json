@@ -1,15 +1,19 @@
 {
-  "secret_key": "[secret key goes here]",
-  "media_files_dir": "[folder in which the media files go]",
+  "secret_key": "seeeecretsurvey",
+  "host": "iutahmdf.uwrl.usu.edu",
+  "static_root": "/opt/survey/static",
+  "static_url": "static",
+  "media_root": "/opt/survey/media",
+  "media_url": "media",
   "databases": [
     {
       "name": "default",
-      "schema": "[database name goes here]",
-      "engine": "[database engine goes here. (django.db.backends.mysql)]",
-      "user": "[database username goes here]",
-      "password": "[database password goes here]",
-      "host": "[database host goes here] (localhost)",
-      "port": "[database connection port goes here] (3306)"
+      "schema": "survey_viewer",
+      "engine": "django.db.backends.postgresql_psycopg2",
+      "user": "web_user",
+      "password": "web_password",
+      "host": "localhost",
+      "port": "5432"
     }
   ]
 }

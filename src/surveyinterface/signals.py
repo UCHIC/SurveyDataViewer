@@ -8,6 +8,9 @@ from django.contrib import messages
 @receiver(cleanup_post_delete)
 def delete_folder(**kwargs):
     directory = os.path.join(kwargs['file'].storage.location, kwargs['file'].instance.code)
+    if not os.path.isdir(directory):
+        return
+
     if not os.listdir(directory):
         try:
             os.rmdir(directory)
